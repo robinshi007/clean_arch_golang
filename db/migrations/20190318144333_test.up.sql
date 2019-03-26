@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY NOT NULL,
+  name VARCHAR (50) UNIQUE NOT NULL,
+  description VARCHAR (355),
+
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  deleted_at TIMESTAMP
+);
