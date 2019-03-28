@@ -2,21 +2,39 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-	"os"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/spf13/viper"
 
 	"github.com/robinshi007/goweb/db"
 	uh "github.com/robinshi007/goweb/handler"
 )
 
-func main() {
-	conn, err := db.NewDb("localhost", "5432", "postgres", "postgres", "test")
+func init() {
+	viper.SetConfigFile(`config.json`)
+	err := viper.ReadInConfig()
 	if err != nil {
 		panic(err)
-		os.Exit(-1)
+	}
+	if viper.GetBool(`debug`) {
+		fmt.Println("Service is running inon DEBUG mode")
+	}
+}
+
+func main() {
+	dbHost := viper.GetString(`database.host`)
+	dbPort := viper.GetString(`database.port`)
+	dbUser := viper.GetString(`database.user`)
+	dbPass := viper.GetString(`database.pass`)
+	dbName := viper.GetString(`database.name`)
+
+	//conn, err := db.NewDb("localhost", "5432", "postgres", "postgres", "test")
+	conn, err := db.NewDb(dbHost, dbPort, dbUser, dbPass, dbName)
+	if err != nil {
+		panic(err)
 	}
 
 	r := chi.NewRouter()
@@ -29,7 +47,15 @@ func main() {
 	})
 
 	fmt.Println("Server listen at :8005")
-	http.ListenAndServe(":8005", r)
+	log.Fatal(http.ListenAndServe(":8005", r))
+
+	// c := make(chan os.Signal)
+	// signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	// go func() {
+	// 	<-c
+	// 	os.Exit(-1)
+	// }()
+
 }
 
 func userRouter(uHandler *uh.User) http.Handler {
