@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/robinshi007/goweb/db"
-	uh "github.com/robinshi007/goweb/handler"
+	uh "github.com/robinshi007/goweb/interface/http"
 )
 
 func init() {
@@ -43,7 +43,7 @@ func main() {
 	uHanlder := uh.NewUserHandler(conn)
 
 	r.Route("/", func(rt chi.Router) {
-		rt.Mount("/users", userRouter(uHanlder))
+		rt.Mount("/users", uh.NewUserRouter(uHanlder))
 	})
 
 	fmt.Println("Server listen at :8005")
@@ -56,14 +56,4 @@ func main() {
 	// 	os.Exit(-1)
 	// }()
 
-}
-
-func userRouter(uHandler *uh.User) http.Handler {
-	r := chi.NewRouter()
-	r.Get("/", uHandler.Fetch)
-	r.Get("/{id:[0-9]+}", uHandler.GetById)
-	r.Post("/", uHandler.Create)
-	r.Put("/{id:[0-9]+}", uHandler.Update)
-	r.Delete("/{id:[0-9]+}", uHandler.Delete)
-	return r
 }

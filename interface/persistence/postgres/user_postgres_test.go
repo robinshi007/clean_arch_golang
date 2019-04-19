@@ -1,12 +1,11 @@
-package repository_test
+package postgres_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/robinshi007/goweb/db"
-	"github.com/robinshi007/goweb/model"
-	"github.com/robinshi007/goweb/repository"
+	"github.com/robinshi007/goweb/domain/model"
+	"github.com/robinshi007/goweb/interface/persistence/postgres"
 )
 
 func TestUserCRUD(t *testing.T) {
@@ -14,13 +13,13 @@ func TestUserCRUD(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	ctx := context.WithValue(context.Background(), "hi", "Golang")
-	userRepo := repository.NewUserRepo(conn)
-	id, err := userRepo.Create(ctx, &model.User{Name: "Rob", Desc: "Pike"})
+	//ctx := context.WithValue(context.Background(), "hi", "Golang")
+	userRepo := postgres.NewUserRepo(conn)
+	id, err := userRepo.Create(&model.User{Name: "Rob", Desc: "Pike"})
 	if err != nil {
 		panic(err)
 	}
-	user, err := userRepo.GetById(ctx, id)
+	user, err := userRepo.GetById(id)
 	if err != nil {
 		panic(err)
 	}
@@ -28,31 +27,31 @@ func TestUserCRUD(t *testing.T) {
 		t.Errorf("id is incorrect, got: %d, want: %d", user.Id, id)
 	}
 
-	id2, err := userRepo.Create(ctx, &model.User{Name: "Hello", Desc: "World"})
+	id2, err := userRepo.Create(&model.User{Name: "Hello", Desc: "World"})
 	if err != nil {
 		panic(err)
 	}
-	users, err := userRepo.Fetch(ctx, int64(5))
+	users, err := userRepo.Fetch(int64(5))
 	if len(users) != 2 {
 		t.Errorf("Fetch() results size is incorrect, got: %d, want: %d", len(users), 2)
 	}
 
 	user.Name = "Robin"
-	_, err = userRepo.Update(ctx, user)
+	_, err = userRepo.Update(user)
 	if err != nil {
 		panic(err)
 	}
-	user2, err := userRepo.GetById(ctx, user.Id)
+	user2, err := userRepo.GetById(user.Id)
 	if user2.Name != "Robin" {
 		t.Errorf("Update() u.name is incorrect, got: %v, want: %v", user2.Name, "Robin")
 	}
 	for _, rowId := range []int64{id, id2} {
-		_, err := userRepo.Delete(ctx, rowId)
+		_, err := userRepo.Delete(rowId)
 		if err != nil {
 			panic(err)
 		}
 	}
-	users2, err := userRepo.Fetch(ctx, int64(5))
+	users2, err := userRepo.Fetch(int64(5))
 	if len(users2) != 0 {
 		t.Errorf("Fetch() results size is incorrect, got: %d, want: %d", len(users2), 0)
 	}

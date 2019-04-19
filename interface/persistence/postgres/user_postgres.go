@@ -1,7 +1,6 @@
-package repository
+package postgres
 
 import (
-	"context"
 	"database/sql"
 	"strconv"
 	"time"
@@ -9,10 +8,11 @@ import (
 	pq "github.com/lib/pq"
 
 	"github.com/robinshi007/goweb/db"
-	model "github.com/robinshi007/goweb/model"
+	"github.com/robinshi007/goweb/domain/model"
+	"github.com/robinshi007/goweb/domain/repository"
 )
 
-func NewUserRepo(conn *db.Db) UserRepo {
+func NewUserRepo(conn *db.Db) repository.UserRepository {
 	return &postgresUserRepo{
 		Conn: conn.SQL,
 	}
@@ -22,7 +22,7 @@ type postgresUserRepo struct {
 	Conn *sql.DB
 }
 
-func (p *postgresUserRepo) fetch(ctx context.Context, query string, args ...interface{}) ([]*model.User, error) {
+func (p *postgresUserRepo) fetch(query string, args ...interface{}) ([]*model.User, error) {
 	result := make([]*model.User, 0)
 	rows, err := p.Conn.Query(query)
 	defer rows.Close()
@@ -50,14 +50,14 @@ func (p *postgresUserRepo) fetch(ctx context.Context, query string, args ...inte
 	}
 	return result, nil
 }
-func (p *postgresUserRepo) Fetch(ctx context.Context, num int64) ([]*model.User, error) {
+func (p *postgresUserRepo) Fetch(num int64) ([]*model.User, error) {
 	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users LIMIT " + strconv.FormatInt(num, 10)
-	return p.fetch(ctx, query, num)
+	return p.fetch(query, num)
 }
 
-func (p *postgresUserRepo) GetById(ctx context.Context, id int64) (*model.User, error) {
+func (p *postgresUserRepo) GetById(id int64) (*model.User, error) {
 	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users where id = " + strconv.FormatInt(id, 10) + ";"
-	rows, err := p.fetch(ctx, query)
+	rows, err := p.fetch(query)
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +69,11 @@ func (p *postgresUserRepo) GetById(ctx context.Context, id int64) (*model.User, 
 	}
 	return payload, nil
 }
+func (p *postgresUserRepo) GetByName(name string) (*model.User, error) {
+	return &model.User{Name: "haha"}, nil
+}
 
-func (p *postgresUserRepo) Create(ctx context.Context, u *model.User) (int64, error) {
+func (p *postgresUserRepo) Create(u *model.User) (int64, error) {
 	var userId int
 	query := "INSERT INTO users (name,description,created_at,updated_at) VALUES ($1, $2, $3, $4) RETURNING id"
 	err := p.Conn.QueryRow(query, u.Name, u.Desc, time.Now(), time.Now()).Scan(&userId)
@@ -80,7 +83,7 @@ func (p *postgresUserRepo) Create(ctx context.Context, u *model.User) (int64, er
 	return int64(userId), err
 }
 
-func (p *postgresUserRepo) Update(ctx context.Context, u *model.User) (*model.User, error) {
+func (p *postgresUserRepo) Update(u *model.User) (*model.User, error) {
 	query := "UPDATE users SET name=$1, description=$2, updated_at=$3 where id=$4 RETURNING id"
 
 	u.UpdatedAt = time.Now()
@@ -90,7 +93,7 @@ func (p *postgresUserRepo) Update(ctx context.Context, u *model.User) (*model.Us
 	}
 	return u, nil
 }
-func (p *postgresUserRepo) Delete(ctx context.Context, id int64) (bool, error) {
+func (p *postgresUserRepo) Delete(id int64) (bool, error) {
 	query := "DELETE FROM users where id=$1"
 	_, err := p.Conn.Exec(query, id)
 	if err != nil {
