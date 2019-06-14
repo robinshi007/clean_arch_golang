@@ -1,16 +1,19 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	//"time"
+
 	"github.com/spf13/viper"
 
 	"github.com/robinshi007/goweb/db"
-	uh "github.com/robinshi007/goweb/interface/http"
+	"github.com/robinshi007/goweb/interface/web"
 )
 
 func init() {
@@ -23,7 +26,11 @@ func init() {
 		fmt.Println("Service is running inon DEBUG mode")
 	}
 }
-
+func failedIf(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
 func main() {
 	dbHost := viper.GetString(`database.host`)
 	dbPort := viper.GetString(`database.port`)
@@ -33,27 +40,25 @@ func main() {
 
 	//conn, err := db.NewDb("localhost", "5432", "postgres", "postgres", "test")
 	conn, err := db.NewDb(dbHost, dbPort, dbUser, dbPass, dbName)
-	if err != nil {
-		panic(err)
+	failedIf(err)
+	// server
+	srv := web.NewServer(conn)
+	go func() {
+		fmt.Println("Server listen at :8005")
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			fmt.Printf("Http Server ListenAndServe: %v", err)
+		}
+	}()
+
+	// handle signal
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	fmt.Println(<-quit)
+
+	fmt.Print("Stopping http server...")
+	if err := srv.Shutdown(context.Background()); err != nil {
+		fmt.Printf("Http server Shutdown: %v", err)
+	} else {
+		fmt.Println("Done.")
 	}
-
-	r := chi.NewRouter()
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Logger)
-	uHanlder := uh.NewUserHandler(conn)
-
-	r.Route("/", func(rt chi.Router) {
-		rt.Mount("/users", uh.NewUserRouter(uHanlder))
-	})
-
-	fmt.Println("Server listen at :8005")
-	log.Fatal(http.ListenAndServe(":8005", r))
-
-	// c := make(chan os.Signal)
-	// signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	// go func() {
-	// 	<-c
-	// 	os.Exit(-1)
-	// }()
-
 }

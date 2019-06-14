@@ -1,4 +1,4 @@
-package http
+package web
 
 import (
 	"encoding/json"
@@ -7,13 +7,13 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	validator "gopkg.in/go-playground/validator.v9"
+
 	"github.com/robinshi007/goweb/db"
 	"github.com/robinshi007/goweb/domain/model"
 	"github.com/robinshi007/goweb/domain/repository"
 	"github.com/robinshi007/goweb/interface/persistence/postgres"
 	"github.com/robinshi007/goweb/util"
-
-	validator "gopkg.in/go-playground/validator.v9"
 )
 
 // NewRouter
