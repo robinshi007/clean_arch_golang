@@ -1,4 +1,4 @@
-## goweb
+## Golang Clean Arch
 
 For golang web apps, with REST and GraphQL as access endpoint
 
@@ -9,6 +9,19 @@ For golang web apps, with REST and GraphQL as access endpoint
 * Test support(Unit test and Integration test)
 * Clean arch with loosely coupled
 * Docker deploy support
+
+
+## Todo
+
+* input model validate and transform
+* output model transform and presenter json/xml
+* error handler
+* response format and error format
+* dbm with expression log
+* unit test
+* integrite test
+* e2e test
+* dev with ticktock
 
 ## Refers
 

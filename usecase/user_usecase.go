@@ -1,11 +1,12 @@
 package usecase
 
 import (
-	"github.com/robinshi007/goweb/domain/model"
-	"github.com/robinshi007/goweb/domain/repository"
-	"github.com/robinshi007/goweb/domain/service"
+	"clean_arch/domain/model"
+	"clean_arch/domain/repository"
+	"clean_arch/domain/service"
 )
 
+// UserUsecase -
 type UserUsecase interface {
 	ListUser() ([]*User, error)
 	CreateUser(name string) error
@@ -16,7 +17,8 @@ type userUsecase struct {
 	service *service.UserService
 }
 
-func NewUserUseCase(repo repository.UserRepository, service *service.UserService) *userUsecase {
+// NewUserUseCase -
+func NewUserUseCase(repo repository.UserRepository, service *service.UserService) *UserUsecase {
 	return &userUsecase{
 		repo:    repo,
 		service: service,
@@ -42,6 +44,7 @@ func (u *userUsecase) RegisterUser(name string) error {
 	return nil
 }
 
+// User -
 type User struct {
 	ID    string
 	Email string

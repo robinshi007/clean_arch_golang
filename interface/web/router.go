@@ -6,14 +6,15 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 
-	"github.com/robinshi007/goweb/db"
+	"clean_arch/infra/database"
 )
 
-func NewRouter(conn *db.Db) http.Handler {
+// NewRouter -
+func NewRouter(dbm *database.DBM) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
-	uHanlder := NewUserHandler(conn)
+	uHanlder := NewUserHandler(dbm)
 
 	r.Route("/", func(rt chi.Router) {
 		rt.Mount("/users", NewUserRouter(uHanlder))

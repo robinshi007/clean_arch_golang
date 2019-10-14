@@ -1,6 +1,6 @@
 run:
-	go run main.go
+	go run cmd/server/main.go
 build:
-	go build main.go
+	go build cmd/server/main.go
 clean:
 	go clean

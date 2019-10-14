@@ -1,0 +1,13 @@
+name: clean_arch
+server:
+  name: clean_arch
+  host: localhost
+  port: 3000
+log:
+  code: zap
+  level: debug
+  file_name: tmp/clean_arch_test.log
+database:
+  code: sqldb
+  driver_name: sqlite3
+  url_address: tmp/clean_arch_test.db

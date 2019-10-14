@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/robinshi007/goweb/db"
+	"clean_arch/infra/database"
 )
 
-func NewServer(conn *db.Db) *http.Server {
+// NewServer -
+func NewServer(conn *database.DBM) *http.Server {
 
 	r := NewRouter(conn)
 	srv := &http.Server{
