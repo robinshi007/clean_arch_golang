@@ -1,18 +1,20 @@
 package web
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"clean_arch/infra/database"
+	"clean_arch/infra/config"
 )
 
 // NewServer -
-func NewServer(conn database.DBM) *http.Server {
+func NewServer(cfg *config.Config, conn database.DBM) *http.Server {
 
 	r := NewRouter(conn)
 	srv := &http.Server{
-		Addr:           ":8005",
+		Addr:           fmt.Sprintf(":%s", cfg.Server.Port),
 		Handler:        r,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,

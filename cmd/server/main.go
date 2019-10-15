@@ -32,9 +32,9 @@ func main() {
 	fmt.Println("dbm:", dbm)
 
 	// server
-	srv := web.NewServer(dbm)
+	srv := web.NewServer(cfg, dbm)
 	go func() {
-		fmt.Println("Server listen at :8005")
+		fmt.Println(fmt.Sprintf("Server listen at :%s", cfg.Server.Port))
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			fmt.Printf("Http Server ListenAndServe: %v", err)
 		}

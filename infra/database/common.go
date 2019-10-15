@@ -5,10 +5,6 @@ import (
 	// ignore package
 	"context"
 	"database/sql"
-
-	// pg and sqlite3
-	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 // DBM database manager

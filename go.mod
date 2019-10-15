@@ -12,6 +12,7 @@ require (
 	go.uber.org/multierr v1.2.0 // indirect
 	go.uber.org/zap v1.10.0
 	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb // indirect
+	gopkg.in/go-playground/validator.v8 v8.18.2
 	gopkg.in/go-playground/validator.v9 v9.27.0
 	gopkg.in/yaml.v2 v2.2.2
 	honnef.co/go/tools v0.0.1-2019.2.3

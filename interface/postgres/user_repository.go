@@ -27,6 +27,7 @@ func (p *postgresUserRepo) fetch(query string, args ...interface{}) ([]*model.Us
 	result := make([]*model.User, 0)
 	ctx := context.Background()
 	stmt, err := p.DBM.Prepare(ctx, query)
+	defer stmt.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +42,7 @@ func (p *postgresUserRepo) fetch(query string, args ...interface{}) ([]*model.Us
 		err := rows.Scan(
 			&data.ID,
 			&data.Name,
-			&data.Desc,
+			&data.Description,
 			&data.CreatedAt,
 			&data.UpdatedAt,
 			&deletedAt,
@@ -86,10 +87,11 @@ func (p *postgresUserRepo) Create(u *model.User) (int64, error) {
 
 	ctx := context.Background()
 	stmt, err := p.DBM.Prepare(ctx, query)
+	defer stmt.Close()
 	if err != nil {
 		return -1, err
 	}
-	err = stmt.QueryRowContext(ctx, u.Name, u.Desc, now, now).Scan(&userID)
+	err = stmt.QueryRowContext(ctx, u.Name, u.Description, now, now).Scan(&userID)
 	if err != nil {
 		return -1, err
 	}
@@ -103,12 +105,13 @@ func (p *postgresUserRepo) Update(u *model.User) (*model.User, error) {
 
 	ctx := context.Background()
 	stmt, err := p.DBM.Prepare(ctx, query)
+	defer stmt.Close()
 	if err != nil {
-		return nil, err
+		return HandlePqErr(err)
 	}
-	_, err = stmt.ExecContext(ctx, u.Name, u.Desc, u.UpdatedAt, u.ID)
+	_, err = stmt.ExecContext(ctx, u.Name, u.Description, u.UpdatedAt, u.ID)
 	if err != nil {
-		return nil, err
+		return HandlePqErr(err)
 	}
 	return u, nil
 }
@@ -117,6 +120,7 @@ func (p *postgresUserRepo) Delete(id int64) (bool, error) {
 
 	ctx := context.Background()
 	stmt, err := p.DBM.Prepare(ctx, query)
+	defer stmt.Close()
 	if err != nil {
 		return false, err
 	}

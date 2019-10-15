@@ -3,18 +3,22 @@ package service
 import (
 	"fmt"
 
-	"github.com/robinshi007/goweb/domain/repository"
+	"clean_arch/domain/repository"
 )
 
+// UserService -
 type UserService struct {
 	repo repository.UserRepository
 }
 
+// NewUserService -
 func NewUserService(repo repository.UserRepository) *UserService {
 	return &UserService{
 		repo: repo,
 	}
 }
+
+// Duplicated -
 func (s *UserService) Duplicated(name string) error {
 	user, err := s.repo.GetByName(name)
 	if user != nil {
