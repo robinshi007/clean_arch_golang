@@ -8,7 +8,7 @@ import (
 )
 
 // NewServer -
-func NewServer(conn *database.DBM) *http.Server {
+func NewServer(conn database.DBM) *http.Server {
 
 	r := NewRouter(conn)
 	srv := &http.Server{

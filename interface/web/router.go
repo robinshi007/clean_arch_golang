@@ -10,7 +10,7 @@ import (
 )
 
 // NewRouter -
-func NewRouter(dbm *database.DBM) http.Handler {
+func NewRouter(dbm database.DBM) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)

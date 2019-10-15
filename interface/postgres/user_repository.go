@@ -7,27 +7,26 @@ import (
 
 	pq "github.com/lib/pq"
 
-	dba "clean_arch/adapter/database"
 	"clean_arch/domain/model"
 	"clean_arch/domain/repository"
 	"clean_arch/infra/database"
 )
 
 // NewUserRepo -
-func NewUserRepo(conn *database.DBM) repository.UserRepository {
+func NewUserRepo(conn database.DBM) repository.UserRepository {
 	return &postgresUserRepo{
-		DBM: dba.GetDBM(),
+		DBM: conn,
 	}
 }
 
 type postgresUserRepo struct {
-	DBM *database.DBM
+	DBM database.DBM
 }
 
 func (p *postgresUserRepo) fetch(query string, args ...interface{}) ([]*model.User, error) {
 	result := make([]*model.User, 0)
 	ctx := context.Background()
-	stmt, err := (*p.DBM).Prepare(ctx, query)
+	stmt, err := p.DBM.Prepare(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +85,7 @@ func (p *postgresUserRepo) Create(u *model.User) (int64, error) {
 	query := "INSERT INTO users (name,description,created_at,updated_at) VALUES ($1, $2, $3, $4) RETURNING id"
 
 	ctx := context.Background()
-	stmt, err := (*p.DBM).Prepare(ctx, query)
+	stmt, err := p.DBM.Prepare(ctx, query)
 	if err != nil {
 		return -1, err
 	}
@@ -103,7 +102,7 @@ func (p *postgresUserRepo) Update(u *model.User) (*model.User, error) {
 	u.UpdatedAt = time.Now()
 
 	ctx := context.Background()
-	stmt, err := (*p.DBM).Prepare(ctx, query)
+	stmt, err := p.DBM.Prepare(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +116,7 @@ func (p *postgresUserRepo) Delete(id int64) (bool, error) {
 	query := "DELETE FROM users where id=$1"
 
 	ctx := context.Background()
-	stmt, err := (*p.DBM).Prepare(ctx, query)
+	stmt, err := p.DBM.Prepare(ctx, query)
 	if err != nil {
 		return false, err
 	}

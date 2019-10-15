@@ -15,7 +15,7 @@ import (
 	"clean_arch/infra/database"
 )
 
-var dm *database.DBM
+var dm database.DBM
 
 // NewDBM -
 func NewDBM(c *config.Config) error {
@@ -25,12 +25,12 @@ func NewDBM(c *config.Config) error {
 	if err != nil {
 		return err
 	}
-	dm = &dbma
+	dm = dbma
 	return nil
 }
 
 // GetDBM get database manager
-func GetDBM() *database.DBM {
+func GetDBM() database.DBM {
 	return dm
 }
 
