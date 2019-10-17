@@ -4,3 +4,5 @@ build:
 	go build cmd/server/main.go
 clean:
 	go clean
+test:
+	go test clean_arch/interface/postgres

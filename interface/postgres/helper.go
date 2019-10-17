@@ -17,8 +17,8 @@ func TimeNow() time.Time {
 	return time.Now().In(location)
 }
 
-// HandlePqErr -
-func HandlePqErr(err error) (*model.User, error) {
+// HandleUserPqErr -
+func HandleUserPqErr(err error) (*model.User, error) {
 	if err, ok := err.(*pq.Error); ok {
 		return nil, errors.Wrap(err, err.Code.Name())
 	}
