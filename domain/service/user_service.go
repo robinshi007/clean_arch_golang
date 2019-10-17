@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
 	"clean_arch/domain/repository"
@@ -19,8 +20,8 @@ func NewUserService(repo repository.UserRepository) *UserService {
 }
 
 // Duplicated -
-func (s *UserService) Duplicated(name string) error {
-	user, err := s.repo.GetByName(name)
+func (s *UserService) Duplicated(c context.Context, name string) error {
+	user, err := s.repo.GetByName(c, name)
 	if user != nil {
 		return fmt.Errorf("%s already exists", name)
 	}

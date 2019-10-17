@@ -1,18 +1,23 @@
 package database
 
 import (
-
-	// ignore package
-	"context"
 	"database/sql"
 )
 
 // DBM database manager
 type DBM interface {
-	ConnectDB(driverName string, urlAddress string) error
-	CloseDB() error
-	Begin(ctx context.Context) (context.Context, error)
-	Rollback(ctx context.Context) (context.Context, error)
-	Commit(ctx context.Context) (context.Context, error)
-	Prepare(ctx context.Context, query string) (*sql.Stmt, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Prepare(query string) (*sql.Stmt, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+	OpenDB(driverName string, urlAddress string) error
+	Close() error
+}
+
+// Transactioner is the transaction interface for database
+type Transactioner interface {
+	Rollback() error
+	Commit() error
+	TxEnd(txFunc func() error) error
+	TxBegin() (DBM, error)
 }
