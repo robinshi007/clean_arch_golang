@@ -28,8 +28,8 @@ func NewUserRouter(uHandler *UserHandler) http.Handler {
 }
 
 // NewUserHandler -
-func NewUserHandler(dbm database.DBM) *UserHandler {
-	repo := postgres.NewUserRepo(dbm)
+func NewUserHandler(db database.DB) *UserHandler {
+	repo := postgres.NewUserRepo(db)
 	service := service.NewUserService(repo)
 	return &UserHandler{
 		uc: usecase.NewUserUseCase(repo, service),

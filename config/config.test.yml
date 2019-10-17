@@ -11,3 +11,6 @@ database:
   code: sqldb
   driver_name: sqlite3
   url_address: tmp/clean_arch_test.db
+contact:
+  name: Robin Shi
+  email: robinshi@outlook.com

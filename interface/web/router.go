@@ -10,11 +10,11 @@ import (
 )
 
 // NewRouter -
-func NewRouter(dbm database.DBM) http.Handler {
+func NewRouter(db database.DB) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
-	uHanlder := NewUserHandler(dbm)
+	uHanlder := NewUserHandler(db)
 
 	r.Route("/", func(rt chi.Router) {
 		rt.Mount("/users", NewUserRouter(uHanlder))

@@ -15,11 +15,11 @@ import (
 	"clean_arch/infra/database"
 )
 
-var dm database.DBM
+var dm database.DB
 
-// NewDBM -
-func NewDBM(c *config.Config) error {
-	var dbma database.DBM
+// NewDB -
+func NewDB(c *config.Config) error {
+	var dbma database.DB
 	dbma = &dbm{txMap: map[string]*sql.Tx{}}
 	err := dbma.ConnectDB(c.Database.DriverName, c.Database.URLAddress)
 	if err != nil {
@@ -29,8 +29,8 @@ func NewDBM(c *config.Config) error {
 	return nil
 }
 
-// GetDBM get database manager
-func GetDBM() database.DBM {
+// GetDB get database manager
+func GetDB() database.DB {
 	return dm
 }
 

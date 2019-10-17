@@ -7,8 +7,8 @@ import (
 	"database/sql"
 )
 
-// DBM database manager
-type DBM interface {
+// DB database manager
+type DB interface {
 	ConnectDB(driverName string, urlAddress string) error
 	CloseDB() error
 	Begin(ctx context.Context) (context.Context, error)
