@@ -31,7 +31,7 @@ func NewUserRouter(uHandler *UserHandler) http.Handler {
 }
 
 // NewUserHandler -
-func NewUserHandler(dbm database.DBM) *UserHandler {
+func NewUserHandler(dbm database.DB) *UserHandler {
 	repo := postgres.NewUserRepo(dbm)
 	pre := presenter.NewUserPresenter()
 	return &UserHandler{

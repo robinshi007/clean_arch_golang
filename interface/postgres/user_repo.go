@@ -14,18 +14,18 @@ import (
 )
 
 // NewUserRepo -
-func NewUserRepo(conn database.DBM) repository.UserRepository {
+func NewUserRepo(conn database.DB) repository.UserRepository {
 	return &postgresUserRepo{
-		DBM: conn,
+		DB: conn,
 	}
 }
 
 type postgresUserRepo struct {
-	DBM database.DBM
+	DB database.DB
 }
 
 func (p *postgresUserRepo) fetch(c context.Context, query string, args ...interface{}) ([]*model.User, error) {
-	stmt, err := p.DBM.Prepare(query)
+	stmt, err := p.DB.Prepare(query)
 	defer stmt.Close()
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (p *postgresUserRepo) Create(c context.Context, u *model.User) (int64, erro
 	now := time.Now()
 	query := "INSERT INTO users (name,description,created_at,updated_at) VALUES ($1, $2, $3, $4) RETURNING id"
 
-	stmt, err := p.DBM.Prepare(query)
+	stmt, err := p.DB.Prepare(query)
 	defer stmt.Close()
 	if err != nil {
 		return -1, err
@@ -116,7 +116,8 @@ func (p *postgresUserRepo) Update(c context.Context, u *model.User) (*model.User
 	query := "UPDATE users SET name=$1, description=$2, updated_at=$3 where id=$4 RETURNING id"
 
 	u.UpdatedAt = time.Now()
-	stmt, err := p.DBM.Prepare(query)
+
+	stmt, err := p.DB.Prepare(query)
 	defer stmt.Close()
 	if err != nil {
 		return HandleUserPqErr(err)
@@ -130,7 +131,7 @@ func (p *postgresUserRepo) Update(c context.Context, u *model.User) (*model.User
 func (p *postgresUserRepo) Delete(c context.Context, id int64) error {
 	query := "DELETE FROM users where id=$1"
 
-	stmt, err := p.DBM.Prepare(query)
+	stmt, err := p.DB.Prepare(query)
 	defer stmt.Close()
 	if err != nil {
 		return err

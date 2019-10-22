@@ -15,7 +15,7 @@ func (m *dbm) Commit() error {
 }
 
 // TransactionBegin starts a transaction
-func (m *dbm) TxBegin() (database.DBM, error) {
+func (m *dbm) TxBegin() (database.DB, error) {
 	return nil, nil
 }
 

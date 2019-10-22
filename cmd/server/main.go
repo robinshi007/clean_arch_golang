@@ -24,15 +24,14 @@ func main() {
 	log, err := logger.NewLogger(cfg)
 	log.Info("test logger")
 
-	err = database.NewDBM(cfg)
+	err = database.NewDB(cfg)
 	if err != nil {
 		log.Info("database err:", err)
 	}
-	dbm := database.GetDBM()
-	fmt.Println("dbm:", dbm)
+	db := database.GetDB()
 
 	// server
-	srv := rest.NewServer(cfg, dbm)
+	srv := rest.NewServer(cfg, db)
 	go func() {
 		fmt.Println(fmt.Sprintf("Server listen at :%s", cfg.Server.Port))
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {

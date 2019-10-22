@@ -4,8 +4,8 @@ import (
 	"database/sql"
 )
 
-// DBM database manager
-type DBM interface {
+// DB database manager
+type DB interface {
 	Exec(query string, args ...interface{}) (sql.Result, error)
 	Prepare(query string) (*sql.Stmt, error)
 	Query(query string, args ...interface{}) (*sql.Rows, error)
@@ -19,5 +19,5 @@ type Transactioner interface {
 	Rollback() error
 	Commit() error
 	TxEnd(txFunc func() error) error
-	TxBegin() (DBM, error)
+	TxBegin() (DB, error)
 }
