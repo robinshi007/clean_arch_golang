@@ -11,7 +11,7 @@ import (
 	"clean_arch/adapter/config"
 	"clean_arch/adapter/database"
 	"clean_arch/adapter/logger"
-	"clean_arch/interface/web"
+	"clean_arch/interface/rest"
 	"clean_arch/pkg/util"
 )
 
@@ -32,7 +32,7 @@ func main() {
 	fmt.Println("dbm:", dbm)
 
 	// server
-	srv := web.NewServer(cfg, dbm)
+	srv := rest.NewServer(cfg, dbm)
 	go func() {
 		fmt.Println(fmt.Sprintf("Server listen at :%s", cfg.Server.Port))
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {

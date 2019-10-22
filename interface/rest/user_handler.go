@@ -1,4 +1,4 @@
-package web
+package rest
 
 import (
 	"context"
@@ -10,10 +10,10 @@ import (
 
 	"github.com/go-chi/chi"
 
-	"clean_arch/domain/service"
 	"clean_arch/infra/database"
 	"clean_arch/interface/postgres"
 	"clean_arch/pkg/util"
+	"clean_arch/presenter"
 	"clean_arch/usecase"
 	"clean_arch/usecase/in"
 )
@@ -23,6 +23,7 @@ func NewUserRouter(uHandler *UserHandler) http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", uHandler.Fetch)
 	r.Get("/{id:[0-9]+}", uHandler.GetByID)
+	r.Get("/{name:[a-z0-9]+}/by_name", uHandler.GetByName)
 	r.Post("/", uHandler.Create)
 	r.Put("/{id:[0-9]+}", uHandler.Update)
 	r.Delete("/{id:[0-9]+}", uHandler.Delete)
@@ -32,9 +33,9 @@ func NewUserRouter(uHandler *UserHandler) http.Handler {
 // NewUserHandler -
 func NewUserHandler(dbm database.DBM) *UserHandler {
 	repo := postgres.NewUserRepo(dbm)
-	service := service.NewUserService(repo)
+	pre := presenter.NewUserPresenter()
 	return &UserHandler{
-		uc: usecase.NewUserUseCase(repo, service, time.Second),
+		uc: usecase.NewUserUseCase(repo, pre, time.Second),
 	}
 }
 
@@ -101,6 +102,18 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 	res, err := u.uc.GetByID(context.Background(), int64(id))
+
+	if err != nil {
+		util.RespondWithError(w, http.StatusNoContent, "Content not found")
+	} else {
+		util.RespondWithJSON(w, http.StatusOK, res)
+	}
+}
+
+// GetByName returns a post details
+func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "name")
+	res, err := u.uc.GetByName(context.Background(), name)
 
 	if err != nil {
 		util.RespondWithError(w, http.StatusNoContent, "Content not found")

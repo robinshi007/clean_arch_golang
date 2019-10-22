@@ -14,4 +14,5 @@ type UserRepository interface {
 	Create(ctx context.Context, u *model.User) (int64, error)
 	Update(ctx context.Context, u *model.User) (*model.User, error)
 	Delete(ctx context.Context, id int64) error
+	DuplicatedByName(ctx context.Context, name string) error
 }

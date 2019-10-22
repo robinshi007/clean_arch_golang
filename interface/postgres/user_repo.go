@@ -67,7 +67,7 @@ func (p *postgresUserRepo) Fetch(c context.Context, num int64) ([]*model.User, e
 }
 
 func (p *postgresUserRepo) GetByID(c context.Context, id int64) (*model.User, error) {
-	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users where id = " + strconv.FormatInt(id, 10) + ";"
+	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users where id = " + strconv.FormatInt(id, 10)
 	rows, err := p.fetch(c, query)
 	if err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func (p *postgresUserRepo) GetByID(c context.Context, id int64) (*model.User, er
 	return payload, nil
 }
 func (p *postgresUserRepo) GetByName(c context.Context, name string) (*model.User, error) {
-	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users where name = $1;"
+	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users where name = $1"
 	rows, err := p.fetch(c, query, name)
 	if err != nil {
 		return nil, err
@@ -136,6 +136,17 @@ func (p *postgresUserRepo) Delete(c context.Context, id int64) error {
 		return err
 	}
 	_, err = stmt.ExecContext(c, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *postgresUserRepo) DuplicatedByName(c context.Context, name string) error {
+	user, err := p.GetByName(c, name)
+	if user != nil {
+		return fmt.Errorf("%s already exists", name)
+	}
 	if err != nil {
 		return err
 	}

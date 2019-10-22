@@ -15,7 +15,7 @@ For golang web apps, with REST and GraphQL as access endpoint
 
 * input model validate and transform
 * output model transform and presenter json/xml
-* error handler
+* error handle with golang 1.13 unwrap
 * response format and error format
 * dbm with expression log
 * unit test
