@@ -8,11 +8,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"clean_arch/adapter/config"
-	"clean_arch/adapter/database"
-	"clean_arch/adapter/logger"
+	"clean_arch/infra/config"
+	"clean_arch/infra/database"
+	"clean_arch/infra/logger"
+	"clean_arch/infra/util"
 	"clean_arch/interface/rest"
-	"clean_arch/pkg/util"
 )
 
 func main() {

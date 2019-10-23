@@ -1,6 +1,8 @@
 package config
 
 import (
+	"clean_arch/infra"
+
 	"github.com/pkg/errors"
 )
 
@@ -18,7 +20,7 @@ const (
 // var logLevels = [...]string{"debug", "info", "warn", "error"}
 
 // ValidateConfig -
-func ValidateConfig(config Config) error {
+func ValidateConfig(config infra.Config) error {
 	err := validateDataStore(config)
 	if err != nil {
 		return errors.Wrap(err, "")
@@ -30,7 +32,7 @@ func ValidateConfig(config Config) error {
 	return nil
 }
 
-func validateLogger(config Config) error {
+func validateLogger(config infra.Config) error {
 	log := config.Log
 	key := log.Code
 	logMsg := " in validateLogger doesn't match key = "
@@ -45,7 +47,7 @@ func validateLogger(config Config) error {
 	return nil
 }
 
-func validateDataStore(config Config) error {
+func validateDataStore(config infra.Config) error {
 	dc := config.Database
 	key := dc.Code
 	dcMsg := " in validateDataStore doesn't match key = "

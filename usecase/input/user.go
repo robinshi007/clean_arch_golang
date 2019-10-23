@@ -1,7 +1,9 @@
-package in
+package input
 
 import (
 	"gopkg.in/go-playground/validator.v9"
+
+	"clean_arch/domain/model"
 )
 
 // PostUser -
@@ -17,7 +19,7 @@ func (u PostUser) Validate() error {
 
 // PutUser -
 type PutUser struct {
-	ID   int64  `validate:"required"`
+	User *model.User
 	Name string `validate:"required"`
 }
 

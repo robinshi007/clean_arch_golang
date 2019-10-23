@@ -13,8 +13,8 @@ For golang web apps, with REST and GraphQL as access endpoint
 
 ## Todo
 
-* input model validate and transform
-* output model transform and presenter json/xml
+* [done] input model validate and transform
+* [doing] output model transform and presenter json/xml
 * error handle with golang 1.13 unwrap
 * response format and error format
 * dbm with expression log

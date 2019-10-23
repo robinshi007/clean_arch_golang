@@ -2,22 +2,23 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"clean_arch/domain/model"
-	"clean_arch/domain/repository"
-	"clean_arch/presenter/vm"
-	"clean_arch/usecase/in"
+	in "clean_arch/usecase/input"
+	out "clean_arch/usecase/output"
 	"clean_arch/usecase/presenter"
+	"clean_arch/usecase/repository"
 )
 
 // UserUsecase -
 type UserUsecase interface {
-	Fetch(ctx context.Context, num int64) ([]*vm.User, error)
-	GetByID(ctx context.Context, id int64) (*vm.User, error)
-	GetByName(ctx context.Context, name string) (*vm.User, error)
+	GetAll(ctx context.Context, num int64) ([]*out.User, error)
+	GetByID(ctx context.Context, id int64) (*out.User, error)
+	GetByName(ctx context.Context, name string) (*out.User, error)
 	Create(ctx context.Context, u *in.PostUser) (int64, error)
-	Update(ctx context.Context, u *in.PutUser) (*vm.User, error)
+	Update(ctx context.Context, u *in.PutUser) (*out.User, error)
 	Delete(ctx context.Context, id int64) error
 }
 
@@ -40,17 +41,17 @@ func NewUserUseCase(
 	}
 }
 
-func (u *userUsecase) Fetch(c context.Context, num int64) ([]*vm.User, error) {
+func (u *userUsecase) GetAll(c context.Context, num int64) ([]*out.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
-	users, err := u.repo.Fetch(ctx, num)
+	users, err := u.repo.GetAll(ctx, num)
 	if err != nil {
 		return nil, err
 	}
 	return u.pre.ViewUsers(ctx, users), nil
 }
 
-func (u *userUsecase) GetByID(c context.Context, id int64) (*vm.User, error) {
+func (u *userUsecase) GetByID(c context.Context, id int64) (*out.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
 	user, err := u.repo.GetByID(ctx, id)
@@ -60,8 +61,14 @@ func (u *userUsecase) GetByID(c context.Context, id int64) (*vm.User, error) {
 	return u.pre.ViewUser(ctx, user), nil
 }
 
-func (u *userUsecase) GetByName(c context.Context, name string) (*vm.User, error) {
-	return nil, nil
+func (u *userUsecase) GetByName(c context.Context, name string) (*out.User, error) {
+	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
+	defer cancel()
+	user, err := u.repo.GetByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	return u.pre.ViewUser(ctx, user), nil
 }
 
 func (u *userUsecase) Create(c context.Context, user *in.PostUser) (int64, error) {
@@ -72,11 +79,16 @@ func (u *userUsecase) Create(c context.Context, user *in.PostUser) (int64, error
 	})
 }
 
-func (u *userUsecase) Update(c context.Context, user *in.PutUser) (*vm.User, error) {
+func (u *userUsecase) Update(c context.Context, user *in.PutUser) (*out.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
+	name := user.User.Name
+	// check is dirty
+	if name == user.Name {
+		return nil, errors.New("item is not changed")
+	}
 	usr, err := u.repo.Update(ctx, &model.User{
-		ID:   user.ID,
+		ID:   user.User.ID,
 		Name: user.Name,
 	})
 	if err != nil {

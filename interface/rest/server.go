@@ -5,12 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"clean_arch/infra/config"
-	"clean_arch/infra/database"
+	"clean_arch/infra"
 )
 
 // NewServer -
-func NewServer(cfg *config.Config, conn database.DB) *http.Server {
+func NewServer(cfg *infra.Config, conn infra.DB) *http.Server {
 
 	r := NewRouter(conn)
 	srv := &http.Server{

@@ -7,11 +7,11 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"clean_arch/infra/config"
+	"clean_arch/infra"
 )
 
 // NewZapLogger -
-func NewZapLogger(config *config.Config) (*zap.SugaredLogger, error) {
+func NewZapLogger(config *infra.Config) (*zap.SugaredLogger, error) {
 	var cfg zap.Config
 
 	switch strings.ToLower(config.Mode) {

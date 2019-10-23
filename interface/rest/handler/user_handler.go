@@ -1,4 +1,4 @@
-package rest
+package handler
 
 import (
 	"context"
@@ -10,18 +10,19 @@ import (
 
 	"github.com/go-chi/chi"
 
-	"clean_arch/infra/database"
-	"clean_arch/interface/postgres"
-	"clean_arch/pkg/util"
-	"clean_arch/presenter"
+	"clean_arch/adapter/postgres"
+	"clean_arch/adapter/presenter"
+	"clean_arch/domain/model"
+	"clean_arch/infra"
+	"clean_arch/infra/util"
 	"clean_arch/usecase"
-	"clean_arch/usecase/in"
+	"clean_arch/usecase/input"
 )
 
 // NewUserRouter -
 func NewUserRouter(uHandler *UserHandler) http.Handler {
 	r := chi.NewRouter()
-	r.Get("/", uHandler.Fetch)
+	r.Get("/", uHandler.GetAll)
 	r.Get("/{id:[0-9]+}", uHandler.GetByID)
 	r.Get("/{name:[a-z0-9]+}/by_name", uHandler.GetByName)
 	r.Post("/", uHandler.Create)
@@ -31,7 +32,7 @@ func NewUserRouter(uHandler *UserHandler) http.Handler {
 }
 
 // NewUserHandler -
-func NewUserHandler(dbm database.DB) *UserHandler {
+func NewUserHandler(dbm infra.DB) *UserHandler {
 	repo := postgres.NewUserRepo(dbm)
 	pre := presenter.NewUserPresenter()
 	return &UserHandler{
@@ -45,15 +46,15 @@ type UserHandler struct {
 }
 
 // Fetch all post data
-func (u *UserHandler) Fetch(w http.ResponseWriter, r *http.Request) {
-	res, _ := u.uc.Fetch(context.Background(), 5)
+func (u *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	res, _ := u.uc.GetAll(context.Background(), 5)
 
 	util.RespondWithJSON(w, http.StatusOK, res)
 }
 
 // Create a new post
 func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
-	user := in.PostUser{}
+	user := input.PostUser{}
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if err := user.Validate(); err != nil {
@@ -74,17 +75,18 @@ func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 // Update a post by id
 func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	user := in.PutUser{ID: int64(id)}
-	json.NewDecoder(r.Body).Decode(&user)
-
-	if err := user.Validate(); err != nil {
+	// check exist by ID
+	user2, err := u.uc.GetByID(context.Background(), int64(id))
+	if err != nil {
 		util.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	user := input.PutUser{
+		User: &model.User{ID: int64(id), Name: user2.Name},
+	}
+	json.NewDecoder(r.Body).Decode(&user)
 
-	// check exist by ID
-	_, err := u.uc.GetByID(context.Background(), user.ID)
-	if err != nil {
+	if err := user.Validate(); err != nil {
 		util.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -104,7 +106,7 @@ func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	res, err := u.uc.GetByID(context.Background(), int64(id))
 
 	if err != nil {
-		util.RespondWithError(w, http.StatusNoContent, "Content not found")
+		util.RespondWithError(w, http.StatusNotFound, err.Error())
 	} else {
 		util.RespondWithJSON(w, http.StatusOK, res)
 	}
@@ -116,7 +118,7 @@ func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 	res, err := u.uc.GetByName(context.Background(), name)
 
 	if err != nil {
-		util.RespondWithError(w, http.StatusNoContent, "Content not found")
+		util.RespondWithError(w, http.StatusNotFound, err.Error())
 	} else {
 		util.RespondWithJSON(w, http.StatusOK, res)
 	}

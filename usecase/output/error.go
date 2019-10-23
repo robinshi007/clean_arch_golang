@@ -1,4 +1,4 @@
-package vm
+package output
 
 // Error -
 type Error struct {

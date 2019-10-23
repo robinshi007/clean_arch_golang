@@ -1,14 +1,15 @@
 package presenter
 
 import (
-	"clean_arch/domain/model"
-	"clean_arch/presenter/vm"
 	"context"
+
+	"clean_arch/domain/model"
+	out "clean_arch/usecase/output"
 )
 
 // UserPresenter -
 type UserPresenter interface {
-	ViewError(ctx context.Context, err error) *vm.Error
-	ViewUser(ctx context.Context, user *model.User) *vm.User
-	ViewUsers(ctx context.Context, users []*model.User) []*vm.User
+	ViewError(ctx context.Context, err error) *out.Error
+	ViewUser(ctx context.Context, user *model.User) *out.User
+	ViewUsers(ctx context.Context, users []*model.User) []*out.User
 }

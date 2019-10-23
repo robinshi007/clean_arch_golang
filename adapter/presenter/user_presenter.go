@@ -2,7 +2,7 @@ package presenter
 
 import (
 	"clean_arch/domain/model"
-	"clean_arch/presenter/vm"
+	out "clean_arch/usecase/output"
 	"clean_arch/usecase/presenter"
 	"context"
 )
@@ -16,26 +16,26 @@ type userPresenter struct {
 }
 
 // ViewError -
-func (u userPresenter) ViewError(ctx context.Context, err error) *vm.Error {
-	return &vm.Error{
+func (u userPresenter) ViewError(ctx context.Context, err error) *out.Error {
+	return &out.Error{
 		Code:    500,
 		Message: err.Error(),
 	}
 }
 
 // ViewUser -
-func (u userPresenter) ViewUser(ctx context.Context, user *model.User) *vm.User {
-	return &vm.User{
+func (u userPresenter) ViewUser(ctx context.Context, user *model.User) *out.User {
+	return &out.User{
 		ID:   user.GetID(),
 		Name: user.GetName(),
 	}
 }
 
 // ViewUsers -
-func (u userPresenter) ViewUsers(ctx context.Context, users []*model.User) []*vm.User {
-	res := make([]*vm.User, len(users))
+func (u userPresenter) ViewUsers(ctx context.Context, users []*model.User) []*out.User {
+	res := make([]*out.User, len(users))
 	for i, user := range users {
-		res[i] = &vm.User{
+		res[i] = &out.User{
 			ID:   user.GetID(),
 			Name: user.GetName(),
 		}

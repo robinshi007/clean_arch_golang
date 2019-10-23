@@ -9,19 +9,19 @@ import (
 	pq "github.com/lib/pq"
 
 	"clean_arch/domain/model"
-	"clean_arch/domain/repository"
-	"clean_arch/infra/database"
+	"clean_arch/infra"
+	"clean_arch/usecase/repository"
 )
 
 // NewUserRepo -
-func NewUserRepo(conn database.DB) repository.UserRepository {
+func NewUserRepo(conn infra.DB) repository.UserRepository {
 	return &postgresUserRepo{
 		DB: conn,
 	}
 }
 
 type postgresUserRepo struct {
-	DB database.DB
+	DB infra.DB
 }
 
 func (p *postgresUserRepo) fetch(c context.Context, query string, args ...interface{}) ([]*model.User, error) {
@@ -30,7 +30,7 @@ func (p *postgresUserRepo) fetch(c context.Context, query string, args ...interf
 	if err != nil {
 		return nil, err
 	}
-	rows, err := stmt.QueryContext(c)
+	rows, err := stmt.QueryContext(c, args...)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
@@ -47,7 +47,6 @@ func (p *postgresUserRepo) fetch(c context.Context, query string, args ...interf
 			&data.UpdatedAt,
 			&deletedAt,
 		)
-		fmt.Println("row", data)
 		if err != nil {
 			return result, err
 		}
@@ -61,8 +60,8 @@ func (p *postgresUserRepo) fetch(c context.Context, query string, args ...interf
 	}
 	return result, nil
 }
-func (p *postgresUserRepo) Fetch(c context.Context, num int64) ([]*model.User, error) {
-	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users LIMIT " + strconv.FormatInt(num, 10)
+func (p *postgresUserRepo) GetAll(c context.Context, num int64) ([]*model.User, error) {
+	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users LIMIT $1 "
 	return p.fetch(c, query, num)
 }
 

@@ -1,4 +1,4 @@
-package vm
+package output
 
 // User -
 type User struct {
