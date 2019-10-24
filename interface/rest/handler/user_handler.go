@@ -14,7 +14,7 @@ import (
 	"clean_arch/adapter/presenter"
 	"clean_arch/domain/model"
 	"clean_arch/infra"
-	"clean_arch/infra/util"
+	"clean_arch/interface/rest/types"
 	"clean_arch/usecase"
 	"clean_arch/usecase/input"
 )
@@ -49,7 +49,7 @@ type UserHandler struct {
 func (u *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	res, _ := u.uc.GetAll(context.Background(), 5)
 
-	util.RespondWithJSON(w, http.StatusOK, res)
+	types.RespondWithJSON(w, http.StatusOK, res)
 }
 
 // Create a new post
@@ -58,17 +58,17 @@ func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if err := user.Validate(); err != nil {
-		util.RespondWithError(w, http.StatusBadRequest, err.Error())
+		types.RespondWithError(w, "1101", err.Error())
 		return
 	}
 	newID, err := u.uc.Create(context.Background(), &user)
 	fmt.Println(newID)
 	if err != nil {
 		//respondWithError(w, http.StatusInternalServerError, "Server Error")
-		util.RespondWithError(w, util.GetStatusCode(err), err.Error())
+		types.RespondWithError(w, "1103", err.Error())
 		fmt.Println(err.Error())
 	} else {
-		util.RespondWithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
+		types.RespondWithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
 	}
 }
 
@@ -78,7 +78,7 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// check exist by ID
 	user2, err := u.uc.GetByID(context.Background(), int64(id))
 	if err != nil {
-		util.RespondWithError(w, http.StatusBadRequest, err.Error())
+		types.RespondWithError(w, "1101", err.Error())
 		return
 	}
 	user := input.PutUser{
@@ -87,15 +87,15 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if err := user.Validate(); err != nil {
-		util.RespondWithError(w, http.StatusBadRequest, err.Error())
+		types.RespondWithError(w, "1101", err.Error())
 		return
 	}
 
 	res, err := u.uc.Update(context.Background(), &user)
 	if err != nil {
-		util.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		types.RespondWithError(w, "1103", err.Error())
 	} else {
-		util.RespondWithJSON(w, http.StatusOK, res)
+		types.RespondWithJSON(w, http.StatusOK, res)
 	}
 
 }
@@ -106,9 +106,9 @@ func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	res, err := u.uc.GetByID(context.Background(), int64(id))
 
 	if err != nil {
-		util.RespondWithError(w, http.StatusNotFound, err.Error())
+		types.RespondWithError(w, "1102", err.Error())
 	} else {
-		util.RespondWithJSON(w, http.StatusOK, res)
+		types.RespondWithJSON(w, http.StatusOK, res)
 	}
 }
 
@@ -118,9 +118,9 @@ func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 	res, err := u.uc.GetByName(context.Background(), name)
 
 	if err != nil {
-		util.RespondWithError(w, http.StatusNotFound, err.Error())
+		types.RespondWithError(w, "1102", err.Error())
 	} else {
-		util.RespondWithJSON(w, http.StatusOK, res)
+		types.RespondWithJSON(w, http.StatusOK, res)
 	}
 }
 
@@ -130,9 +130,9 @@ func (u *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	err := u.uc.Delete(context.Background(), int64(id))
 
 	if err != nil {
-		util.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		types.RespondWithError(w, "1103", err.Error())
 	} else {
-		util.RespondWithJSON(w, http.StatusMovedPermanently, map[string]string{"message": "Delete Successfully"})
+		types.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Delete Successfully"})
 	}
 
 }

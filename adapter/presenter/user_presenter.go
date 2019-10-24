@@ -18,7 +18,7 @@ type userPresenter struct {
 // ViewError -
 func (u userPresenter) ViewError(ctx context.Context, err error) *out.Error {
 	return &out.Error{
-		Code:    500,
+		Code:    "500",
 		Message: err.Error(),
 	}
 }

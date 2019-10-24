@@ -5,7 +5,7 @@ build:
 clean:
 	go clean
 test:
-	go test clean_arch/interface/postgres
+	go test ./... -v
 
 db_create:
 	migrate create -dir db/migrations -ext sql ${ARGS}
