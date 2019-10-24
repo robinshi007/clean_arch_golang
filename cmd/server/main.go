@@ -17,7 +17,9 @@ import (
 
 func main() {
 
-	cfg, err := config.NewConfig()
+	currentPath, _ := os.Getwd()
+
+	cfg, err := config.NewConfig(currentPath)
 	util.FailedIf(err)
 	fmt.Println("config:", cfg)
 

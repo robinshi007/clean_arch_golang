@@ -9,8 +9,8 @@ log:
   file_name: tmp/clean_arch_test.log
 database:
   code: sqldb
-  driver_name: sqlite3
-  url_address: tmp/clean_arch_test.db
+  driver_name: postgres
+  url_address: "host=localhost port=5432 user=postgres password=postgres dbname=clean_arch_test sslmode=disable"
 contact:
   name: Robin Shi
   email: robinshi@outlook.com

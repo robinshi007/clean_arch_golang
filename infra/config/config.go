@@ -12,9 +12,22 @@ import (
 )
 
 // NewConfig  -
-func NewConfig() (*infra.Config, error) {
-	env := ReadEnv("APP_MODE", "dev")
-	return ReadConfigFromYAML(fmt.Sprintf("config/config.%s.yml", env))
+func NewConfig(path string) (*infra.Config, error) {
+	appMode := "dev"
+	appMode = ReadEnv("APP_MODE", appMode)
+
+	if path == "" {
+		path, _ = os.Getwd()
+	}
+	fmt.Println("wd", path)
+
+	cfg, err := ReadConfigFromYAML(fmt.Sprintf("%s/config/config.%s.yml", path, appMode))
+	if err != nil {
+		return nil, err
+	}
+	// set config mode
+	cfg.Mode = appMode
+	return cfg, nil
 }
 
 // ReadEnv -
@@ -42,15 +55,12 @@ func ReadConfigFromYAML(filename string) (*infra.Config, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "validate config")
 	}
-
-	ReadEnvConfig(&c)
-
 	return &c, nil
 }
 
 // ReadEnvConfig -
 func ReadEnvConfig(cfg *infra.Config) error {
 	// re write mode using env
-	cfg.Mode = ReadEnv("APP_MODE", "dev")
+	// cfg.Mode = ReadEnv("APP_MODE", "dev")
 	return nil
 }
