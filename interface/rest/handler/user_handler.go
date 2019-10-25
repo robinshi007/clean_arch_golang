@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -14,7 +13,7 @@ import (
 	"clean_arch/adapter/presenter"
 	"clean_arch/domain/model"
 	"clean_arch/infra"
-	"clean_arch/interface/rest/types"
+	"clean_arch/interface/rest"
 	"clean_arch/usecase"
 	"clean_arch/usecase/input"
 )
@@ -45,11 +44,10 @@ type UserHandler struct {
 	uc usecase.UserUsecase
 }
 
-// Fetch all post data
+// GetAll the post data
 func (u *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	res, _ := u.uc.GetAll(context.Background(), 5)
-
-	types.RespondWithJSON(w, http.StatusOK, res)
+	rest.RespondOK(w, res)
 }
 
 // Create a new post
@@ -58,17 +56,14 @@ func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if err := user.Validate(); err != nil {
-		types.RespondWithError(w, "1101", err.Error())
+		rest.RespondError(w, model.ErrEntityBadInput)
 		return
 	}
 	newID, err := u.uc.Create(context.Background(), &user)
-	fmt.Println(newID)
 	if err != nil {
-		//respondWithError(w, http.StatusInternalServerError, "Server Error")
-		types.RespondWithError(w, "1103", err.Error())
-		fmt.Println(err.Error())
+		rest.RespondError(w, err)
 	} else {
-		types.RespondWithJSON(w, http.StatusCreated, map[string]string{"message": "Successfully Created"})
+		rest.RespondCreated(w, newID)
 	}
 }
 
@@ -78,7 +73,7 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// check exist by ID
 	user2, err := u.uc.GetByID(context.Background(), int64(id))
 	if err != nil {
-		types.RespondWithError(w, "1101", err.Error())
+		rest.RespondError(w, model.ErrEntityBadInput)
 		return
 	}
 	user := input.PutUser{
@@ -87,15 +82,15 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if err := user.Validate(); err != nil {
-		types.RespondWithError(w, "1101", err.Error())
+		rest.RespondError(w, model.ErrEntityBadInput)
 		return
 	}
 
 	res, err := u.uc.Update(context.Background(), &user)
 	if err != nil {
-		types.RespondWithError(w, "1103", err.Error())
+		rest.RespondError(w, err)
 	} else {
-		types.RespondWithJSON(w, http.StatusOK, res)
+		rest.RespondOK(w, res)
 	}
 
 }
@@ -106,9 +101,9 @@ func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	res, err := u.uc.GetByID(context.Background(), int64(id))
 
 	if err != nil {
-		types.RespondWithError(w, "1102", err.Error())
+		rest.RespondError(w, err)
 	} else {
-		types.RespondWithJSON(w, http.StatusOK, res)
+		rest.RespondOK(w, res)
 	}
 }
 
@@ -118,21 +113,23 @@ func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 	res, err := u.uc.GetByName(context.Background(), name)
 
 	if err != nil {
-		types.RespondWithError(w, "1102", err.Error())
+		rest.RespondError(w, err)
 	} else {
-		types.RespondWithJSON(w, http.StatusOK, res)
+		rest.RespondOK(w, res)
 	}
 }
 
 // Delete a post
 func (u *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	err := u.uc.Delete(context.Background(), int64(id))
-
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		types.RespondWithError(w, "1103", err.Error())
+		rest.RespondError(w, model.ErrEntityBadInput)
+	}
+	err = u.uc.Delete(context.Background(), int64(id))
+	if err != nil {
+		rest.RespondError(w, err)
 	} else {
-		types.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Delete Successfully"})
+		rest.RespondOK(w, string(id))
 	}
 
 }

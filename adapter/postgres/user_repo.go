@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -75,7 +74,7 @@ func (p *postgresUserRepo) GetByID(c context.Context, id int64) (*model.User, er
 	if len(rows) > 0 {
 		payload = rows[0]
 	} else {
-		return nil, model.ErrNotFound
+		return nil, model.ErrEntityNotFound
 	}
 	return payload, nil
 }
@@ -89,7 +88,7 @@ func (p *postgresUserRepo) GetByName(c context.Context, name string) (*model.Use
 	if len(rows) > 0 {
 		payload = rows[0]
 	} else {
-		return nil, model.ErrNotFound
+		return nil, model.ErrEntityNotFound
 	}
 	return payload, nil
 }
@@ -108,7 +107,7 @@ func (p *postgresUserRepo) Create(c context.Context, u *model.User) (int64, erro
 	if err != nil {
 		return -1, err
 	}
-	return int64(userID), err
+	return int64(userID), nil
 }
 
 func (p *postgresUserRepo) Update(c context.Context, u *model.User) (*model.User, error) {
@@ -135,9 +134,15 @@ func (p *postgresUserRepo) Delete(c context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	_, err = stmt.ExecContext(c, id)
+	res, err := stmt.ExecContext(c, id)
 	if err != nil {
 		return err
+	}
+	count, err := res.RowsAffected()
+	if err == nil {
+		if count == 0 {
+			return model.ErrEntityNotFound
+		}
 	}
 	return nil
 }
@@ -145,7 +150,7 @@ func (p *postgresUserRepo) Delete(c context.Context, id int64) error {
 func (p *postgresUserRepo) DuplicatedByName(c context.Context, name string) error {
 	user, err := p.GetByName(c, name)
 	if user != nil {
-		return fmt.Errorf("%s already exists", name)
+		return model.ErrEntityUniqueConflict
 	}
 	if err != nil {
 		return err

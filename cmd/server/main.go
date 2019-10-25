@@ -12,7 +12,7 @@ import (
 	"clean_arch/infra/database"
 	"clean_arch/infra/logger"
 	"clean_arch/infra/util"
-	"clean_arch/interface/rest"
+	"clean_arch/interface/rest/server"
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 	db := database.GetDB()
 
 	// server
-	srv := rest.NewServer(cfg, db)
+	srv := server.NewServer(cfg, db)
 	go func() {
 		fmt.Println(fmt.Sprintf("Server listen at :%s", cfg.Server.Port))
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {

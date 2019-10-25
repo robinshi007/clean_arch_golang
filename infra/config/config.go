@@ -19,7 +19,6 @@ func NewConfig(path string) (*infra.Config, error) {
 	if path == "" {
 		path, _ = os.Getwd()
 	}
-	fmt.Println("wd", path)
 
 	cfg, err := ReadConfigFromYAML(fmt.Sprintf("%s/config/config.%s.yml", path, appMode))
 	if err != nil {

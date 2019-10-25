@@ -2,10 +2,10 @@ package postgres
 
 import (
 	"clean_arch/domain/model"
+	"fmt"
 	"time"
 
 	pq "github.com/lib/pq"
-	"github.com/pkg/errors"
 )
 
 // TimeNow -
@@ -20,7 +20,7 @@ func TimeNow() time.Time {
 // HandleUserPqErr -
 func HandleUserPqErr(err error) (*model.User, error) {
 	if err, ok := err.(*pq.Error); ok {
-		return nil, errors.Wrap(err, err.Code.Name())
+		return nil, fmt.Errorf("HandleUserPqErr: %w", err)
 	}
 	return nil, err
 }

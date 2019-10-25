@@ -3,8 +3,10 @@ package model
 import "errors"
 
 var (
-	ErrInternalServerError = errors.New("Internal server error")
-	ErrNotFound            = errors.New("Your requested item is not found")
-	ErrConflict            = errors.New("Your item already exist")
-	ErrBadParamInput       = errors.New("Given Param is not valid")
+	// ErrEntityNotFound - entity is not found in database
+	ErrEntityNotFound = errors.New("requested item is not found")
+	// ErrEntityUniqueConflict - entity cannot be created or updated due to unique conflict
+	ErrEntityUniqueConflict = errors.New("requested item is already exist")
+	// ErrEntityBadInput - entity cannot be created or updated due to bad input
+	ErrEntityBadInput = errors.New("input params is not valid")
 )
