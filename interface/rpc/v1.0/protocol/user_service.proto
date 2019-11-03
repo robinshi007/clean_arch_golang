@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package protocol;
+
+service UserService {
+  rpc ListUser(ListUserRequestType) returns (ListUserResponseType) {}
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+}
+
+message ListUserRequestType {
+
+}
+
+message ListUserResponseType {
+  repeated User users = 1;
+}
+

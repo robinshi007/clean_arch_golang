@@ -14,12 +14,12 @@ For golang web apps, with REST and GraphQL as access endpoint
 ## Todo
 
 * [done] input model validate and transform
-* [doing] output model transform and presenter json/xml
-* error handle with golang 1.13 unwrap
-* response format and error format
+* [done] output model transform and presenter json
+* [done] error handle with golang 1.13 unwrap
+* [done] response format and error format
 * dbm with expression log
 * unit test
-* integrite test
+* [done] integrite test
 * e2e test
 * dev with ticktock
 
