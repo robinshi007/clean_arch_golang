@@ -23,6 +23,11 @@ func (u userPresenter) ViewError(ctx context.Context, err error) *out.Error {
 	}
 }
 
+// ViewUserID -
+func (u userPresenter) ViewUserID(ctx context.Context, user *model.User) out.UserID {
+	return out.UserID(user.GetID())
+}
+
 // ViewUser -
 func (u userPresenter) ViewUser(ctx context.Context, user *model.User) *out.User {
 	return &out.User{

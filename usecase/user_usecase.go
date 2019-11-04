@@ -17,7 +17,7 @@ type UserUsecase interface {
 	GetAll(ctx context.Context, num int64) ([]*out.User, error)
 	GetByID(ctx context.Context, id int64) (*out.User, error)
 	GetByName(ctx context.Context, name string) (*out.User, error)
-	Create(ctx context.Context, u *in.PostUser) (int64, error)
+	Create(ctx context.Context, u *in.PostUser) (out.UserID, error)
 	Update(ctx context.Context, u *in.PutUser) (*out.User, error)
 	Delete(ctx context.Context, id int64) error
 }
@@ -71,12 +71,13 @@ func (u *userUsecase) GetByName(c context.Context, name string) (*out.User, erro
 	return u.pre.ViewUser(ctx, user), nil
 }
 
-func (u *userUsecase) Create(c context.Context, user *in.PostUser) (int64, error) {
+func (u *userUsecase) Create(c context.Context, user *in.PostUser) (out.UserID, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
-	return u.repo.Create(ctx, &model.User{
+	res, err := u.repo.Create(ctx, &model.User{
 		Name: user.Name,
 	})
+	return out.UserID(res), err
 }
 
 func (u *userUsecase) Update(c context.Context, user *in.PutUser) (*out.User, error) {
@@ -103,13 +104,13 @@ func (u *userUsecase) Delete(c context.Context, id int64) error {
 	return u.repo.Delete(ctx, id)
 }
 
-func (u *userUsecase) RegisterUser(c context.Context, name string) (int64, error) {
+func (u *userUsecase) RegisterUser(c context.Context, name string) (out.UserID, error) {
 	if err := u.repo.DuplicatedByName(c, name); err != nil {
 		return -1, err
 	}
 	user := model.NewUser(name)
 	if id, err := u.repo.Create(c, user); err != nil {
-		return id, err
+		return out.UserID(id), err
 	}
 	return -1, nil
 }
