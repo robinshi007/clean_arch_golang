@@ -13,7 +13,7 @@ import (
 	"clean_arch/adapter/presenter"
 	"clean_arch/domain/model"
 	"clean_arch/infra"
-	"clean_arch/interface/rest"
+	"clean_arch/interface/web"
 	"clean_arch/usecase"
 	"clean_arch/usecase/input"
 )
@@ -47,7 +47,7 @@ type UserHandler struct {
 // GetAll the post data
 func (u *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	res, _ := u.uc.GetAll(context.Background(), 5)
-	rest.RespondOK(w, res)
+	web.RespondOK(w, res)
 }
 
 // Create a new post
@@ -56,14 +56,14 @@ func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if err := user.Validate(); err != nil {
-		rest.RespondError(w, model.ErrEntityBadInput)
+		web.RespondError(w, model.ErrEntityBadInput)
 		return
 	}
 	newID, err := u.uc.Create(context.Background(), &user)
 	if err != nil {
-		rest.RespondError(w, err)
+		web.RespondError(w, err)
 	} else {
-		rest.RespondCreated(w, newID)
+		web.RespondCreated(w, newID)
 	}
 }
 
@@ -73,7 +73,7 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// check exist by ID
 	user2, err := u.uc.GetByID(context.Background(), int64(id))
 	if err != nil {
-		rest.RespondError(w, model.ErrEntityBadInput)
+		web.RespondError(w, model.ErrEntityBadInput)
 		return
 	}
 	user := input.PutUser{
@@ -82,15 +82,15 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if err := user.Validate(); err != nil {
-		rest.RespondError(w, model.ErrEntityBadInput)
+		web.RespondError(w, model.ErrEntityBadInput)
 		return
 	}
 
 	res, err := u.uc.Update(context.Background(), &user)
 	if err != nil {
-		rest.RespondError(w, err)
+		web.RespondError(w, err)
 	} else {
-		rest.RespondOK(w, res)
+		web.RespondOK(w, res)
 	}
 
 }
@@ -101,9 +101,9 @@ func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	res, err := u.uc.GetByID(context.Background(), int64(id))
 
 	if err != nil {
-		rest.RespondError(w, err)
+		web.RespondError(w, err)
 	} else {
-		rest.RespondOK(w, res)
+		web.RespondOK(w, res)
 	}
 }
 
@@ -113,9 +113,9 @@ func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 	res, err := u.uc.GetByName(context.Background(), name)
 
 	if err != nil {
-		rest.RespondError(w, err)
+		web.RespondError(w, err)
 	} else {
-		rest.RespondOK(w, res)
+		web.RespondOK(w, res)
 	}
 }
 
@@ -123,13 +123,13 @@ func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 func (u *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		rest.RespondError(w, model.ErrEntityBadInput)
+		web.RespondError(w, model.ErrEntityBadInput)
 	}
 	err = u.uc.Delete(context.Background(), int64(id))
 	if err != nil {
-		rest.RespondError(w, err)
+		web.RespondError(w, err)
 	} else {
-		rest.RespondOK(w, string(id))
+		web.RespondOK(w, string(id))
 	}
 
 }

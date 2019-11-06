@@ -6,6 +6,7 @@ require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
+	github.com/friendsofgo/graphiql v0.2.2
 	github.com/gavv/httpexpect v2.0.0+incompatible
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-playground/locales v0.12.1 // indirect
@@ -13,6 +14,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.7.0
 	github.com/golang/protobuf v1.3.1
 	github.com/gorilla/websocket v1.4.1 // indirect
+	github.com/graphql-go/graphql v0.7.8
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/leodido/go-urn v1.1.0 // indirect
