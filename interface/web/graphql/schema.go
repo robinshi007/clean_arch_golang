@@ -10,7 +10,8 @@ import (
 // NewSchema -
 func NewSchema(db infra.DB) graphql.Schema {
 	var schema, err = graphql.NewSchema(graphql.SchemaConfig{
-		Query: NewRootQuery(db),
+		Query:    NewRootQuery(db),
+		Mutation: NewRootMutation(db),
 	})
 
 	util.FailedIf(err)
