@@ -1,4 +1,4 @@
-package input
+package in
 
 import (
 	"gopkg.in/go-playground/validator.v9"

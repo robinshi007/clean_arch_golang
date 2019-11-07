@@ -12,10 +12,11 @@ import (
 	"clean_arch/adapter/postgres"
 	"clean_arch/adapter/presenter"
 	"clean_arch/domain/model"
+	"clean_arch/domain/usecase"
+	"clean_arch/domain/usecase/in"
 	"clean_arch/infra"
-	"clean_arch/interface/web"
-	"clean_arch/usecase"
-	"clean_arch/usecase/input"
+	"clean_arch/interface/api"
+	ctn "clean_arch/usecase"
 )
 
 // NewUserRouter -
@@ -35,35 +36,37 @@ func NewUserHandler(dbm infra.DB) *UserHandler {
 	repo := postgres.NewUserRepo(dbm)
 	pre := presenter.NewUserPresenter()
 	return &UserHandler{
-		uc: usecase.NewUserUseCase(repo, pre, time.Second),
+		uc:  ctn.NewUserUseCase(repo, pre, time.Second),
+		rsp: api.NewRespond("json"),
 	}
 }
 
 // UserHandler -
 type UserHandler struct {
-	uc usecase.UserUsecase
+	uc  usecase.UserUsecase
+	rsp api.Respond
 }
 
 // GetAll the post data
 func (u *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	res, _ := u.uc.GetAll(context.Background(), 5)
-	web.RespondOK(w, res)
+	u.rsp.OK(w, res)
 }
 
 // Create a new post
 func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
-	user := input.PostUser{}
+	user := in.PostUser{}
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if err := user.Validate(); err != nil {
-		web.RespondError(w, model.ErrEntityBadInput)
+		u.rsp.Error(w, model.ErrEntityBadInput)
 		return
 	}
 	newID, err := u.uc.Create(context.Background(), &user)
 	if err != nil {
-		web.RespondError(w, err)
+		u.rsp.Error(w, err)
 	} else {
-		web.RespondCreated(w, newID)
+		u.rsp.Created(w, newID)
 	}
 }
 
@@ -73,24 +76,24 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// check exist by ID
 	user2, err := u.uc.GetByID(context.Background(), int64(id))
 	if err != nil {
-		web.RespondError(w, model.ErrEntityBadInput)
+		u.rsp.Error(w, model.ErrEntityBadInput)
 		return
 	}
-	user := input.PutUser{
+	user := in.PutUser{
 		User: &model.User{ID: int64(id), Name: user2.Name},
 	}
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if err := user.Validate(); err != nil {
-		web.RespondError(w, model.ErrEntityBadInput)
+		u.rsp.Error(w, model.ErrEntityBadInput)
 		return
 	}
 
 	res, err := u.uc.Update(context.Background(), &user)
 	if err != nil {
-		web.RespondError(w, err)
+		u.rsp.Error(w, err)
 	} else {
-		web.RespondOK(w, res)
+		u.rsp.OK(w, res)
 	}
 
 }
@@ -101,9 +104,9 @@ func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	res, err := u.uc.GetByID(context.Background(), int64(id))
 
 	if err != nil {
-		web.RespondError(w, err)
+		u.rsp.Error(w, err)
 	} else {
-		web.RespondOK(w, res)
+		u.rsp.OK(w, res)
 	}
 }
 
@@ -113,9 +116,9 @@ func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 	res, err := u.uc.GetByName(context.Background(), name)
 
 	if err != nil {
-		web.RespondError(w, err)
+		u.rsp.Error(w, err)
 	} else {
-		web.RespondOK(w, res)
+		u.rsp.OK(w, res)
 	}
 }
 
@@ -123,13 +126,13 @@ func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 func (u *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		web.RespondError(w, model.ErrEntityBadInput)
+		u.rsp.Error(w, model.ErrEntityBadInput)
 	}
 	err = u.uc.Delete(context.Background(), int64(id))
 	if err != nil {
-		web.RespondError(w, err)
+		u.rsp.Error(w, err)
 	} else {
-		web.RespondOK(w, string(id))
+		u.rsp.OK(w, string(id))
 	}
 
 }

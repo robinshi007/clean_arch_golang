@@ -15,19 +15,12 @@ var dm infra.DB
 func NewDB(c *infra.Config) error {
 	var dbma infra.DB
 	dbma = &dbm{}
-	err := dbma.OpenDB(c.Database.DriverName, c.Database.URLAddress)
+	err := dbma.Open(c.Database.DriverName, c.Database.URLAddress)
 	if err != nil {
 		return err
 	}
 	dm = dbma
 	return nil
-}
-
-// NewDBMFromDB -
-func NewDBMFromDB(db *sql.DB) infra.DB {
-	var dbma infra.DB
-	dbma = &dbm{DB: db}
-	return dbma
 }
 
 // GetDB get database manager
@@ -41,7 +34,7 @@ type dbm struct {
 }
 
 // ConnectDB database
-func (m *dbm) OpenDB(driverName, dataSourceName string) error {
+func (m *dbm) Open(driverName, dataSourceName string) error {
 	var err error
 	m.DB, err = sql.Open(driverName, dataSourceName)
 	if err != nil {

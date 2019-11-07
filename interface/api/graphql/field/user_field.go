@@ -8,11 +8,11 @@ import (
 
 	"clean_arch/adapter/postgres"
 	"clean_arch/adapter/presenter"
+	"clean_arch/domain/usecase/in"
+	"clean_arch/domain/usecase/out"
 	"clean_arch/infra"
-	"clean_arch/interface/web/graphql/types"
+	"clean_arch/interface/api/graphql/types"
 	"clean_arch/usecase"
-	"clean_arch/usecase/input"
-	"clean_arch/usecase/output"
 )
 
 // NewUserListField -
@@ -44,7 +44,7 @@ func NewCreateUserField(db infra.DB) *graphql.Field {
 		},
 		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 			userName, _ := params.Args["name"].(string)
-			user := input.PostUser{Name: userName}
+			user := in.PostUser{Name: userName}
 
 			if err := user.Validate(); err != nil {
 				return nil, err
@@ -58,7 +58,7 @@ func NewCreateUserField(db infra.DB) *graphql.Field {
 			if err != nil {
 				return nil, err
 			}
-			return output.User{ID: int64(newID), Name: userName}, nil
+			return out.User{ID: int64(newID), Name: userName}, nil
 		},
 	}
 	return CreateUserField

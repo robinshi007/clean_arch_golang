@@ -3,7 +3,7 @@ package rpc
 import (
 	"google.golang.org/grpc"
 
-	"clean_arch/usecase"
+	"clean_arch/domain/usecase"
 
 	"clean_arch/interface/rpc/v1.0"
 )

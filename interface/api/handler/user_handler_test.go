@@ -15,7 +15,7 @@ import (
 	"clean_arch/infra/config"
 	"clean_arch/infra/database"
 	"clean_arch/infra/util"
-	"clean_arch/interface/rest/handler"
+	"clean_arch/interface/api/handler"
 )
 
 func TestUserHandlerCRUD(t *testing.T) {
@@ -36,7 +36,6 @@ func TestUserHandlerCRUD(t *testing.T) {
 	db := database.GetDB()
 
 	// migration up
-	util.MigrationDown(cfg, wd)
 	util.MigrationUp(cfg, wd)
 
 	uHanlder := handler.NewUserHandler(db)
@@ -92,7 +91,7 @@ func TestUserHandlerCRUD(t *testing.T) {
 		Status(http.StatusOK).JSON().Object().Value("data").Array().Length().Equal(1)
 
 	// migration down
-	//util.MigrationDown(cfg, wd)
+	util.MigrationDown(cfg, wd)
 }
 
 func TestUserHandlerError(t *testing.T) {
@@ -161,6 +160,7 @@ func TestUserHandlerError(t *testing.T) {
 	e.GET("/").
 		Expect().
 		Status(http.StatusOK).JSON().Object().Value("data").Array().Length().Equal(1)
+
 	// migration down
-	//util.MigrationDown(cfg, wd)
+	util.MigrationDown(cfg, wd)
 }

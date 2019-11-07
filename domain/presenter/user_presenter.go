@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"clean_arch/domain/model"
-	out "clean_arch/usecase/output"
+	"clean_arch/domain/usecase/out"
 )
 
 // UserPresenter -

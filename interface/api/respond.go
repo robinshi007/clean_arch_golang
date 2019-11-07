@@ -1,4 +1,4 @@
-package web
+package api
 
 import (
 	"encoding/json"
@@ -7,11 +7,32 @@ import (
 	"strings"
 
 	"clean_arch/domain/model"
-	"clean_arch/usecase/output"
+	"clean_arch/domain/usecase/out"
 )
 
-// RespondOK write json response format
-func RespondOK(w http.ResponseWriter, payload interface{}) {
+// Respond -
+type Respond interface {
+	OK(w http.ResponseWriter, payload interface{})
+	Created(w http.ResponseWriter, payload interface{})
+	Error(w http.ResponseWriter, err error)
+}
+
+// NewRespond -
+func NewRespond(code string) Respond {
+	switch code {
+	case "json", "JSON":
+		return &RespondJSON{}
+	default:
+		return &RespondJSON{}
+	}
+}
+
+// RespondJSON -
+type RespondJSON struct {
+}
+
+// OK - write json response format
+func (r *RespondJSON) OK(w http.ResponseWriter, payload interface{}) {
 	response, _ := json.Marshal(NewResponse(payload))
 
 	w.Header().Set("Content-Type", "application/json")
@@ -19,8 +40,8 @@ func RespondOK(w http.ResponseWriter, payload interface{}) {
 	w.Write(response)
 }
 
-// RespondCreated write json response format
-func RespondCreated(w http.ResponseWriter, payload interface{}) {
+// Created - write json response format
+func (r *RespondJSON) Created(w http.ResponseWriter, payload interface{}) {
 	response, _ := json.Marshal(NewResponse(payload))
 
 	w.Header().Set("Content-Type", "application/json")
@@ -36,8 +57,8 @@ func respondError(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
-// RespondError return error message
-func RespondError(w http.ResponseWriter, err error) {
+// Error - return error message
+func (r *RespondJSON) Error(w http.ResponseWriter, err error) {
 	var code string
 	if strings.HasPrefix(err.Error(), "pq:") {
 		code = "1103"
@@ -53,5 +74,5 @@ func RespondError(w http.ResponseWriter, err error) {
 			code = "1103"
 		}
 	}
-	respondError(w, output.GetHTTPStatus(code), NewErrorResponse(code))
+	respondError(w, out.GetHTTPStatus(code), NewErrorResponse(code))
 }

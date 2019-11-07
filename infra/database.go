@@ -10,7 +10,7 @@ type DB interface {
 	Prepare(query string) (*sql.Stmt, error)
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 	QueryRow(query string, args ...interface{}) *sql.Row
-	OpenDB(driverName string, urlAddress string) error
+	Open(driverName string, urlAddress string) error
 	Close() error
 }
 

@@ -8,8 +8,8 @@ import (
 	pq "github.com/lib/pq"
 
 	"clean_arch/domain/model"
+	"clean_arch/domain/repository"
 	"clean_arch/infra"
-	"clean_arch/usecase/repository"
 )
 
 // NewUserRepo -

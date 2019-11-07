@@ -9,8 +9,8 @@ import (
 
 	"clean_arch/infra"
 	"clean_arch/infra/util"
-	gql "clean_arch/interface/web/graphql"
-	"clean_arch/interface/web/handler"
+	gql "clean_arch/interface/api/graphql"
+	"clean_arch/interface/api/handler"
 )
 
 // NewRouter -

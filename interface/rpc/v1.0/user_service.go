@@ -4,8 +4,8 @@ import (
 	"context"
 	"strconv"
 
-	"clean_arch/usecase"
-	"clean_arch/usecase/output"
+	"clean_arch/domain/usecase"
+	"clean_arch/domain/usecase/out"
 
 	"clean_arch/interface/rpc/v1.0/protocol"
 )
@@ -32,7 +32,7 @@ func (s *userService) ListUser(ctx context.Context, in *protocol.ListUserRequest
 	return res, nil
 }
 
-func toUser(users []*output.User) []*protocol.User {
+func toUser(users []*out.User) []*protocol.User {
 	res := make([]*protocol.User, len(users))
 	for i, user := range users {
 		res[i] = &protocol.User{

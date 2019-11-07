@@ -1,23 +1,23 @@
-package web
+package api
 
 import (
-	"clean_arch/usecase/output"
+	"clean_arch/domain/usecase/out"
 )
 
 // Response - defined response json format
 type Response struct {
-	Success  bool            `json:"success"`
-	Messages []string        `json:"messages"`
-	Data     interface{}     `json:"data"`
-	Errors   []*output.Error `json:"errors"`
+	Success  bool         `json:"success"`
+	Messages []string     `json:"messages"`
+	Data     interface{}  `json:"data"`
+	Errors   []*out.Error `json:"errors"`
 }
 
 // NewErrorResponse -
 func NewErrorResponse(code string) *Response {
 	return &Response{
 		Success: false,
-		Errors: []*output.Error{
-			output.NewError(code),
+		Errors: []*out.Error{
+			out.NewError(code),
 		},
 		Messages: []string{},
 	}
@@ -29,6 +29,6 @@ func NewResponse(res interface{}) *Response {
 		Success:  true,
 		Data:     res,
 		Messages: []string{},
-		Errors:   []*output.Error{},
+		Errors:   []*out.Error{},
 	}
 }

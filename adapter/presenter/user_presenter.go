@@ -2,8 +2,8 @@ package presenter
 
 import (
 	"clean_arch/domain/model"
-	out "clean_arch/usecase/output"
-	"clean_arch/usecase/presenter"
+	"clean_arch/domain/presenter"
+	"clean_arch/domain/usecase/out"
 	"context"
 )
 

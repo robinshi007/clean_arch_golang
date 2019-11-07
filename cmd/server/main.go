@@ -12,7 +12,7 @@ import (
 	"clean_arch/infra/database"
 	"clean_arch/infra/logger"
 	"clean_arch/infra/util"
-	"clean_arch/interface/web/server"
+	"clean_arch/interface/api/server"
 )
 
 func main() {

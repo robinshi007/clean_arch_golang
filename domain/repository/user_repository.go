@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"clean_arch/domain/model"
 	"context"
+
+	"clean_arch/domain/model"
 )
 
 // UserRepository -
