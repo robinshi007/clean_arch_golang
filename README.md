@@ -1,11 +1,11 @@
 ## Golang Clean Arch
 
-For golang web apps, with REST and GraphQL as access endpoint
+For golang web apps template, with REST, GraphQL and GRPC as access endpoint
 
 ## Feature
 
-* Stack (Golang, Nginx, Redis, Postgres)
-* API (REST and GraphQL)
+* Stack (Golang, Redis, Postgres, Nats)
+* Endpoint (REST, GraphQL and GRPC)
 * Test support(Unit test and Integration test)
 * Clean arch with loosely coupled
 * Docker deploy support
@@ -14,9 +14,10 @@ For golang web apps, with REST and GraphQL as access endpoint
 ## Todo
 
 * [done] input model validate and transform
-* [done] output model transform and presenter json
+* [done] output model transform and presenter json/xml
 * [done] error handle with golang 1.13 unwrap
-* [done] response format and error format
+* [done] response format standard
+* [done] error handler(404, 5xx)
 * dbm with expression log
 * unit test
 * [done] integrite test
