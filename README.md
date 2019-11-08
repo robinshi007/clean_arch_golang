@@ -1,22 +1,27 @@
 ## Golang Clean Arch
 
-For golang web apps, with REST and GraphQL as access endpoint
+For golang web apps template, with REST, GraphQL and GRPC as access endpoint
 
 ## Feature
 
-* Stack (Golang, Nginx, Redis, Postgres)
-* API (REST and GraphQL)
+* Stack (Golang, Redis, Postgres/SQLite3, Nats)
+* Library(chi, migrate, pq, sqlf, sqlhooks, error1.13, graphql)
+* Endpoint (REST, GraphQL and GRPC)
+* Serializer (JSON, MessagePack)
+* Database (Postgres, SQLite3)
+* Logging, tracing and metrics(zerolog, opentracing and prometheus)
+* Security(JWT, UUID)
 * Test support(Unit test and Integration test)
 * Clean arch with loosely coupled
 * Docker deploy support
 
-
 ## Todo
 
 * [done] input model validate and transform
-* [done] output model transform and presenter json
+* [done] output model transform and presenter json/msgpack
 * [done] error handle with golang 1.13 unwrap
-* [done] response format and error format
+* [done] response format standard
+* [done] error handler(404, 5xx)
 * dbm with expression log
 * unit test
 * [done] integrite test
@@ -28,3 +33,5 @@ For golang web apps, with REST and GraphQL as access endpoint
 * <https://github.com/hatajoe/8am>
 * <https://github.com/bxcodec/go-clean-arch>
 * <https://github.com/bradford-hamilton/go-graphql-api>
+* <https://github.com/tensor-programming/hex-microservice>
+* <https://github.com/sourcegraph/sourcegraph>
