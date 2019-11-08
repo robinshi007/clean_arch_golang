@@ -2,14 +2,16 @@ package api
 
 import (
 	"clean_arch/domain/usecase/out"
+	"encoding/xml"
 )
 
 // Response - defined response json format
 type Response struct {
-	Success  bool         `json:"success"`
-	Messages []string     `json:"messages"`
-	Data     interface{}  `json:"data"`
-	Errors   []*out.Error `json:"errors"`
+	XMLName  xml.Name     `json:"-" xml:"response"`
+	Success  bool         `json:"success" xml:"success"`
+	Messages []string     `json:"messages" xml:"messages"`
+	Data     interface{}  `json:"data" xml:"data>data"`
+	Errors   []*out.Error `json:"errors" xml:"errors"`
 }
 
 // NewErrorResponse -
@@ -17,7 +19,7 @@ func NewErrorResponse(code string) *Response {
 	return &Response{
 		Success: false,
 		Errors: []*out.Error{
-			out.NewError(code),
+			out.GetError(code),
 		},
 		Messages: []string{},
 	}

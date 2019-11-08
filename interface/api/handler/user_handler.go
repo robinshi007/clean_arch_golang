@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,6 +15,7 @@ import (
 	"clean_arch/domain/usecase/in"
 	"clean_arch/infra"
 	"clean_arch/interface/api"
+	"clean_arch/interface/api/respond"
 	ctn "clean_arch/usecase"
 )
 
@@ -37,7 +37,7 @@ func NewUserHandler(dbm infra.DB) *UserHandler {
 	pre := presenter.NewUserPresenter()
 	return &UserHandler{
 		uc:  ctn.NewUserUseCase(repo, pre, time.Second),
-		rsp: api.NewRespond("json"),
+		rsp: respond.NewRespond("json"),
 	}
 }
 
@@ -56,7 +56,8 @@ func (u *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // Create a new post
 func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user := in.PostUser{}
-	json.NewDecoder(r.Body).Decode(&user)
+	//json.NewDecoder(r.Body).Decode(&user)
+	u.rsp.Decode(r.Body, &user)
 
 	if err := user.Validate(); err != nil {
 		u.rsp.Error(w, model.ErrEntityBadInput)
@@ -82,7 +83,7 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	user := in.PutUser{
 		User: &model.User{ID: int64(id), Name: user2.Name},
 	}
-	json.NewDecoder(r.Body).Decode(&user)
+	u.rsp.Decode(r.Body, &user)
 
 	if err := user.Validate(); err != nil {
 		u.rsp.Error(w, model.ErrEntityBadInput)
@@ -134,5 +135,4 @@ func (u *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	} else {
 		u.rsp.OK(w, string(id))
 	}
-
 }

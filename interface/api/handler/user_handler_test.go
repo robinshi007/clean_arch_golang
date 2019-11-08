@@ -3,7 +3,6 @@ package handler_test
 // https://github.com/gavv/httpexpect/blob/master/_examples/fruits_test.go
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -12,28 +11,19 @@ import (
 
 	"github.com/gavv/httpexpect"
 
-	"clean_arch/infra/config"
-	"clean_arch/infra/database"
 	"clean_arch/infra/util"
 	"clean_arch/interface/api/handler"
+	"clean_arch/registry"
 )
 
 func TestUserHandlerCRUD(t *testing.T) {
 	wd, _ := os.Getwd()
 	wd = filepath.Dir(filepath.Dir(filepath.Dir(wd)))
 
-	cfg, err := config.NewConfig(wd)
-	util.FailedIf(err)
-	fmt.Println("config:", cfg)
-
-	//	log, err := logger.NewLogger(cfg)
-	//	log.Info("test logger")
-
-	err = database.NewDB(cfg)
-	//	if err != nil {
-	//		log.Info("database err:", err)
-	//	}
-	db := database.GetDB()
+	registry.InitGlobals(wd)
+	cfg := registry.Cfg
+	db := registry.Db
+	defer db.Close()
 
 	// migration up
 	util.MigrationUp(cfg, wd)
@@ -98,18 +88,10 @@ func TestUserHandlerError(t *testing.T) {
 	wd, _ := os.Getwd()
 	wd = filepath.Dir(filepath.Dir(filepath.Dir(wd)))
 
-	cfg, err := config.NewConfig(wd)
-	util.FailedIf(err)
-	fmt.Println("config:", cfg)
-
-	//	log, err := logger.NewLogger(cfg)
-	//	log.Info("test logger")
-
-	err = database.NewDB(cfg)
-	//	if err != nil {
-	//		log.Info("database err:", err)
-	//	}
-	db := database.GetDB()
+	registry.InitGlobals(wd)
+	cfg := registry.Cfg
+	db := registry.Db
+	defer db.Close()
 
 	// migration up
 	util.MigrationDown(cfg, wd)
@@ -143,7 +125,7 @@ func TestUserHandlerError(t *testing.T) {
 	e.POST("/").WithJSON(user3).
 		Expect().Status(http.StatusCreated)
 	e.POST("/").WithJSON(user3).
-		Expect().Status(http.StatusInternalServerError)
+		Expect().Status(http.StatusBadRequest)
 
 	e.PUT("/1").WithJSON(user2).
 		Expect().Status(http.StatusBadRequest)

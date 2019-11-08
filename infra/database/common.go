@@ -3,32 +3,21 @@ package database
 import (
 	"database/sql"
 
-	// ignore package
-	_ "github.com/lib/pq"
-
 	"clean_arch/infra"
 )
 
-var dm infra.DB
-
 // NewDB -
-func NewDB(c *infra.Config) error {
+func NewDB(c *infra.Config) (infra.DB, error) {
 	var dbma infra.DB
 	dbma = &dbm{}
 	err := dbma.Open(c.Database.DriverName, c.Database.URLAddress)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	dm = dbma
-	return nil
+	return dbma, nil
 }
 
-// GetDB get database manager
-func GetDB() infra.DB {
-	return dm
-}
-
-// dbm database manager
+// database manager
 type dbm struct {
 	DB *sql.DB
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -12,20 +14,23 @@ import (
 )
 
 // NewConfig  -
-func NewConfig(path string) (*infra.Config, error) {
+func NewConfig(dir string) (*infra.Config, error) {
 	appMode := "dev"
 	appMode = ReadEnv("APP_MODE", appMode)
 
-	if path == "" {
-		path, _ = os.Getwd()
+	if dir == "" {
+		dir, _ = os.Getwd()
 	}
 
-	cfg, err := ReadConfigFromYAML(fmt.Sprintf("%s/config/config.%s.yml", path, appMode))
+	cfg, err := ReadConfigFromYAML(fmt.Sprintf("%s/config/config.%s.yml", dir, appMode))
 	if err != nil {
 		return nil, err
 	}
 	// set config mode
 	cfg.Mode = appMode
+	if !strings.HasPrefix(cfg.Log.FileName, "/") {
+		cfg.Log.FileName = path.Join(dir, cfg.Log.FileName)
+	}
 	return cfg, nil
 }
 

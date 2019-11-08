@@ -6,9 +6,9 @@ import (
 
 // Error -
 type Error struct {
-	Status  int    `json:"-"`
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Status  int    `json:"-" xml:"-"`
+	Code    string `json:"code" xml:"code"`
+	Message string `json:"message" xml:"message"`
 }
 
 // NewBadReqeustError -
@@ -83,8 +83,8 @@ func NewUnsupportedMediaTypeError() *Error {
 	}
 }
 
-// NewError -
-func NewError(code string) *Error {
+// GetError -
+func GetError(code string) *Error {
 	switch code {
 	case "1101":
 		return NewBadReqeustError()

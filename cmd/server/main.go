@@ -8,34 +8,27 @@ import (
 	"os/signal"
 	"syscall"
 
-	"clean_arch/infra/config"
-	"clean_arch/infra/database"
-	"clean_arch/infra/logger"
-	"clean_arch/infra/util"
 	"clean_arch/interface/api/server"
+	"clean_arch/registry"
 )
 
 func main() {
 
 	currentPath, _ := os.Getwd()
 
-	cfg, err := config.NewConfig(currentPath)
-	util.FailedIf(err)
-	fmt.Println("config:", cfg)
+	registry.InitGlobals(currentPath)
+	defer registry.Db.Close()
 
-	log, err := logger.NewLogger(cfg)
-	log.Info("test logger")
-
-	err = database.NewDB(cfg)
-	if err != nil {
-		log.Info("database err:", err)
+	// print this in dev mode
+	if registry.Cfg.Mode == "dev" {
+		fmt.Println("config", registry.Cfg)
+		registry.Log.Info("Init Logger")
 	}
-	db := database.GetDB()
 
 	// server
-	srv := server.NewServer(cfg, db)
+	srv := server.NewServer(registry.Cfg, registry.Db)
 	go func() {
-		fmt.Println(fmt.Sprintf("Server listen at :%s", cfg.Server.Port))
+		fmt.Println(fmt.Sprintf("Server listen at :%s", registry.Cfg.Server.Port))
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			fmt.Printf("Http Server ListenAndServe: %v", err)
 		}
