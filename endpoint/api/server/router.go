@@ -7,10 +7,10 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 
+	gql "clean_arch/endpoint/api/graphql"
+	"clean_arch/endpoint/api/handler"
 	"clean_arch/infra"
 	"clean_arch/infra/util"
-	gql "clean_arch/interface/api/graphql"
-	"clean_arch/interface/api/handler"
 )
 
 // NewRouter -

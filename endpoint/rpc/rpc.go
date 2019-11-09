@@ -5,7 +5,7 @@ import (
 
 	"clean_arch/domain/usecase"
 
-	"clean_arch/interface/rpc/v1.0"
+	"clean_arch/endpoint/rpc/v1.0"
 )
 
 // Apply -

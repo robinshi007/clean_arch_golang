@@ -8,6 +8,7 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/friendsofgo/graphiql v0.2.2
 	github.com/gavv/httpexpect v2.0.0+incompatible
+	github.com/gchaincl/sqlhooks v1.2.0
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-playground/locales v0.12.1 // indirect
 	github.com/go-playground/universal-translator v0.16.0 // indirect
@@ -17,8 +18,9 @@ require (
 	github.com/graphql-go/graphql v0.7.8
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
+	github.com/keegancsmith/sqlf v1.1.0
 	github.com/leodido/go-urn v1.1.0 // indirect
-	github.com/lib/pq v1.0.0
+	github.com/lib/pq v1.2.0
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/pkg/errors v0.8.1

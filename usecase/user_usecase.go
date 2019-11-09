@@ -35,7 +35,7 @@ func NewUserUseCase(
 func (u *userUsecase) GetAll(c context.Context, num int64) ([]*out.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
-	users, err := u.repo.GetAll(ctx, num)
+	users, err := u.repo.GetAll(ctx, &repository.UserListOptions{})
 	if err != nil {
 		return nil, err
 	}

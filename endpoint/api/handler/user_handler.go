@@ -13,9 +13,9 @@ import (
 	"clean_arch/domain/model"
 	"clean_arch/domain/usecase"
 	"clean_arch/domain/usecase/in"
+	"clean_arch/endpoint/api"
+	"clean_arch/endpoint/api/respond"
 	"clean_arch/infra"
-	"clean_arch/interface/api"
-	"clean_arch/interface/api/respond"
 	ctn "clean_arch/usecase"
 )
 
@@ -125,14 +125,14 @@ func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 
 // Delete a post
 func (u *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		u.rsp.Error(w, model.ErrEntityBadInput)
 	}
-	err = u.uc.Delete(context.Background(), int64(id))
+	err = u.uc.Delete(context.Background(), id)
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
-		u.rsp.OK(w, string(id))
+		u.rsp.OK(w, strconv.FormatInt(id, 10))
 	}
 }

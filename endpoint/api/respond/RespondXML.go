@@ -10,7 +10,7 @@ import (
 	"clean_arch/domain/model"
 	Iserializer "clean_arch/domain/serializer"
 	"clean_arch/domain/usecase/out"
-	"clean_arch/interface/api"
+	"clean_arch/endpoint/api"
 )
 
 // RespondXML -

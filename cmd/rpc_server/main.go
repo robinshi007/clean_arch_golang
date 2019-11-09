@@ -12,7 +12,7 @@ import (
 
 	"clean_arch/adapter/postgres"
 	"clean_arch/adapter/presenter"
-	"clean_arch/interface/rpc"
+	"clean_arch/endpoint/rpc"
 	"clean_arch/registry"
 	"clean_arch/usecase"
 )

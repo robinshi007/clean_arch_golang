@@ -2,153 +2,191 @@ package postgres
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"strconv"
 	"time"
 
-	pq "github.com/lib/pq"
+	"github.com/keegancsmith/sqlf"
 
 	"clean_arch/domain/model"
 	"clean_arch/domain/repository"
 	"clean_arch/infra"
+	"clean_arch/infra/util"
+	"clean_arch/registry"
 )
 
 // NewUserRepo -
 func NewUserRepo(conn infra.DB) repository.UserRepository {
-	return &postgresUserRepo{
+	return &userRepo{
 		DB: conn,
 	}
 }
 
-type postgresUserRepo struct {
+type userRepo struct {
 	DB infra.DB
 }
 
-func (p *postgresUserRepo) fetch(c context.Context, query string, args ...interface{}) ([]*model.User, error) {
-	stmt, err := p.DB.Prepare(query)
-	defer stmt.Close()
+func (u *userRepo) getBySQL(ctx context.Context, query string, args ...interface{}) ([]*model.User, error) {
+	rows, err := registry.Db.QueryContext(ctx, "SELECT id, name, description, created_at, updated_at FROM users "+query, args...)
 	if err != nil {
 		return nil, err
 	}
-	rows, err := stmt.QueryContext(c, args...)
+
+	users := []*model.User{}
 	defer rows.Close()
-	if err != nil {
-		return nil, err
-	}
-	result := make([]*model.User, 0)
 	for rows.Next() {
-		var deletedAt pq.NullTime
-		data := new(model.User)
+		//var deletedAt pq.NullTime
+		user := model.User{}
 		err := rows.Scan(
-			&data.ID,
-			&data.Name,
-			&data.Description,
-			&data.CreatedAt,
-			&data.UpdatedAt,
-			&deletedAt,
+			&user.ID,
+			&user.Name,
+			&user.Description,
+			&user.CreatedAt,
+			&user.UpdatedAt,
 		)
 		if err != nil {
-			return result, err
+			return nil, err
 		}
-		if deletedAt.Valid {
-			data.DeletedAt = deletedAt.Time
-		}
-		result = append(result, data)
+		//		if deletedAt.Valid {
+		//			user.DeletedAt = deletedAt.Time
+		//		}
+
+		users = append(users, &user)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	return result, nil
+	return users, nil
 }
-func (p *postgresUserRepo) GetAll(c context.Context, num int64) ([]*model.User, error) {
-	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users LIMIT $1 "
-	return p.fetch(c, query, num)
+func (u *userRepo) listSQL(opt repository.UserListOptions) (conds []*sqlf.Query) {
+	conds = []*sqlf.Query{}
+	conds = append(conds, sqlf.Sprintf("deleted_at IS NULL"))
+	if opt.Query != "" {
+		query := "%" + opt.Query + "%"
+		conds = append(conds, sqlf.Sprintf("name ILIKE %s OR discription ILIKE %s", query, query))
+	}
+	return conds
 }
 
-func (p *postgresUserRepo) GetByID(c context.Context, id int64) (*model.User, error) {
-	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users where id = " + strconv.FormatInt(id, 10)
-	rows, err := p.fetch(c, query)
+// GetAll -
+func (u *userRepo) GetAll(ctx context.Context, opt *repository.UserListOptions) ([]*model.User, error) {
+	if opt == nil {
+		opt = &repository.UserListOptions{}
+	}
+	conds := u.listSQL(*opt)
+	q := sqlf.Sprintf("WHERE %s ORDER BY id ASC %s", sqlf.Join(conds, "AND"), opt.LimitOffset.SQL())
+	return u.getBySQL(ctx, q.Query(sqlf.PostgresBindVar), q.Args()...)
+}
+
+// GetByID -
+func (u *userRepo) GetByID(ctx context.Context, id int64) (*model.User, error) {
+	rows, err := u.getBySQL(ctx, "WHERE deleted_at IS NULL AND id=$1 LIMIT 1", strconv.FormatInt(id, 10))
 	if err != nil {
 		return nil, err
 	}
-	payload := &model.User{}
-	if len(rows) > 0 {
-		payload = rows[0]
-	} else {
+	if len(rows) == 0 {
 		return nil, model.ErrEntityNotFound
 	}
-	return payload, nil
+	return rows[0], nil
 }
-func (p *postgresUserRepo) GetByName(c context.Context, name string) (*model.User, error) {
-	query := "SELECT id, name, description, created_at, updated_at, deleted_at FROM users where name = $1"
-	rows, err := p.fetch(c, query, name)
+
+// GetByName -
+func (u *userRepo) GetByName(ctx context.Context, name string) (*model.User, error) {
+	rows, err := u.getBySQL(ctx, "WHERE deleted_at IS NULL AND name=$1 LIMIT 1", name)
 	if err != nil {
 		return nil, err
 	}
-	payload := &model.User{}
-	if len(rows) > 0 {
-		payload = rows[0]
-	} else {
+	if len(rows) == 0 {
 		return nil, model.ErrEntityNotFound
 	}
-	return payload, nil
+	return rows[0], nil
 }
 
-func (p *postgresUserRepo) Create(c context.Context, u *model.User) (int64, error) {
-	var userID int
-	now := time.Now()
+// Create -
+func (u *userRepo) Create(ctx context.Context, user *model.User) (int64, error) {
 	query := "INSERT INTO users (name,description,created_at,updated_at) VALUES ($1, $2, $3, $4) RETURNING id"
-
-	stmt, err := p.DB.Prepare(query)
-	defer stmt.Close()
+	tx, err := registry.Db.BeginTx(ctx, nil)
 	if err != nil {
 		return -1, err
 	}
-	err = stmt.QueryRowContext(c, u.Name, u.Description, now, now).Scan(&userID)
+	defer func() {
+		if err != nil {
+			util.CW(os.Stdout, util.NRed, "\"%s\"\n", err.Error())
+			rollErr := tx.Rollback()
+			if rollErr != nil {
+				fmt.Println("rollback error:", rollErr.Error())
+			}
+			return
+		}
+		err = tx.Commit()
+	}()
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = user.CreatedAt
+
+	err = tx.QueryRowContext(
+		ctx,
+		query,
+		user.Name,
+		user.Description,
+		user.CreatedAt,
+		user.UpdatedAt,
+	).Scan(&user.ID)
 	if err != nil {
 		return -1, err
 	}
-	return int64(userID), nil
+	return user.ID, nil
 }
 
-func (p *postgresUserRepo) Update(c context.Context, u *model.User) (*model.User, error) {
-	query := "UPDATE users SET name=$1, description=$2, updated_at=$3 where id=$4 RETURNING id"
+// Update -
+func (u *userRepo) Update(ctx context.Context, user *model.User) (*model.User, error) {
+	tx, err := registry.Db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			util.CW(os.Stdout, util.NRed, "\"%s\"\n", err.Error())
+			rollErr := tx.Rollback()
+			if rollErr != nil {
+				fmt.Println("rollback error:", rollErr.Error())
+			}
+			return
+		}
+		err = tx.Commit()
+	}()
 
-	u.UpdatedAt = time.Now()
-
-	stmt, err := p.DB.Prepare(query)
-	defer stmt.Close()
+	query := "UPDATE users SET name=$1, description=$2, updated_at=$3 WHERE id=$4 AND deleted_at IS NULL RETURNING id"
+	user.UpdatedAt = time.Now()
+	_, err = tx.ExecContext(ctx, query, user.Name, user.Description, user.UpdatedAt, user.ID)
 	if err != nil {
 		return HandleUserPqErr(err)
 	}
-	_, err = stmt.ExecContext(c, u.Name, u.Description, u.UpdatedAt, u.ID)
-	if err != nil {
-		return HandleUserPqErr(err)
-	}
-	return u, nil
+	return user, nil
 }
-func (p *postgresUserRepo) Delete(c context.Context, id int64) error {
-	query := "DELETE FROM users where id=$1"
 
-	stmt, err := p.DB.Prepare(query)
-	defer stmt.Close()
+// Delete -
+func (u *userRepo) Delete(ctx context.Context, id int64) error {
+	query := "UPDATE users SET updated_at=$1, deleted_at=$2 WHERE id=$3"
+	timeNow := time.Now()
+	res, err := registry.Db.ExecContext(ctx, query, timeNow, timeNow, strconv.FormatInt(id, 10))
 	if err != nil {
-		return err
-	}
-	res, err := stmt.ExecContext(c, id)
-	if err != nil {
+		util.CW(os.Stdout, util.NRed, "\"%s\"\n", err.Error())
 		return err
 	}
 	count, err := res.RowsAffected()
-	if err == nil {
-		if count == 0 {
-			return model.ErrEntityNotFound
-		}
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return model.ErrEntityNotFound
 	}
 	return nil
 }
 
-func (p *postgresUserRepo) DuplicatedByName(c context.Context, name string) error {
-	user, err := p.GetByName(c, name)
+// DuplicatedByName -
+func (u *userRepo) DuplicatedByName(ctx context.Context, name string) error {
+	user, err := u.GetByName(ctx, name)
 	if user != nil {
 		return model.ErrEntityUniqueConflict
 	}

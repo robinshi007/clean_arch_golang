@@ -10,8 +10,8 @@ import (
 	"clean_arch/adapter/presenter"
 	"clean_arch/domain/usecase/in"
 	"clean_arch/domain/usecase/out"
+	"clean_arch/endpoint/api/graphql/types"
 	"clean_arch/infra"
-	"clean_arch/interface/api/graphql/types"
 	"clean_arch/usecase"
 )
 

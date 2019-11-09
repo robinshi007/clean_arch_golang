@@ -11,8 +11,8 @@ import (
 
 	"github.com/gavv/httpexpect"
 
+	"clean_arch/endpoint/api/handler"
 	"clean_arch/infra/util"
-	"clean_arch/interface/api/handler"
 	"clean_arch/registry"
 )
 

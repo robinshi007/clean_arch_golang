@@ -6,7 +6,7 @@ import (
 )
 
 // Respond -
-// interface level interface
+// Endpoint level interface
 type Respond interface {
 	OK(w http.ResponseWriter, payload interface{})
 	Created(w http.ResponseWriter, payload interface{})

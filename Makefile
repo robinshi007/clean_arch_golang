@@ -9,9 +9,9 @@ clean:
 test:
 	go test ./... -v
 protoc:
-	protoc --proto_path=. --go_out=plugins=grpc:./ interface/rpc/v1/protocol/*.proto
+	protoc --proto_path=. --go_out=plugins=grpc:./ endpoint/rpc/v1/protocol/*.proto
 grpcc:
-	grpcc --proto interface/rpc/v1.0/protocol/*.proto --address 127.0.0.1:8081 -i
+	grpcc --proto endpoint/rpc/v1.0/protocol/*.proto --address 127.0.0.1:8081 -i
 
 db_create:
 	migrate create -dir db/migrations -ext sql ${ARGS}

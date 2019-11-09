@@ -3,8 +3,8 @@ package graphql
 import (
 	"github.com/graphql-go/graphql"
 
+	"clean_arch/endpoint/api/graphql/field"
 	"clean_arch/infra"
-	"clean_arch/interface/api/graphql/field"
 )
 
 // NewRootMutation -

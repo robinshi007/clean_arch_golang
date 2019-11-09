@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"clean_arch/interface/api/server"
+	"clean_arch/endpoint/api/server"
 	"clean_arch/registry"
 )
 
