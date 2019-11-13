@@ -11,20 +11,16 @@ import (
 
 	"clean_arch/domain/model"
 	"clean_arch/domain/repository"
-	"clean_arch/infra"
 	"clean_arch/infra/util"
 	"clean_arch/registry"
 )
 
 // NewUserRepo -
-func NewUserRepo(conn infra.DB) repository.UserRepository {
-	return &userRepo{
-		DB: conn,
-	}
+func NewUserRepo() repository.UserRepository {
+	return &userRepo{}
 }
 
 type userRepo struct {
-	DB infra.DB
 }
 
 func (u *userRepo) getBySQL(ctx context.Context, query string, args ...interface{}) ([]*model.User, error) {

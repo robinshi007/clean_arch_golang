@@ -11,18 +11,17 @@ import (
 	"clean_arch/domain/usecase/in"
 	"clean_arch/domain/usecase/out"
 	"clean_arch/endpoint/api/graphql/types"
-	"clean_arch/infra"
 	"clean_arch/usecase"
 )
 
 // NewUserListField -
-func NewUserListField(db infra.DB) *graphql.Field {
+func NewUserListField() *graphql.Field {
 	userListField := &graphql.Field{
 		Type:        graphql.NewList(types.UserType),
 		Description: "List of users",
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 
-			repo := postgres.NewUserRepo(db)
+			repo := postgres.NewUserRepo()
 			pre := presenter.NewUserPresenter()
 			uc := usecase.NewUserUseCase(repo, pre, time.Second)
 			return uc.GetAll(context.Background(), 5)
@@ -32,7 +31,7 @@ func NewUserListField(db infra.DB) *graphql.Field {
 }
 
 // NewCreateUserField -
-func NewCreateUserField(db infra.DB) *graphql.Field {
+func NewCreateUserField() *graphql.Field {
 
 	CreateUserField := &graphql.Field{
 		Type:        types.UserType,
@@ -50,7 +49,7 @@ func NewCreateUserField(db infra.DB) *graphql.Field {
 				return nil, err
 			}
 
-			repo := postgres.NewUserRepo(db)
+			repo := postgres.NewUserRepo()
 			pre := presenter.NewUserPresenter()
 			uc := usecase.NewUserUseCase(repo, pre, time.Second)
 

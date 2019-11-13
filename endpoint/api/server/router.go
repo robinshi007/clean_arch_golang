@@ -19,14 +19,14 @@ func NewRouter(db infra.DB) http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
 
-	uHanlder := handler.NewUserHandler(db)
+	uHanlder := handler.NewUserHandler()
 	graphiqlHandler, err := graphiql.NewGraphiqlHandler("/graphql")
 	util.FailedIf(err)
 
 	r.Route("/", func(rt chi.Router) {
 		rt.Mount("/users", handler.NewUserRouter(uHanlder))
 
-		rt.Mount("/graphql", gql.NewGraphqlHandler(db))
+		rt.Mount("/graphql", gql.NewGraphqlHandler())
 		rt.Mount("/graphiql", graphiqlHandler)
 	})
 

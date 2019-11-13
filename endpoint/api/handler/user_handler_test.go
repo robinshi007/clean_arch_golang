@@ -28,7 +28,7 @@ func TestUserHandlerCRUD(t *testing.T) {
 	// migration up
 	util.MigrationUp(cfg, wd)
 
-	uHanlder := handler.NewUserHandler(db)
+	uHanlder := handler.NewUserHandler()
 
 	server := httptest.NewServer(handler.NewUserRouter(uHanlder))
 	defer server.Close()
@@ -71,6 +71,9 @@ func TestUserHandlerCRUD(t *testing.T) {
 	e.GET("/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object().Value("data").Object().ContainsKey("name").ValueEqual("name", "Ben")
+	e.GET("/Ben/by_name").
+		Expect().
+		Status(http.StatusOK).JSON().Object().Value("data").Object().ContainsKey("id").ValueEqual("id", 1)
 
 	e.DELETE("/2").
 		Expect().
@@ -97,7 +100,7 @@ func TestUserHandlerError(t *testing.T) {
 	util.MigrationDown(cfg, wd)
 	util.MigrationUp(cfg, wd)
 
-	uHanlder := handler.NewUserHandler(db)
+	uHanlder := handler.NewUserHandler()
 
 	server := httptest.NewServer(handler.NewUserRouter(uHanlder))
 	defer server.Close()

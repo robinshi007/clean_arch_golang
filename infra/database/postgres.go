@@ -17,7 +17,8 @@ import (
 
 // database manager
 type pqsql struct {
-	DB *sql.DB
+	DB   *sql.DB
+	Mode string
 }
 
 var registerOnce sync.Once
@@ -52,7 +53,10 @@ func (p *pqsql) Open(driverName, dataSourceName string) error {
 
 func (p *pqsql) openDBWithHooks(dataSourceName string) error {
 	registerOnce.Do(func() {
-		sql.Register("postgres-proxy", sqlhooks.Wrap(&pq.Driver{}, &hook{}))
+		sql.Register("postgres-proxy", sqlhooks.Wrap(&pq.Driver{}, &hook{
+			Mode: p.Mode,
+		}))
+		fmt.Println("pqsql mode:", p.Mode)
 	})
 	db, err := sql.Open("postgres-proxy", dataSourceName)
 	p.DB = db
@@ -110,24 +114,37 @@ func (p *pqsql) TxEnd(txFunc func() error) error {
 	return nil
 }
 
-type hook struct{}
+type hook struct {
+	Mode string
+}
 
 // Before implements sqlhooks.Hooks
 func (h *hook) Before(ctx context.Context, query string, args ...interface{}) (context.Context, error) {
-
-	beginTime := time.Now()
-	//fmt.Printf("> %s %q", query, args)
-	util.CW(os.Stdout, util.Reset, "%s ", beginTime.Format(util.TimeFormatStr))
-	util.CW(os.Stdout, util.NYellow, "\"%s %q\"", query, args)
-	return context.WithValue(ctx, BeginTimeSQL, beginTime), nil
+	// Print sql logs only in dev mode
+	if h.Mode == "dev" {
+		beginTime := time.Now()
+		//fmt.Printf("> %s %q", query, args)
+		util.CW(os.Stdout, util.Reset, "%s ", beginTime.Format(util.TimeFormatStr))
+		util.CW(os.Stdout, util.NYellow, "\"%s %q\"", query, args)
+		return context.WithValue(ctx, BeginTimeSQL, beginTime), nil
+	}
+	return ctx, nil
 }
 
 // After implements sqlhooks.Hooks
 func (h *hook) After(ctx context.Context, query string, args ...interface{}) (context.Context, error) {
-	begin := ctx.Value(BeginTimeSQL).(time.Time)
-	//fmt.Printf(". took: %s\n", time.Since(begin))
-	util.CW(os.Stdout, util.Reset, " in ")
-	util.CW(os.Stdout, util.NGreen, "%s\n", time.Since(begin))
+	// Print sql logs only in dev mode
+	if h.Mode == "dev" {
+		begin := ctx.Value(BeginTimeSQL).(time.Time)
+		//fmt.Printf(". took: %s\n", time.Since(begin))
+		util.CW(os.Stdout, util.Reset, " in ")
+		timeDuration := time.Since(begin)
+		if timeDuration > time.Millisecond*8 {
+			util.CW(os.Stdout, util.NRed, "%s\n", timeDuration)
+		} else {
+			util.CW(os.Stdout, util.NGreen, "%s\n", timeDuration)
+		}
+	}
 	return ctx, nil
 }
 

@@ -7,7 +7,6 @@ import (
 
 	"github.com/graphql-go/graphql"
 
-	"clean_arch/infra"
 	"clean_arch/infra/util"
 )
 
@@ -16,7 +15,7 @@ type reqBody struct {
 }
 
 // NewGraphqlHandler -
-func NewGraphqlHandler(db infra.DB) http.Handler {
+func NewGraphqlHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -26,7 +25,7 @@ func NewGraphqlHandler(db infra.DB) http.Handler {
 		err := json.NewDecoder(r.Body).Decode(&rBody)
 		util.FailedIf(err)
 
-		result := executeQuery(fmt.Sprintf("%s", rBody.Query), NewSchema(db))
+		result := executeQuery(fmt.Sprintf("%s", rBody.Query), NewSchema())
 		json.NewEncoder(w).Encode(result)
 	})
 }

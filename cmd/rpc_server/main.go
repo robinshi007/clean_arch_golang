@@ -34,7 +34,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("faild to listen: %v", err)
 	}
-	repo := postgres.NewUserRepo(registry.Db)
+	repo := postgres.NewUserRepo()
 	pre := presenter.NewUserPresenter()
 	service := usecase.NewUserUseCase(repo, pre, time.Second)
 

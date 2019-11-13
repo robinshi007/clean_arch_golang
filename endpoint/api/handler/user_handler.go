@@ -15,7 +15,6 @@ import (
 	"clean_arch/domain/usecase/in"
 	"clean_arch/endpoint/api"
 	"clean_arch/endpoint/api/respond"
-	"clean_arch/infra"
 	ctn "clean_arch/usecase"
 )
 
@@ -24,7 +23,7 @@ func NewUserRouter(uHandler *UserHandler) http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", uHandler.GetAll)
 	r.Get("/{id:[0-9]+}", uHandler.GetByID)
-	r.Get("/{name:[a-z0-9]+}/by_name", uHandler.GetByName)
+	r.Get("/{name:[a-zA-Z0-9]+}/by_name", uHandler.GetByName)
 	r.Post("/", uHandler.Create)
 	r.Put("/{id:[0-9]+}", uHandler.Update)
 	r.Delete("/{id:[0-9]+}", uHandler.Delete)
@@ -32,8 +31,8 @@ func NewUserRouter(uHandler *UserHandler) http.Handler {
 }
 
 // NewUserHandler -
-func NewUserHandler(dbm infra.DB) *UserHandler {
-	repo := postgres.NewUserRepo(dbm)
+func NewUserHandler() *UserHandler {
+	repo := postgres.NewUserRepo()
 	pre := presenter.NewUserPresenter()
 	return &UserHandler{
 		uc:  ctn.NewUserUseCase(repo, pre, time.Second),
