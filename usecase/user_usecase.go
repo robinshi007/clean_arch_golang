@@ -42,10 +42,10 @@ func (u *userUsecase) GetAll(c context.Context, num int64) ([]*out.User, error) 
 	return u.pre.ViewUsers(ctx, users), nil
 }
 
-func (u *userUsecase) GetByID(c context.Context, id int64) (*out.User, error) {
+func (u *userUsecase) GetByID(c context.Context, input *in.FetchUser) (*out.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
-	user, err := u.repo.GetByID(ctx, id)
+	user, err := u.repo.GetByID(ctx, input.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (u *userUsecase) GetByName(c context.Context, name string) (*out.User, erro
 	return u.pre.ViewUser(ctx, user), nil
 }
 
-func (u *userUsecase) Create(c context.Context, user *in.PostUser) (out.UserID, error) {
+func (u *userUsecase) Create(c context.Context, user *in.NewUser) (out.UserID, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
 	res, err := u.repo.Create(ctx, &model.User{
@@ -71,7 +71,7 @@ func (u *userUsecase) Create(c context.Context, user *in.PostUser) (out.UserID, 
 	return out.UserID(res), err
 }
 
-func (u *userUsecase) Update(c context.Context, user *in.PutUser) (*out.User, error) {
+func (u *userUsecase) Update(c context.Context, user *in.EditUser) (*out.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
 	name := user.User.Name
@@ -89,10 +89,10 @@ func (u *userUsecase) Update(c context.Context, user *in.PutUser) (*out.User, er
 	return u.pre.ViewUser(ctx, usr), nil
 }
 
-func (u *userUsecase) Delete(c context.Context, id int64) error {
+func (u *userUsecase) Delete(c context.Context, input *in.FetchUser) error {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
-	return u.repo.Delete(ctx, id)
+	return u.repo.Delete(ctx, input.ID)
 }
 
 func (u *userUsecase) RegisterUser(c context.Context, name string) (out.UserID, error) {

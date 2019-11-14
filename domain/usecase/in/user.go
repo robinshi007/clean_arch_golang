@@ -6,25 +6,47 @@ import (
 	"clean_arch/domain/model"
 )
 
-// PostUser -
-type PostUser struct {
+// NewUser -
+type NewUser struct {
 	Name string `validate:"required"`
 }
 
 // Validate -
-func (u PostUser) Validate() error {
+func (u NewUser) Validate() error {
 	validate := validator.New()
 	return validate.Struct(u)
 }
 
-// PutUser -
-type PutUser struct {
+// EditUser -
+type EditUser struct {
 	User *model.User
 	Name string `validate:"required"`
 }
 
 // Validate -
-func (u PutUser) Validate() error {
+func (u EditUser) Validate() error {
 	validate := validator.New()
 	return validate.Struct(u)
+}
+
+// FetchUser -
+type FetchUser struct {
+	ID int64 `validate:"required"`
+}
+
+// Validate -
+func (u FetchUser) Validate() error {
+	validate := validator.New()
+	return validate.Struct(u)
+}
+
+// FetchUserInput -
+type FetchUserInput struct {
+	ID string `json:"id"`
+}
+
+// EditUserInput -
+type EditUserInput struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }

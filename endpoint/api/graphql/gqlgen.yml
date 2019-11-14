@@ -1,0 +1,25 @@
+# .gqlgen.yml example
+#
+# Refer to https://gqlgen.com/config/
+# for detailed .gqlgen.yml documentation.
+
+schema:
+- schema/user.graphql
+exec:
+  filename: gen/generated.go
+model:
+  filename: gen/models_gen.go
+resolver:
+  filename: resolver/resolver.go
+  type: Resolver
+  package: resolver
+models:
+  User:
+    model: clean_arch/domain/usecase/out.User
+  NewUser:
+    model: clean_arch/domain/usecase/in.NewUser
+  EditUser:
+    model: clean_arch/domain/usecase/in.EditUserInput
+  FetchUser:
+    model: clean_arch/domain/usecase/in.FetchUserInput
+autobind: []

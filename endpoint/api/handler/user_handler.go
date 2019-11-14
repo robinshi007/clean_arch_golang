@@ -54,7 +54,7 @@ func (u *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 
 // Create a new post
 func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
-	user := in.PostUser{}
+	user := in.NewUser{}
 	//json.NewDecoder(r.Body).Decode(&user)
 	u.rsp.Decode(r.Body, &user)
 
@@ -74,12 +74,12 @@ func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 	// check exist by ID
-	user2, err := u.uc.GetByID(context.Background(), int64(id))
+	user2, err := u.uc.GetByID(context.Background(), &in.FetchUser{ID: int64(id)})
 	if err != nil {
 		u.rsp.Error(w, model.ErrEntityBadInput)
 		return
 	}
-	user := in.PutUser{
+	user := in.EditUser{
 		User: &model.User{ID: int64(id), Name: user2.Name},
 	}
 	u.rsp.Decode(r.Body, &user)
@@ -101,7 +101,7 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 // GetByID returns a post details
 func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	res, err := u.uc.GetByID(context.Background(), int64(id))
+	res, err := u.uc.GetByID(context.Background(), &in.FetchUser{ID: int64(id)})
 
 	if err != nil {
 		u.rsp.Error(w, err)
@@ -128,7 +128,7 @@ func (u *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		u.rsp.Error(w, model.ErrEntityBadInput)
 	}
-	err = u.uc.Delete(context.Background(), id)
+	err = u.uc.Delete(context.Background(), &in.FetchUser{ID: id})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
