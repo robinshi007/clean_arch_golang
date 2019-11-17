@@ -13,42 +13,40 @@ import (
 	"clean_arch/endpoint/api"
 )
 
-// RespondJSON -
-type RespondJSON struct {
+// RespondMsgpack -
+type RespondMsgpack struct {
 	srz Iserializer.Serializer
 }
 
-// OK - write json response format
-func (r *RespondJSON) OK(w http.ResponseWriter, payload interface{}) {
+// OK - write xml response format
+func (r *RespondMsgpack) OK(w http.ResponseWriter, payload interface{}) {
 	response, _ := r.Encode(api.NewResponse(payload))
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/x-msgpack")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 }
 
-// Created - write json response format
-func (r *RespondJSON) Created(w http.ResponseWriter, payload interface{}) {
+// Created - write xml response format
+func (r *RespondMsgpack) Created(w http.ResponseWriter, payload interface{}) {
 	response, _ := r.Encode(api.NewResponse(payload))
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/x-msgpack")
 	w.WriteHeader(http.StatusCreated)
 	w.Write(response)
 }
 
-func (r *RespondJSON) respondError(w http.ResponseWriter, code int, payload interface{}) {
+func (r *RespondMsgpack) respondError(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := r.srz.Encode(payload)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/x-msgpack")
 	w.WriteHeader(code)
 	w.Write(response)
 }
 
 // Error - return error message
-func (r *RespondJSON) Error(w http.ResponseWriter, err error) {
+func (r *RespondMsgpack) Error(w http.ResponseWriter, err error) {
 	var code string
-	if strings.HasPrefix(err.Error(), "pq: duplicate key value violates unique constraint") {
-		code = "1101"
-	} else if strings.HasPrefix(err.Error(), "pq:") {
+	if strings.HasPrefix(err.Error(), "pq:") {
 		code = "1103"
 	} else {
 		switch {
@@ -66,7 +64,7 @@ func (r *RespondJSON) Error(w http.ResponseWriter, err error) {
 }
 
 // Decode -
-func (r *RespondJSON) Decode(input io.Reader, v interface{}) error {
+func (r *RespondMsgpack) Decode(input io.Reader, v interface{}) error {
 	// convert io.Reader to []byte
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(input)
@@ -74,6 +72,6 @@ func (r *RespondJSON) Decode(input io.Reader, v interface{}) error {
 }
 
 // Encode -
-func (r *RespondJSON) Encode(input interface{}) ([]byte, error) {
+func (r *RespondMsgpack) Encode(input interface{}) ([]byte, error) {
 	return r.srz.Encode(input)
 }

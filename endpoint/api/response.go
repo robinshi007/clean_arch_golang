@@ -2,12 +2,10 @@ package api
 
 import (
 	"clean_arch/domain/usecase/out"
-	"encoding/xml"
 )
 
 // Response - defined response json format
 type Response struct {
-	XMLName  xml.Name     `json:"-" xml:"response"`
 	Success  bool         `json:"success" xml:"success"`
 	Messages []string     `json:"messages" xml:"messages"`
 	Data     interface{}  `json:"data" xml:"data>data"`
