@@ -31,6 +31,7 @@ func NewConfig(dir string) (*infra.Config, error) {
 	if !strings.HasPrefix(cfg.Log.FileName, "/") {
 		cfg.Log.FileName = path.Join(dir, cfg.Log.FileName)
 	}
+	//fmt.Printf("APP MODE:%s\n", cfg.Mode)
 	return cfg, nil
 }
 

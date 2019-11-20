@@ -28,3 +28,12 @@ func HandleUserPqErr(err error) (*model.User, error) {
 	}
 	return nil, err
 }
+
+// HandleAccountPqErr -
+func HandleAccountPqErr(err error) (*model.UserAccount, error) {
+	if err, ok := err.(*pq.Error); ok {
+		util.CW(os.Stdout, util.NRed, "\"%s\"\n", err.Error())
+		return nil, fmt.Errorf("HandleAccountPqErr: %w", err)
+	}
+	return nil, err
+}

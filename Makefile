@@ -8,6 +8,9 @@ clean:
 	go clean
 test:
 	go test ./... -v
+test_db:
+	go test clean_arch/adapter/postgres -v
+
 protoc:
 	protoc --proto_path=. --go_out=plugins=grpc:./ endpoint/rpc/v1/protocol/*.proto
 grpcc:
@@ -15,7 +18,7 @@ grpcc:
 gql:
 	cd endpoint/api/graphql && go run github.com/99designs/gqlgen -v && cd -
 
-
+# make ARGS="test" db_create
 db_create:
 	migrate create -dir db/migrations -ext sql ${ARGS}
 db_up:

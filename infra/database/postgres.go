@@ -56,7 +56,7 @@ func (p *pqsql) openDBWithHooks(dataSourceName string) error {
 		sql.Register("postgres-proxy", sqlhooks.Wrap(&pq.Driver{}, &hook{
 			Mode: p.Mode,
 		}))
-		fmt.Println("pqsql mode:", p.Mode)
+		fmt.Printf("PQSQL MODE: %s\n", p.Mode)
 	})
 	db, err := sql.Open("postgres-proxy", dataSourceName)
 	p.DB = db
