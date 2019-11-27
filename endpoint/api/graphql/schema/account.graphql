@@ -1,0 +1,16 @@
+type Account {
+  id: ID!
+  email: String!
+}
+
+input NewAccount{
+  email: String!
+  password: String!
+}
+input EditAccount{
+  id: ID!
+  password: String!
+}
+input FetchAccount{
+  id: ID!
+}

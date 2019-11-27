@@ -1,52 +1,22 @@
 package in
 
-import (
-	"gopkg.in/go-playground/validator.v9"
-
-	"clean_arch/domain/model"
-)
-
 // NewUser -
 type NewUser struct {
-	Name string `validate:"required"`
-}
-
-// Validate -
-func (u NewUser) Validate() error {
-	validate := validator.New()
-	return validate.Struct(u)
+	Name string `json:"name" validate:"required"`
 }
 
 // EditUser -
 type EditUser struct {
-	User *model.User
-	Name string `validate:"required"`
-}
-
-// Validate -
-func (u EditUser) Validate() error {
-	validate := validator.New()
-	return validate.Struct(u)
+	ID   string `json:"id" validate:"required,numeric"`
+	Name string `json:"name" validate:"required"`
 }
 
 // FetchUser -
 type FetchUser struct {
-	ID int64 `validate:"required"`
+	ID string `json:"id" validate:"required,numeric"`
 }
 
-// Validate -
-func (u FetchUser) Validate() error {
-	validate := validator.New()
-	return validate.Struct(u)
-}
-
-// FetchUserInput -
-type FetchUserInput struct {
-	ID string `json:"id"`
-}
-
-// EditUserInput -
-type EditUserInput struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+// FetchUserByName -
+type FetchUserByName struct {
+	Name string `json:"name" validate:"required"`
 }

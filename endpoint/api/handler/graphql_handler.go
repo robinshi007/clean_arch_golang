@@ -15,8 +15,11 @@ import (
 
 // GraphQLHandler -
 func GraphQLHandler() http.Handler {
-	repo := postgres.NewUserRepo()
-	pre := presenter.NewUserPresenter()
-	uuc := usecase.NewUserUseCase(repo, pre, time.Second)
-	return gqlhandler.GraphQL(gen.NewExecutableSchema(resolver.NewRootResolver(uuc)))
+	urepo := postgres.NewUserRepo()
+	upre := presenter.NewUserPresenter()
+	uuc := usecase.NewUserUseCase(urepo, upre, time.Second)
+	arepo := postgres.NewAccountRepo()
+	apre := presenter.NewAccountPresenter()
+	auc := usecase.NewAccountUseCase(arepo, apre, time.Second)
+	return gqlhandler.GraphQL(gen.NewExecutableSchema(resolver.NewRootResolver(uuc, auc)))
 }

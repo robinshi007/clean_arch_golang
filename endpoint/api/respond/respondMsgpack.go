@@ -53,7 +53,7 @@ func (r *RespondMsgpack) Error(w http.ResponseWriter, err error) {
 		case errors.Is(err, model.ErrEntityBadInput):
 			code = "1101"
 		case errors.Is(err, model.ErrEntityNotFound):
-			code = "1104"
+			code = "1102"
 		case errors.Is(err, model.ErrEntityUniqueConflict):
 			code = "1104"
 		default:

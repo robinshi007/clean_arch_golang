@@ -10,9 +10,9 @@ import (
 // UserUsecase -
 type UserUsecase interface {
 	GetAll(ctx context.Context, num int64) ([]*out.User, error)
-	GetByID(ctx context.Context, u *in.FetchUser) (*out.User, error)
-	GetByName(ctx context.Context, name string) (*out.User, error)
-	Create(ctx context.Context, u *in.NewUser) (out.UserID, error)
-	Update(ctx context.Context, u *in.EditUser) (*out.User, error)
-	Delete(ctx context.Context, u *in.FetchUser) error
+	GetByID(ctx context.Context, input *in.FetchUser) (*out.User, error)
+	GetByName(ctx context.Context, input *in.FetchUserByName) (*out.User, error)
+	Create(ctx context.Context, input *in.NewUser) (out.ID, error)
+	Update(ctx context.Context, input *in.EditUser) (*out.User, error)
+	Delete(ctx context.Context, input *in.FetchUser) error
 }

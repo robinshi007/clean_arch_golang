@@ -119,7 +119,7 @@ func TestUserHandlerError(t *testing.T) {
 	e.GET("/a1").
 		Expect().Status(http.StatusNotFound)
 	e.GET("/11").
-		Expect().Status(http.StatusConflict)
+		Expect().Status(http.StatusNotFound)
 
 	e.POST("/").WithJSON(user1).
 		Expect().Status(http.StatusBadRequest)
@@ -134,13 +134,15 @@ func TestUserHandlerError(t *testing.T) {
 		Expect().Status(http.StatusBadRequest)
 	e.PUT("/1").WithJSON(user3).
 		Expect().Status(http.StatusInternalServerError)
+	e.PUT("/a9").WithJSON(user3).
+		Expect().Status(http.StatusNotFound)
 	e.PUT("/99").WithJSON(user3).
-		Expect().Status(http.StatusBadRequest)
+		Expect().Status(http.StatusNotFound)
 
 	e.DELETE("/a").
 		Expect().Status(http.StatusNotFound)
 	e.DELETE("/11").
-		Expect().Status(http.StatusConflict)
+		Expect().Status(http.StatusNotFound)
 
 	e.GET("/").
 		Expect().

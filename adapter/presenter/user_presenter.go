@@ -5,6 +5,7 @@ import (
 	"clean_arch/domain/presenter"
 	"clean_arch/domain/usecase/out"
 	"context"
+	"strconv"
 )
 
 // NewUserPresenter -
@@ -24,15 +25,17 @@ func (u userPresenter) ViewError(ctx context.Context, err error) *out.Error {
 }
 
 // ViewUserID -
-func (u userPresenter) ViewUserID(ctx context.Context, user *model.User) out.UserID {
-	return out.UserID(user.GetID())
+func (u userPresenter) ViewUserID(ctx context.Context, user *model.User) out.ID {
+	return out.ID(strconv.FormatInt(user.ID, 10))
 }
 
 // ViewUser -
 func (u userPresenter) ViewUser(ctx context.Context, user *model.User) *out.User {
 	return &out.User{
-		ID:   user.GetID(),
-		Name: user.GetName(),
+		ID:        user.ID,
+		Name:      user.Name,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}
 }
 
@@ -41,8 +44,10 @@ func (u userPresenter) ViewUsers(ctx context.Context, users []*model.User) []*ou
 	res := make([]*out.User, len(users))
 	for i, user := range users {
 		res[i] = &out.User{
-			ID:   user.GetID(),
-			Name: user.GetName(),
+			ID:        user.ID,
+			Name:      user.Name,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
 		}
 	}
 	return res

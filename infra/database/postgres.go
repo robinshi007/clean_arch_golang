@@ -139,7 +139,7 @@ func (h *hook) After(ctx context.Context, query string, args ...interface{}) (co
 		//fmt.Printf(". took: %s\n", time.Since(begin))
 		util.CW(os.Stdout, util.Reset, " in ")
 		timeDuration := time.Since(begin)
-		if timeDuration > time.Millisecond*8 {
+		if timeDuration > time.Millisecond*15 {
 			util.CW(os.Stdout, util.NRed, "%s\n", timeDuration)
 		} else {
 			util.CW(os.Stdout, util.NGreen, "%s\n", timeDuration)

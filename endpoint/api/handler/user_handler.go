@@ -3,14 +3,12 @@ package handler
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/go-chi/chi"
 
 	"clean_arch/adapter/postgres"
 	"clean_arch/adapter/presenter"
-	"clean_arch/domain/model"
 	"clean_arch/domain/usecase"
 	"clean_arch/domain/usecase/in"
 	"clean_arch/endpoint/api"
@@ -48,20 +46,19 @@ type UserHandler struct {
 
 // GetAll the post data
 func (u *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	res, _ := u.uc.GetAll(context.Background(), 5)
-	u.rsp.OK(w, res)
+	res, err := u.uc.GetAll(context.Background(), 5)
+	if err != nil {
+		u.rsp.Error(w, err)
+	} else {
+		u.rsp.OK(w, res)
+	}
 }
 
 // Create a new post
 func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user := in.NewUser{}
-	//json.NewDecoder(r.Body).Decode(&user)
 	u.rsp.Decode(r.Body, &user)
 
-	if err := user.Validate(); err != nil {
-		u.rsp.Error(w, model.ErrEntityBadInput)
-		return
-	}
 	newID, err := u.uc.Create(context.Background(), &user)
 	if err != nil {
 		u.rsp.Error(w, err)
@@ -72,22 +69,10 @@ func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 // Update a post by id
 func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	// check exist by ID
-	user2, err := u.uc.GetByID(context.Background(), &in.FetchUser{ID: int64(id)})
-	if err != nil {
-		u.rsp.Error(w, model.ErrEntityBadInput)
-		return
-	}
 	user := in.EditUser{
-		User: &model.User{ID: int64(id), Name: user2.Name},
+		ID: chi.URLParam(r, "id"),
 	}
 	u.rsp.Decode(r.Body, &user)
-
-	if err := user.Validate(); err != nil {
-		u.rsp.Error(w, model.ErrEntityBadInput)
-		return
-	}
 
 	res, err := u.uc.Update(context.Background(), &user)
 	if err != nil {
@@ -100,9 +85,8 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 // GetByID returns a post details
 func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	res, err := u.uc.GetByID(context.Background(), &in.FetchUser{ID: int64(id)})
-
+	id := chi.URLParam(r, "id")
+	res, err := u.uc.GetByID(context.Background(), &in.FetchUser{ID: id})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -113,8 +97,7 @@ func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // GetByName returns a post details
 func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
-	res, err := u.uc.GetByName(context.Background(), name)
-
+	res, err := u.uc.GetByName(context.Background(), &in.FetchUserByName{Name: name})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -124,14 +107,11 @@ func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 
 // Delete a post
 func (u *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-	if err != nil {
-		u.rsp.Error(w, model.ErrEntityBadInput)
-	}
-	err = u.uc.Delete(context.Background(), &in.FetchUser{ID: id})
+	id := chi.URLParam(r, "id")
+	err := u.uc.Delete(context.Background(), &in.FetchUser{ID: id})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
-		u.rsp.OK(w, strconv.FormatInt(id, 10))
+		u.rsp.OK(w, id)
 	}
 }

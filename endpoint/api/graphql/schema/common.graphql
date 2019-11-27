@@ -1,0 +1,17 @@
+
+type Query {
+  users: [User!]!
+  fetchUser(input: FetchUser!): User!
+
+  accounts: [Account!]!
+  fetchAccount(input: FetchAccount!): Account!
+}
+type Mutation {
+  createUser(input: NewUser!): User!
+  updateUser(input: EditUser!): User!
+  deleteUser(input: FetchUser!): User!
+
+  createAccount(input: NewAccount!): Account!
+  updateAccount(input: EditAccount!): Account!
+  deleteAccount(input: FetchAccount!): Account!
+}

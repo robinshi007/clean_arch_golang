@@ -4,7 +4,7 @@
 # for detailed .gqlgen.yml documentation.
 
 schema:
-- schema/user.graphql
+- schema/*.graphql
 exec:
   filename: gen/generated.go
 model:
@@ -19,7 +19,15 @@ models:
   NewUser:
     model: clean_arch/domain/usecase/in.NewUser
   EditUser:
-    model: clean_arch/domain/usecase/in.EditUserInput
+    model: clean_arch/domain/usecase/in.EditUser
   FetchUser:
-    model: clean_arch/domain/usecase/in.FetchUserInput
+    model: clean_arch/domain/usecase/in.FetchUser
+  Account:
+    model: clean_arch/domain/usecase/out.Account
+  NewAccount:
+    model: clean_arch/domain/usecase/in.NewAccount
+  EditAccount:
+    model: clean_arch/domain/usecase/in.EditAccount
+  FetchAccount:
+    model: clean_arch/domain/usecase/in.FetchAccount
 autobind: []

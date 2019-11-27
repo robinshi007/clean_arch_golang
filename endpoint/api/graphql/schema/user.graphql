@@ -1,6 +1,8 @@
 type User {
   id: ID!
   name: String!
+  created_at: String!
+  updated_at: String!
 }
 
 input NewUser{
@@ -12,13 +14,4 @@ input EditUser{
 }
 input FetchUser{
   id: ID!
-}
-type Query {
-  users: [User!]!
-  fetchUser(input: FetchUser!): User!
-}
-type Mutation {
-  createUser(input: NewUser!): User!
-  updateUser(input: EditUser!): User!
-  deleteUser(input: FetchUser!): User!
 }

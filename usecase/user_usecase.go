@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"errors"
+	"strconv"
 	"time"
 
 	"clean_arch/domain/model"
@@ -45,43 +45,74 @@ func (u *userUsecase) GetAll(c context.Context, num int64) ([]*out.User, error) 
 func (u *userUsecase) GetByID(c context.Context, input *in.FetchUser) (*out.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
-	user, err := u.repo.GetByID(ctx, input.ID)
+
+	if err := in.Validate(input); err != nil {
+		return nil, model.ErrEntityBadInput
+	}
+	id, err := in.ToID(input.ID)
+	if err != nil {
+		return nil, model.ErrEntityBadInput
+	}
+	user, err := u.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	return u.pre.ViewUser(ctx, user), nil
 }
 
-func (u *userUsecase) GetByName(c context.Context, name string) (*out.User, error) {
+func (u *userUsecase) GetByName(c context.Context, input *in.FetchUserByName) (*out.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
-	user, err := u.repo.GetByName(ctx, name)
+
+	if err := in.Validate(input); err != nil {
+		return nil, model.ErrEntityBadInput
+	}
+
+	user, err := u.repo.GetByName(ctx, input.Name)
 	if err != nil {
 		return nil, err
 	}
 	return u.pre.ViewUser(ctx, user), nil
 }
 
-func (u *userUsecase) Create(c context.Context, user *in.NewUser) (out.UserID, error) {
+func (u *userUsecase) Create(c context.Context, input *in.NewUser) (out.ID, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
+
+	if err := in.Validate(input); err != nil {
+		return out.ID("-1"), model.ErrEntityBadInput
+	}
+
 	res, err := u.repo.Create(ctx, &model.User{
-		Name: user.Name,
+		Name: input.Name,
 	})
-	return out.UserID(res), err
+	id := strconv.FormatInt(res, 10)
+	return out.ID(id), err
 }
 
-func (u *userUsecase) Update(c context.Context, user *in.EditUser) (*out.User, error) {
+func (u *userUsecase) Update(c context.Context, input *in.EditUser) (*out.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
-	name := user.User.Name
+
+	if err := in.Validate(input); err != nil {
+		return nil, model.ErrEntityBadInput
+	}
+	id, err := strconv.ParseInt(input.ID, 10, 64)
+	if err != nil {
+		return nil, model.ErrEntityBadInput
+	}
+	user, err := u.repo.GetByID(context.Background(), id)
+	if err != nil {
+		return nil, model.ErrEntityNotFound
+	}
+
 	// check is dirty
-	if name == user.Name {
-		return nil, errors.New("item is not changed")
+	if user.Name == input.Name {
+		return nil, model.ErrEntityNotChanged
 	}
 	usr, err := u.repo.Update(ctx, &model.User{
-		ID:   user.User.ID,
-		Name: user.Name,
+		ID:   user.ID,
+		Name: input.Name,
 	})
 	if err != nil {
 		return nil, err
@@ -92,16 +123,27 @@ func (u *userUsecase) Update(c context.Context, user *in.EditUser) (*out.User, e
 func (u *userUsecase) Delete(c context.Context, input *in.FetchUser) error {
 	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
 	defer cancel()
-	return u.repo.Delete(ctx, input.ID)
+
+	err := in.Validate(input)
+	if err != nil {
+		return model.ErrEntityBadInput
+	}
+
+	id, err := in.ToID(input.ID)
+	if err != nil {
+		return err
+	}
+	return u.repo.Delete(ctx, id)
 }
 
-func (u *userUsecase) RegisterUser(c context.Context, name string) (out.UserID, error) {
+func (u *userUsecase) RegisterUser(c context.Context, name string) (out.ID, error) {
 	if err := u.repo.DuplicatedByName(c, name); err != nil {
-		return -1, err
+		return out.ID("-1"), err
 	}
 	user := model.NewUser(name)
-	if id, err := u.repo.Create(c, user); err != nil {
-		return out.UserID(id), err
+	id, err := u.repo.Create(c, user)
+	if err != nil {
+		return out.ID("-1"), err
 	}
-	return -1, nil
+	return out.ID(strconv.FormatInt(id, 10)), nil
 }
