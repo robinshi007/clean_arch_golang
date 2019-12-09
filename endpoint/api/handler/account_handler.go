@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -9,9 +10,11 @@ import (
 
 	"clean_arch/adapter/postgres"
 	"clean_arch/adapter/presenter"
+	"clean_arch/domain/model"
 	"clean_arch/domain/usecase"
 	"clean_arch/domain/usecase/in"
 	"clean_arch/endpoint/api"
+	"clean_arch/endpoint/api/middleware"
 	"clean_arch/endpoint/api/respond"
 	ctn "clean_arch/usecase"
 )
@@ -25,6 +28,7 @@ func NewAccountRouter(uHandler *AccountHandler) http.Handler {
 	r.Post("/", uHandler.Create)
 	r.Put("/{id:[0-9]+}", uHandler.UpdatePassword)
 	r.Delete("/{id:[0-9]+}", uHandler.Delete)
+	r.Post("/login", uHandler.Login)
 	return r
 }
 
@@ -33,7 +37,7 @@ func NewAccountHandler() *AccountHandler {
 	repo := postgres.NewAccountRepo()
 	pre := presenter.NewAccountPresenter()
 	return &AccountHandler{
-		uc:  ctn.NewAccountUseCase(repo, pre, time.Second),
+		uc:  ctn.NewAccountUseCase(repo, pre, 2*time.Second),
 		rsp: respond.NewRespond("json"),
 	}
 }
@@ -61,13 +65,14 @@ func (u *AccountHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	newID, err := u.uc.Create(context.Background(), &account)
 	if err != nil {
+		fmt.Println("create err:", err)
 		u.rsp.Error(w, err)
 	} else {
 		u.rsp.Created(w, newID)
 	}
 }
 
-// Update a post by id
+// UpdatePassword - update a post by id
 func (u *AccountHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	account := in.EditAccount{
 		ID: chi.URLParam(r, "id"),
@@ -94,7 +99,7 @@ func (u *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetByName returns a post details
+// GetByEmail - returns a post details
 func (u *AccountHandler) GetByEmail(w http.ResponseWriter, r *http.Request) {
 	email := chi.URLParam(r, "email")
 	res, err := u.uc.GetByEmail(context.Background(), &in.FetchAccountByEmail{Email: email})
@@ -113,5 +118,29 @@ func (u *AccountHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		u.rsp.Error(w, err)
 	} else {
 		u.rsp.OK(w, id)
+	}
+}
+
+// Login -
+func (u *AccountHandler) Login(w http.ResponseWriter, r *http.Request) {
+	// clean the cookie
+	account := in.LoginAccountByEmail{}
+	u.rsp.Decode(r.Body, &account)
+	res, err := u.uc.Login(context.Background(), &account)
+	if err != nil {
+		u.rsp.Error(w, err)
+	} else if !res {
+		u.rsp.Error(w, model.ErrAccountNotMatch)
+	} else {
+		tokenString, err := middleware.GenerateToken(account.Email)
+		if err != nil {
+			u.rsp.Error(w, err)
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:    "token",
+			Value:   tokenString,
+			Expires: time.Now().Add(30 * time.Minute),
+		})
+		u.rsp.OK(w, res)
 	}
 }

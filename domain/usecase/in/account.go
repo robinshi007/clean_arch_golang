@@ -3,6 +3,7 @@ package in
 // NewAccount -
 type NewAccount struct {
 	Email    string `validate:"required"`
+	Name     string
 	Password string `validate:"required"`
 }
 
@@ -20,4 +21,21 @@ type FetchAccount struct {
 // FetchAccountByEmail -
 type FetchAccountByEmail struct {
 	Email string `validate:"required,email"`
+}
+
+// FetchAccountByName -
+type FetchAccountByName struct {
+	Name string `validate:"required,alphanum"`
+}
+
+// LoginAccountByEmail -
+type LoginAccountByEmail struct {
+	Email    string `validate:"required,email"`
+	Password string `validate:"required"`
+}
+
+// LoginAccountByName-
+type LoginAccountByName struct {
+	Name     string `validate:"required,alphanum"`
+	Password string `validate:"required"`
 }

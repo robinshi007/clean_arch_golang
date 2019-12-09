@@ -47,11 +47,20 @@ func NewConflictError() *Error {
 	}
 }
 
+// NewLoginError -
+func NewLoginError() *Error {
+	return &Error{
+		Status:  http.StatusUnauthorized,
+		Code:    "1105",
+		Message: "Account email or password is not correct",
+	}
+}
+
 // NewUnauthorizedError -
 func NewUnauthorizedError() *Error {
 	return &Error{
 		Status:  http.StatusUnauthorized,
-		Code:    "1105",
+		Code:    "1106",
 		Message: "Unauthorized",
 	}
 }
@@ -60,7 +69,7 @@ func NewUnauthorizedError() *Error {
 func NewForbiddenError() *Error {
 	return &Error{
 		Status:  http.StatusForbidden,
-		Code:    "1106",
+		Code:    "1107",
 		Message: "Forbidden",
 	}
 }
@@ -69,7 +78,7 @@ func NewForbiddenError() *Error {
 func NewRequestTimeoutError() *Error {
 	return &Error{
 		Status:  http.StatusRequestTimeout,
-		Code:    "1107",
+		Code:    "1108",
 		Message: "Request Timeout",
 	}
 }
@@ -78,7 +87,7 @@ func NewRequestTimeoutError() *Error {
 func NewUnsupportedMediaTypeError() *Error {
 	return &Error{
 		Status:  http.StatusUnsupportedMediaType,
-		Code:    "1108",
+		Code:    "1109",
 		Message: "Unsupported Media Type",
 	}
 }
@@ -95,12 +104,14 @@ func GetError(code string) *Error {
 	case "1104":
 		return NewConflictError()
 	case "1105":
-		return NewUnauthorizedError()
+		return NewLoginError()
 	case "1106":
-		return NewForbiddenError()
+		return NewUnauthorizedError()
 	case "1107":
-		return NewRequestTimeoutError()
+		return NewForbiddenError()
 	case "1108":
+		return NewRequestTimeoutError()
+	case "1109":
 		return NewUnsupportedMediaTypeError()
 	default:
 		return NewInternalServerError()
@@ -121,10 +132,12 @@ func GetHTTPStatus(code string) int {
 	case "1105":
 		return http.StatusUnauthorized
 	case "1106":
-		return http.StatusForbidden
+		return http.StatusUnauthorized
 	case "1107":
-		return http.StatusRequestTimeout
+		return http.StatusForbidden
 	case "1108":
+		return http.StatusRequestTimeout
+	case "1109":
 		return http.StatusUnsupportedMediaType
 	default:
 		return http.StatusInternalServerError

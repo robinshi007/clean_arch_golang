@@ -54,10 +54,14 @@ func (r *RespondJSON) Error(w http.ResponseWriter, err error) {
 		switch {
 		case errors.Is(err, model.ErrEntityBadInput):
 			code = "1101"
+		case errors.Is(err, model.ErrAccountNotMatch):
+			code = "1105"
 		case errors.Is(err, model.ErrEntityNotFound):
 			code = "1102"
 		case errors.Is(err, model.ErrEntityUniqueConflict):
 			code = "1104"
+		case errors.Is(err, model.ErrAccountNotMatch):
+			code = "1105"
 		default:
 			code = "1103"
 		}

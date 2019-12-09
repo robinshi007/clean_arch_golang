@@ -11,6 +11,7 @@ import (
 	"clean_arch/domain/usecase"
 	"clean_arch/domain/usecase/in"
 	"clean_arch/domain/usecase/out"
+	"clean_arch/infra/util"
 )
 
 type accountUsecase struct {
@@ -75,6 +76,21 @@ func (au *accountUsecase) GetByEmail(c context.Context, input *in.FetchAccountBy
 	return au.pre.ViewAccount(ctx, account), nil
 }
 
+func (au *accountUsecase) GetByName(c context.Context, input *in.FetchAccountByName) (*out.Account, error) {
+	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
+	defer cancel()
+
+	if err := in.Validate(input); err != nil {
+		return nil, model.ErrEntityBadInput
+	}
+
+	account, err := au.repo.GetByName(ctx, input.Name)
+	if err != nil {
+		return nil, err
+	}
+	return au.pre.ViewAccount(ctx, account), nil
+}
+
 func (au *accountUsecase) Create(c context.Context, input *in.NewAccount) (out.ID, error) {
 	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
 	defer cancel()
@@ -83,9 +99,14 @@ func (au *accountUsecase) Create(c context.Context, input *in.NewAccount) (out.I
 		return out.ID("-1"), model.ErrEntityBadInput
 	}
 
+	PasswordHash, err := util.HashPassword(input.Password)
+	if err != nil {
+		return out.ID("-1"), err
+	}
+
 	res, err := au.repo.Create(ctx, &model.UserAccount{
 		Email:    input.Email,
-		Password: input.Password,
+		Password: PasswordHash,
 	})
 	if err != nil {
 		return out.ID("-1"), err
@@ -139,4 +160,20 @@ func (au *accountUsecase) Delete(c context.Context, input *in.FetchAccount) erro
 		return err
 	}
 	return au.repo.Delete(ctx, id)
+}
+
+func (au *accountUsecase) Login(c context.Context, input *in.LoginAccountByEmail) (bool, error) {
+	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
+	defer cancel()
+
+	if err := in.Validate(input); err != nil {
+		return false, model.ErrEntityBadInput
+	}
+
+	account, err := au.repo.GetByEmail(ctx, input.Email)
+	if err != nil {
+		return false, err
+	}
+	result := util.ComparePassword(input.Password, account.Password)
+	return result, nil
 }
