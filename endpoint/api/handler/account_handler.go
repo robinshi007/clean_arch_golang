@@ -10,11 +10,9 @@ import (
 
 	"clean_arch/adapter/postgres"
 	"clean_arch/adapter/presenter"
-	"clean_arch/domain/model"
 	"clean_arch/domain/usecase"
 	"clean_arch/domain/usecase/in"
 	"clean_arch/endpoint/api"
-	"clean_arch/endpoint/api/middleware"
 	"clean_arch/endpoint/api/respond"
 	ctn "clean_arch/usecase"
 )
@@ -28,7 +26,6 @@ func NewAccountRouter(uHandler *AccountHandler) http.Handler {
 	r.Post("/", uHandler.Create)
 	r.Put("/{id:[0-9]+}", uHandler.UpdatePassword)
 	r.Delete("/{id:[0-9]+}", uHandler.Delete)
-	r.Post("/login", uHandler.Login)
 	return r
 }
 
@@ -118,29 +115,5 @@ func (u *AccountHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		u.rsp.Error(w, err)
 	} else {
 		u.rsp.OK(w, id)
-	}
-}
-
-// Login -
-func (u *AccountHandler) Login(w http.ResponseWriter, r *http.Request) {
-	// clean the cookie
-	account := in.LoginAccountByEmail{}
-	u.rsp.Decode(r.Body, &account)
-	res, err := u.uc.Login(context.Background(), &account)
-	if err != nil {
-		u.rsp.Error(w, err)
-	} else if !res {
-		u.rsp.Error(w, model.ErrAccountNotMatch)
-	} else {
-		tokenString, err := middleware.GenerateToken(account.Email)
-		if err != nil {
-			u.rsp.Error(w, err)
-		}
-		http.SetCookie(w, &http.Cookie{
-			Name:    "token",
-			Value:   tokenString,
-			Expires: time.Now().Add(30 * time.Minute),
-		})
-		u.rsp.OK(w, res)
 	}
 }

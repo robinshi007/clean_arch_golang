@@ -7,7 +7,7 @@ For golang web apps template, with REST, GraphQL and GRPC as access endpoint
 * Stack (Golang, Redis, Postgres/SQLite3, Nats)
 * Library(chi, migrate, pq, sqlf, sqlhooks, error1.13, graphql)
 * Endpoint (REST, GraphQL and GRPC)
-* Serializer (JSON, XML)
+* Serializer (JSON, MessagePack)
 * Database (Postgres, SQLite3)
 * Logging, tracing and metrics(zerolog, opentracing and prometheus)
 * Security(JWT, UUID)
@@ -23,7 +23,7 @@ For golang web apps template, with REST, GraphQL and GRPC as access endpoint
 * [done] response format standard
 * [doing] add GraphQL endpoint
 * [doing] error handler(404, 5xx)
-* [doing] SQL format library sqlf
+* [done] SQL format library sqlf
 * [done] dbm with SQL expression log
 * [doing] add context for handler, usecase, repository and respond
 * unit test

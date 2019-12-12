@@ -17,6 +17,7 @@ var (
 )
 
 // InitConfig -
+// params dir is used for better testing
 func InitConfig(dir string) {
 	conf, err := config.NewConfig(dir)
 	util.FailedIf(err)

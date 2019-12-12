@@ -90,7 +90,7 @@ func FromContext(ctx context.Context) (*jwt.Token, *AccountClaims, error) {
 		if tokenClaims, ok := token.Claims.(*AccountClaims); ok {
 			claims = tokenClaims
 		} else {
-			panic(fmt.Sprintf("jwtauth: unknown type of Claims: %T", token.Claims))
+			return nil, nil, errors.New(fmt.Sprintf("jwtauth: unknown type of Claims: %T", token.Claims))
 		}
 	} else {
 		claims = &AccountClaims{}
@@ -110,11 +110,12 @@ func JWTMiddleware() func(http.Handler) http.Handler {
 			tokenString := TokenFromHTTPRequest(r)
 
 			token, _, err := ParseToken(tokenString)
-			if err != nil {
-				http.Error(w, http.StatusText(401), 401)
+			if err != nil || !token.Valid {
+				next.ServeHTTP(w, r)
+				return
 			}
-			ctx = NewContext(ctx, token, err)
-			next.ServeHTTP(w, r.WithContext(ctx))
+			newCtx := NewContext(ctx, token, err)
+			next.ServeHTTP(w, r.WithContext(newCtx))
 		}
 		return http.HandlerFunc(hfn)
 	}
@@ -128,6 +129,7 @@ func TokenFromHTTPRequest(r *http.Request) string {
 	if len(splitToken) > 1 {
 		tokenString = splitToken[1]
 	}
+	//fmt.Println("tokenString", tokenString)
 	return tokenString
 }
 
