@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"time"
 
 	gqlhandler "github.com/99designs/gqlgen/handler"
 	"github.com/go-chi/chi"
@@ -13,31 +14,28 @@ import (
 	"clean_arch/registry"
 )
 
-// Hello - for testing
-func Hello(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hello Clean Arch."))
-}
-
 // NewRouter -
 func NewRouter(db infra.DB) http.Handler {
-	r := chi.NewRouter()
-	r.Use(chiMiddleware.Recoverer)
-	r.Use(chiMiddleware.Logger)
-	r.Use(chiMiddleware.Logger)
-
 	//uHanlder := handler.NewUserHandler()
+	eHandler := handler.NewErrorHandler()
 	aHandler := handler.NewAccountHandler()
 	auHandler := handler.NewAuthHandler()
 
+	r := chi.NewRouter()
+	//	r.Use(chiMiddleware.RequestID)
+	//	r.Use(chiMiddleware.RealIP)
+	r.Use(chiMiddleware.Logger)
+	//r.Use(chiMiddleware.Recoverer)
+	r.Use(eHandler.Recoverer)
+	r.Use(chiMiddleware.Timeout(10 * time.Second))
+
 	// for test only
-	r.Get("/", Hello)
+	r.Get("/", handler.HelloHanlder)
+	r.Get("/panic", handler.PanicHanlder)
 
 	// for graphql playground, dev only, will removed in prod env
 	if registry.Cfg.Mode == "dev" {
-		r.Mount("/play", gqlhandler.Playground("GraphQL Playground", "/graphql"))
-		r.Mount("/graphql", handler.GraphQLHandler())
+		r.Mount("/play", gqlhandler.Playground("GraphQL Playground", "/api/v1/graphql"))
 	}
 
 	// for login
@@ -52,8 +50,12 @@ func NewRouter(db infra.DB) http.Handler {
 		rt.Use(mw.JWTVerify())
 		//rt.Mount("/user", handler.NewUserRouter(uHanlder))
 		rt.Mount("/accounts", auHandler.JWTAuthenticator(handler.NewAccountRouter(aHandler)))
+		rt.Mount("/graphql", auHandler.JWTAuthenticator(handler.GraphQLHandler()))
 
 	})
 
+	// Error Handler
+	r.NotFound(eHandler.RouteNotFound)
+	r.MethodNotAllowed(eHandler.MethodNotAllowed)
 	return r
 }

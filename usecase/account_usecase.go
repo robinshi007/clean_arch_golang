@@ -15,9 +15,8 @@ import (
 )
 
 type accountUsecase struct {
-	repo       repository.AccountRepository
-	pre        presenter.AccountPresenter
-	ctxTimeout time.Duration
+	repo repository.AccountRepository
+	pre  presenter.AccountPresenter
 }
 
 // NewAccountUseCase -
@@ -27,25 +26,21 @@ func NewAccountUseCase(
 	timeout time.Duration,
 ) usecase.AccountUsecase {
 	return &accountUsecase{
-		repo:       repo,
-		pre:        pre,
-		ctxTimeout: timeout,
+		repo: repo,
+		pre:  pre,
 	}
 }
 
-func (au *accountUsecase) GetAll(c context.Context, num int64) ([]*out.Account, error) {
-	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
-	defer cancel()
+func (au *accountUsecase) GetAll(ctx context.Context, num int64) ([]*out.Account, error) {
 	accounts, err := au.repo.GetAll(ctx, &repository.AccountListOptions{})
+	time.Sleep(3 * time.Second)
 	if err != nil {
 		return nil, err
 	}
 	return au.pre.ViewAccounts(ctx, accounts), nil
 }
 
-func (au *accountUsecase) GetByID(c context.Context, input *in.FetchAccount) (*out.Account, error) {
-	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
-	defer cancel()
+func (au *accountUsecase) GetByID(ctx context.Context, input *in.FetchAccount) (*out.Account, error) {
 
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
@@ -61,9 +56,7 @@ func (au *accountUsecase) GetByID(c context.Context, input *in.FetchAccount) (*o
 	return au.pre.ViewAccount(ctx, account), nil
 }
 
-func (au *accountUsecase) GetByEmail(c context.Context, input *in.FetchAccountByEmail) (*out.Account, error) {
-	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
-	defer cancel()
+func (au *accountUsecase) GetByEmail(ctx context.Context, input *in.FetchAccountByEmail) (*out.Account, error) {
 
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
@@ -76,9 +69,7 @@ func (au *accountUsecase) GetByEmail(c context.Context, input *in.FetchAccountBy
 	return au.pre.ViewAccount(ctx, account), nil
 }
 
-func (au *accountUsecase) GetByName(c context.Context, input *in.FetchAccountByName) (*out.Account, error) {
-	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
-	defer cancel()
+func (au *accountUsecase) GetByName(ctx context.Context, input *in.FetchAccountByName) (*out.Account, error) {
 
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
@@ -91,10 +82,7 @@ func (au *accountUsecase) GetByName(c context.Context, input *in.FetchAccountByN
 	return au.pre.ViewAccount(ctx, account), nil
 }
 
-func (au *accountUsecase) Create(c context.Context, input *in.NewAccount) (out.ID, error) {
-	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
-	defer cancel()
-
+func (au *accountUsecase) Create(ctx context.Context, input *in.NewAccount) (out.ID, error) {
 	if err := in.Validate(input); err != nil {
 		return out.ID("-1"), model.ErrEntityBadInput
 	}
@@ -115,9 +103,7 @@ func (au *accountUsecase) Create(c context.Context, input *in.NewAccount) (out.I
 	return out.ID(id), err
 }
 
-func (au *accountUsecase) UpdatePassword(c context.Context, input *in.EditAccount) (*out.Account, error) {
-	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
-	defer cancel()
+func (au *accountUsecase) UpdatePassword(ctx context.Context, input *in.EditAccount) (*out.Account, error) {
 
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
@@ -146,10 +132,7 @@ func (au *accountUsecase) UpdatePassword(c context.Context, input *in.EditAccoun
 	return au.pre.ViewAccount(ctx, accountNew), nil
 }
 
-func (au *accountUsecase) Delete(c context.Context, input *in.FetchAccount) error {
-	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
-	defer cancel()
-
+func (au *accountUsecase) Delete(ctx context.Context, input *in.FetchAccount) error {
 	err := in.Validate(input)
 	if err != nil {
 		return model.ErrEntityBadInput
@@ -162,9 +145,7 @@ func (au *accountUsecase) Delete(c context.Context, input *in.FetchAccount) erro
 	return au.repo.Delete(ctx, id)
 }
 
-func (au *accountUsecase) Login(c context.Context, input *in.LoginAccountByEmail) (bool, error) {
-	ctx, cancel := context.WithTimeout(c, au.ctxTimeout)
-	defer cancel()
+func (au *accountUsecase) Login(ctx context.Context, input *in.LoginAccountByEmail) (bool, error) {
 
 	if err := in.Validate(input); err != nil {
 		return false, model.ErrEntityBadInput

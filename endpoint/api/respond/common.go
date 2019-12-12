@@ -46,6 +46,10 @@ func GetErrorCode(err error) string {
 			code = "104"
 		case errors.Is(err, model.ErrInternalServerError):
 			code = "105"
+		case errors.Is(err, model.ErrRouteNotFound):
+			code = "106"
+		case errors.Is(err, model.ErrMethodNotAllowed):
+			code = "107"
 		case errors.Is(err, model.ErrAuthNotMatch):
 			code = "201"
 		case errors.Is(err, model.ErrTokenExpired):

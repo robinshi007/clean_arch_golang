@@ -52,7 +52,25 @@ func NewInternalServerError() *Error {
 	return &Error{
 		Status:  http.StatusInternalServerError,
 		Code:    "105",
-		Message: "Internal Server Error",
+		Message: "OHH, Internal Server Error",
+	}
+}
+
+// NewRouteNotFound -
+func NewRouteNotFound() *Error {
+	return &Error{
+		Status:  http.StatusNotFound,
+		Code:    "106",
+		Message: "Route Path Not Found",
+	}
+}
+
+// NewMethodNotAllowed -
+func NewMethodNotAllowed() *Error {
+	return &Error{
+		Status:  http.StatusMethodNotAllowed,
+		Code:    "107",
+		Message: "HTTP Method Not Allowed",
 	}
 }
 
@@ -111,7 +129,7 @@ func NewUnsupportedMediaTypeError() *Error {
 }
 
 // GetError -
-func GetError(code string) *Error {
+func GetErrorResponse(code string) *Error {
 	switch code {
 	// common error
 	case "101":
@@ -124,6 +142,10 @@ func GetError(code string) *Error {
 		return NewConflictError()
 	case "105":
 		return NewInternalServerError()
+	case "106":
+		return NewRouteNotFound()
+	case "107":
+		return NewMethodNotAllowed()
 
 	// auth and permisson error
 	case "201":
@@ -159,6 +181,10 @@ func GetHTTPStatus(code string) int {
 		return http.StatusConflict
 	case "105":
 		return http.StatusInternalServerError
+	case "106":
+		return http.StatusNotFound
+	case "107":
+		return http.StatusMethodNotAllowed
 
 	case "201":
 		return http.StatusUnauthorized

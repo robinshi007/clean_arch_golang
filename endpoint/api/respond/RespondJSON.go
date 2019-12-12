@@ -2,6 +2,7 @@ package respond
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -35,8 +36,9 @@ func (r *RespondJSON) Created(w http.ResponseWriter, payload interface{}) {
 
 func (r *RespondJSON) respondError(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := r.srz.Encode(payload)
-	w.Header().Set("Content-Type", "application/json")
+	fmt.Println("code", code)
 	w.WriteHeader(code)
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 }
 

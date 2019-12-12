@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -48,7 +47,7 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	// clean the cookie
 	account := in.LoginAccountByEmail{}
 	a.rsp.Decode(r.Body, &account)
-	res, err := a.uc.Login(context.Background(), &account)
+	res, err := a.uc.Login(r.Context(), &account)
 	if err != nil {
 		a.rsp.Error(w, err)
 	} else if !res {

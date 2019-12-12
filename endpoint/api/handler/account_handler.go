@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -48,7 +47,7 @@ type AccountHandler struct {
 
 // GetAll the post data
 func (u *AccountHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	res, err := u.uc.GetAll(context.Background(), 5)
+	res, err := u.uc.GetAll(r.Context(), 5)
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -61,7 +60,7 @@ func (u *AccountHandler) Create(w http.ResponseWriter, r *http.Request) {
 	account := in.NewAccount{}
 	u.rsp.Decode(r.Body, &account)
 
-	newID, err := u.uc.Create(context.Background(), &account)
+	newID, err := u.uc.Create(r.Context(), &account)
 	if err != nil {
 		fmt.Println("create err:", err)
 		u.rsp.Error(w, err)
@@ -77,7 +76,7 @@ func (u *AccountHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) 
 	}
 	u.rsp.Decode(r.Body, &account)
 
-	res, err := u.uc.UpdatePassword(context.Background(), &account)
+	res, err := u.uc.UpdatePassword(r.Context(), &account)
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -89,7 +88,7 @@ func (u *AccountHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) 
 // GetByID returns a post details
 func (u *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	res, err := u.uc.GetByID(context.Background(), &in.FetchAccount{ID: id})
+	res, err := u.uc.GetByID(r.Context(), &in.FetchAccount{ID: id})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -100,7 +99,7 @@ func (u *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // GetByEmail - returns a post details
 func (u *AccountHandler) GetByEmail(w http.ResponseWriter, r *http.Request) {
 	email := chi.URLParam(r, "email")
-	res, err := u.uc.GetByEmail(context.Background(), &in.FetchAccountByEmail{Email: email})
+	res, err := u.uc.GetByEmail(r.Context(), &in.FetchAccountByEmail{Email: email})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -111,7 +110,7 @@ func (u *AccountHandler) GetByEmail(w http.ResponseWriter, r *http.Request) {
 // Delete a post
 func (u *AccountHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	err := u.uc.Delete(context.Background(), &in.FetchAccount{ID: id})
+	err := u.uc.Delete(r.Context(), &in.FetchAccount{ID: id})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -47,7 +46,7 @@ type UserHandler struct {
 
 // GetAll the post data
 func (u *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	res, err := u.uc.GetAll(context.Background(), 5)
+	res, err := u.uc.GetAll(r.Context(), 5)
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -60,7 +59,7 @@ func (u *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user := in.NewUser{}
 	u.rsp.Decode(r.Body, &user)
 
-	newID, err := u.uc.Create(context.Background(), &user)
+	newID, err := u.uc.Create(r.Context(), &user)
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -75,7 +74,7 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	u.rsp.Decode(r.Body, &user)
 
-	res, err := u.uc.Update(context.Background(), &user)
+	res, err := u.uc.Update(r.Context(), &user)
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -87,7 +86,7 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 // GetByID returns a post details
 func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	res, err := u.uc.GetByID(context.Background(), &in.FetchUser{ID: id})
+	res, err := u.uc.GetByID(r.Context(), &in.FetchUser{ID: id})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -98,7 +97,7 @@ func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // GetByName returns a post details
 func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
-	res, err := u.uc.GetByName(context.Background(), &in.FetchUserByName{Name: name})
+	res, err := u.uc.GetByName(r.Context(), &in.FetchUserByName{Name: name})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -109,7 +108,7 @@ func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 // Delete a post
 func (u *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	err := u.uc.Delete(context.Background(), &in.FetchUser{ID: id})
+	err := u.uc.Delete(r.Context(), &in.FetchUser{ID: id})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {

@@ -17,7 +17,7 @@ func NewErrorResponse(code string) *Response {
 	return &Response{
 		Success: false,
 		Errors: []*out.Error{
-			out.GetError(code),
+			out.GetErrorResponse(code),
 		},
 		Messages: []string{},
 	}

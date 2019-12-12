@@ -3,6 +3,11 @@ package model
 import "errors"
 
 var (
+	// ErrRouteNotFound -
+	ErrRouteNotFound = errors.New("route not found")
+	// ErrMethodNotAllowed -
+	ErrMethodNotAllowed = errors.New("http method not allowed")
+
 	// ErrEntityBadInput - entity cannot be created or updated due to bad input
 	ErrEntityBadInput = errors.New("input params is not valid")
 	// ErrEntityNotFound - entity is not found in database
@@ -16,10 +21,10 @@ var (
 
 	// ErrAuthNotMatch -
 	ErrAuthNotMatch = errors.New("login email or password is not correct")
-	// ErrTokenIsExpired -
+	// ErrTokenExpired -
 	ErrTokenExpired = errors.New("token is expired")
 	// ErrTokenIsInvalid -
 	ErrTokenIsInvalid = errors.New("token is invalid")
-	// ErrTokenIsInvalid -
+	// ErrActionNotAllowed -
 	ErrActionNotAllowed = errors.New("action is not allowed")
 )
