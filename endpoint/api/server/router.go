@@ -10,6 +10,7 @@ import (
 	"clean_arch/endpoint/api/handler"
 	mw "clean_arch/endpoint/api/middleware"
 	"clean_arch/infra"
+	"clean_arch/registry"
 )
 
 // Hello - for testing
@@ -30,15 +31,27 @@ func NewRouter(db infra.DB) http.Handler {
 	aHandler := handler.NewAccountHandler()
 	auHandler := handler.NewAuthHandler()
 
+	// for test only
 	r.Get("/", Hello)
+
+	// for graphql playground, dev only, will removed in prod env
+	if registry.Cfg.Mode == "dev" {
+		r.Mount("/play", gqlhandler.Playground("GraphQL Playground", "/graphql"))
+		r.Mount("/graphql", handler.GraphQLHandler())
+	}
+
+	// for login
 	r.Post("/login", auHandler.Login)
 	r.Route("/", func(rt chi.Router) {
 		rt.Use(mw.JWTVerify())
-		//rt.Mount("/user", handler.NewUserRouter(uHanlder))
 		rt.Mount("/auth", auHandler.JWTAuthenticator(handler.NewAuthRouter(auHandler)))
+	})
+
+	// for api use
+	r.Route("/api/v1", func(rt chi.Router) {
+		rt.Use(mw.JWTVerify())
+		//rt.Mount("/user", handler.NewUserRouter(uHanlder))
 		rt.Mount("/accounts", auHandler.JWTAuthenticator(handler.NewAccountRouter(aHandler)))
-		rt.Mount("/play", gqlhandler.Playground("GraphQL Playground", "/graphql"))
-		rt.Mount("/graphql", handler.GraphQLHandler())
 
 	})
 

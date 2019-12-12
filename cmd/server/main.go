@@ -35,7 +35,7 @@ func main() {
 		fmt.Println(fmt.Sprintf("server listen at :%s", registry.Cfg.Server.Port))
 		errs <- srv.ListenAndServe()
 	}()
-	//
+
 	// handle signal
 	go func() {
 		c := make(chan os.Signal, 1)
