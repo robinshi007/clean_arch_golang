@@ -3,12 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
-	"syscall"
 
 	"clean_arch/endpoint/api/server"
+	"clean_arch/infra/util"
 	"clean_arch/registry"
 )
 
@@ -19,6 +18,10 @@ func main() {
 	registry.InitGlobals(currentPath)
 	defer registry.Db.Close()
 
+	// migration up
+	fmt.Println("migration database...")
+	util.MigrationUp(registry.Cfg, currentPath)
+
 	// print this in dev mode
 	if registry.Cfg.Mode == "dev" {
 		fmt.Println("config", registry.Cfg)
@@ -26,23 +29,24 @@ func main() {
 	}
 
 	// server
+	errs := make(chan error, 2)
 	srv := server.NewServer(registry.Cfg, registry.Db)
 	go func() {
-		fmt.Println(fmt.Sprintf("Server listen at :%s", registry.Cfg.Server.Port))
-		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-			fmt.Printf("Http Server ListenAndServe: %v", err)
-		}
+		fmt.Println(fmt.Sprintf("server listen at :%s", registry.Cfg.Server.Port))
+		errs <- srv.ListenAndServe()
 	}()
 	//
 	// handle signal
-	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-	fmt.Println(<-quit)
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt, os.Kill)
+		errs <- fmt.Errorf("%s", <-c)
+	}()
 
-	fmt.Print("Stopping http server...")
+	fmt.Printf(" %s, shutdown http servers...", <-errs)
 	if err := srv.Shutdown(context.Background()); err != nil {
-		fmt.Printf("Http server Shutdown: %v", err)
+		fmt.Printf("error occured: %v", err)
 	} else {
-		fmt.Println("Done.")
+		fmt.Println("done.")
 	}
 }

@@ -47,23 +47,31 @@ func (r *RespondJSON) respondError(w http.ResponseWriter, code int, payload inte
 func (r *RespondJSON) Error(w http.ResponseWriter, err error) {
 	var code string
 	if strings.HasPrefix(err.Error(), "pq: duplicate key value violates unique constraint") {
-		code = "1101"
+		code = "101"
 	} else if strings.HasPrefix(err.Error(), "pq:") {
-		code = "1103"
+		code = "103"
 	} else {
 		switch {
 		case errors.Is(err, model.ErrEntityBadInput):
-			code = "1101"
-		case errors.Is(err, model.ErrAccountNotMatch):
-			code = "1105"
+			code = "101"
 		case errors.Is(err, model.ErrEntityNotFound):
-			code = "1102"
+			code = "102"
+		case errors.Is(err, model.ErrEntityNotChanged):
+			code = "103"
 		case errors.Is(err, model.ErrEntityUniqueConflict):
-			code = "1104"
-		case errors.Is(err, model.ErrAccountNotMatch):
-			code = "1105"
+			code = "104"
+		case errors.Is(err, model.ErrInternalServerError):
+			code = "105"
+		case errors.Is(err, model.ErrAuthNotMatch):
+			code = "201"
+		case errors.Is(err, model.ErrTokenExpired):
+			code = "202"
+		case errors.Is(err, model.ErrTokenIsInvalid):
+			code = "203"
+		case errors.Is(err, model.ErrActionNotAllowed):
+			code = "204"
 		default:
-			code = "1103"
+			code = "103"
 		}
 	}
 	r.respondError(w, out.GetHTTPStatus(code), api.NewErrorResponse(code))

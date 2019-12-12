@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"clean_arch/domain/model"
 	"context"
 	"errors"
 	"fmt"
@@ -39,7 +40,7 @@ var (
 
 // GenerateToken -
 func GenerateToken(email string) (string, error) {
-	expireAt := time.Now().Add(30 * time.Minute)
+	expireAt := time.Now().Add(60 * time.Minute)
 	issuedBy := "nobody"
 
 	// define payload
@@ -70,9 +71,9 @@ func ParseToken(ss string) (*jwt.Token, *AccountClaims, error) {
 		if claim, ok := token.Claims.(*AccountClaims); ok && token.Valid {
 			return token, claim, nil
 		}
-		return nil, nil, errors.New("jwt auth token is invalid")
+		return nil, nil, model.ErrTokenIsInvalid
 	}
-	return nil, nil, err
+	return nil, nil, model.ErrTokenIsInvalid
 }
 
 // NewContext -
@@ -90,35 +91,13 @@ func FromContext(ctx context.Context) (*jwt.Token, *AccountClaims, error) {
 		if tokenClaims, ok := token.Claims.(*AccountClaims); ok {
 			claims = tokenClaims
 		} else {
-			return nil, nil, errors.New(fmt.Sprintf("jwtauth: unknown type of Claims: %T", token.Claims))
+			return nil, nil, errors.New(fmt.Sprintf("jwt: unknown type of Claims: %T", token.Claims))
 		}
 	} else {
 		claims = &AccountClaims{}
 	}
 	err, _ := ctx.Value(ErrorCtxKey).(error)
 	return token, claims, err
-}
-
-// JWTMiddleware -
-// sends a 401 Unauthorized response for any unverified tokens
-func JWTMiddleware() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		hfn := func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-
-			//token, err := VerifyRequest(ja, r, findTokenFns...)
-			tokenString := TokenFromHTTPRequest(r)
-
-			token, _, err := ParseToken(tokenString)
-			if err != nil || !token.Valid {
-				next.ServeHTTP(w, r)
-				return
-			}
-			newCtx := NewContext(ctx, token, err)
-			next.ServeHTTP(w, r.WithContext(newCtx))
-		}
-		return http.HandlerFunc(hfn)
-	}
 }
 
 // TokenFromHTTPRequest -
@@ -133,23 +112,18 @@ func TokenFromHTTPRequest(r *http.Request) string {
 	return tokenString
 }
 
-// Authenticator is a authentication middleware to enforce access from the
-// Verifier middleware request context values. The Authenticator sends a 401 Unauthorized
-// response for any unverified tokens and passes the good ones through.
-func Authenticator(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, _, err := FromContext(r.Context())
+// JWTVerify - check token and put claims into context
+func JWTVerify() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		hfn := func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
 
-		if err != nil {
-			http.Error(w, http.StatusText(401), 401)
-			return
+			//token, err := VerifyRequest(ja, r, findTokenFns...)
+			tokenString := TokenFromHTTPRequest(r)
+			token, _, err := ParseToken(tokenString)
+			newCtx := NewContext(ctx, token, err)
+			next.ServeHTTP(w, r.WithContext(newCtx))
 		}
-
-		if token == nil || !token.Valid {
-			http.Error(w, http.StatusText(401), 401)
-			return
-		}
-		// Token is authenticated, pass it through
-		next.ServeHTTP(w, r)
-	})
+		return http.HandlerFunc(hfn)
+	}
 }

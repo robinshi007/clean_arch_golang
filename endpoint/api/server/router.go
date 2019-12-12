@@ -12,7 +12,7 @@ import (
 	"clean_arch/infra"
 )
 
-// Hello -
+// Hello - for testing
 func Hello(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -27,15 +27,16 @@ func NewRouter(db infra.DB) http.Handler {
 	r.Use(chiMiddleware.Logger)
 
 	//uHanlder := handler.NewUserHandler()
-	aHanlder := handler.NewAccountHandler()
-	authHanlder := handler.NewAuthHandler()
+	aHandler := handler.NewAccountHandler()
+	auHandler := handler.NewAuthHandler()
 
 	r.Get("/", Hello)
+	r.Post("/login", auHandler.Login)
 	r.Route("/", func(rt chi.Router) {
-		rt.Use(mw.JWTMiddleware())
+		rt.Use(mw.JWTVerify())
 		//rt.Mount("/user", handler.NewUserRouter(uHanlder))
-		rt.Mount("/auth", handler.NewAuthRouter(authHanlder))
-		rt.Mount("/accounts", handler.NewAccountRouter(aHanlder))
+		rt.Mount("/auth", auHandler.JWTAuthenticator(handler.NewAuthRouter(auHandler)))
+		rt.Mount("/accounts", auHandler.JWTAuthenticator(handler.NewAccountRouter(aHandler)))
 		rt.Mount("/play", gqlhandler.Playground("GraphQL Playground", "/graphql"))
 		rt.Mount("/graphql", handler.GraphQLHandler())
 

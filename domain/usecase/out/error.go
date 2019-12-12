@@ -15,7 +15,7 @@ type Error struct {
 func NewBadReqeustError() *Error {
 	return &Error{
 		Status:  http.StatusBadRequest,
-		Code:    "1101",
+		Code:    "101",
 		Message: "Bad Request",
 	}
 }
@@ -24,17 +24,17 @@ func NewBadReqeustError() *Error {
 func NewNotFoundError() *Error {
 	return &Error{
 		Status:  http.StatusNotFound,
-		Code:    "1102",
-		Message: "Not Found",
+		Code:    "102",
+		Message: "Entity Not Found",
 	}
 }
 
-// NewInternalServerError -
-func NewInternalServerError() *Error {
+// NewNotChangedError -
+func NewNotChangedError() *Error {
 	return &Error{
-		Status:  http.StatusInternalServerError,
-		Code:    "1103",
-		Message: "Internal Server Error",
+		Status:  http.StatusNotModified,
+		Code:    "103",
+		Message: "Entity Not Changed",
 	}
 }
 
@@ -42,8 +42,17 @@ func NewInternalServerError() *Error {
 func NewConflictError() *Error {
 	return &Error{
 		Status:  http.StatusConflict,
-		Code:    "1104",
-		Message: "Conflict",
+		Code:    "104",
+		Message: "Entity Conflict",
+	}
+}
+
+// NewInternalServerError -
+func NewInternalServerError() *Error {
+	return &Error{
+		Status:  http.StatusInternalServerError,
+		Code:    "105",
+		Message: "Internal Server Error",
 	}
 }
 
@@ -51,8 +60,17 @@ func NewConflictError() *Error {
 func NewLoginError() *Error {
 	return &Error{
 		Status:  http.StatusUnauthorized,
-		Code:    "1105",
+		Code:    "201",
 		Message: "Account email or password is not correct",
+	}
+}
+
+// NewTokenExpiredError -
+func NewTokenExpiredError() *Error {
+	return &Error{
+		Status:  http.StatusUnauthorized,
+		Code:    "202",
+		Message: "Token Is Expired",
 	}
 }
 
@@ -60,8 +78,8 @@ func NewLoginError() *Error {
 func NewUnauthorizedError() *Error {
 	return &Error{
 		Status:  http.StatusUnauthorized,
-		Code:    "1106",
-		Message: "Unauthorized",
+		Code:    "203",
+		Message: "The Action is Unauthorized",
 	}
 }
 
@@ -69,8 +87,8 @@ func NewUnauthorizedError() *Error {
 func NewForbiddenError() *Error {
 	return &Error{
 		Status:  http.StatusForbidden,
-		Code:    "1107",
-		Message: "Forbidden",
+		Code:    "204",
+		Message: "The Action Is Not Allowed",
 	}
 }
 
@@ -95,24 +113,34 @@ func NewUnsupportedMediaTypeError() *Error {
 // GetError -
 func GetError(code string) *Error {
 	switch code {
-	case "1101":
+	// common error
+	case "101":
 		return NewBadReqeustError()
-	case "1102":
+	case "102":
 		return NewNotFoundError()
-	case "1103":
-		return NewInternalServerError()
-	case "1104":
+	case "103":
+		return NewNotChangedError()
+	case "104":
 		return NewConflictError()
-	case "1105":
+	case "105":
+		return NewInternalServerError()
+
+	// auth and permisson error
+	case "201":
 		return NewLoginError()
-	case "1106":
+	case "202":
+		return NewTokenExpiredError()
+	case "203":
 		return NewUnauthorizedError()
-	case "1107":
+	case "204":
 		return NewForbiddenError()
-	case "1108":
+
+	// misc error
+	case "901":
 		return NewRequestTimeoutError()
-	case "1109":
+	case "902":
 		return NewUnsupportedMediaTypeError()
+
 	default:
 		return NewInternalServerError()
 	}
@@ -121,24 +149,31 @@ func GetError(code string) *Error {
 // GetHTTPStatus -
 func GetHTTPStatus(code string) int {
 	switch code {
-	case "1101":
+	case "101":
 		return http.StatusBadRequest
-	case "1102":
+	case "102":
 		return http.StatusNotFound
-	case "1103":
-		return http.StatusInternalServerError
-	case "1104":
+	case "103":
+		return http.StatusNotModified
+	case "104":
 		return http.StatusConflict
-	case "1105":
+	case "105":
+		return http.StatusInternalServerError
+
+	case "201":
 		return http.StatusUnauthorized
-	case "1106":
+	case "202":
 		return http.StatusUnauthorized
-	case "1107":
+	case "203":
+		return http.StatusUnauthorized
+	case "204":
 		return http.StatusForbidden
-	case "1108":
+
+	case "901":
 		return http.StatusRequestTimeout
-	case "1109":
+	case "902":
 		return http.StatusUnsupportedMediaType
+
 	default:
 		return http.StatusInternalServerError
 	}
