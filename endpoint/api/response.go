@@ -6,10 +6,10 @@ import (
 
 // Response - defined response json format
 type Response struct {
-	Success  bool         `json:"success" xml:"success"`
-	Messages []string     `json:"messages" xml:"messages"`
-	Data     interface{}  `json:"data" xml:"data>data"`
-	Errors   []*out.Error `json:"errors" xml:"errors"`
+	Success  bool         `json:"success" msgpack:"success"`
+	Messages []string     `json:"messages" msgpack:"messages"`
+	Data     interface{}  `json:"data" msgpack:"data"`
+	Errors   []*out.Error `json:"errors" msgpack:"errors"`
 }
 
 // NewErrorResponse -

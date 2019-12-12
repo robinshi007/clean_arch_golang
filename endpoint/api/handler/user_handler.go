@@ -13,6 +13,7 @@ import (
 	"clean_arch/domain/usecase/in"
 	"clean_arch/endpoint/api"
 	"clean_arch/endpoint/api/respond"
+	"clean_arch/registry"
 	ctn "clean_arch/usecase"
 )
 
@@ -34,7 +35,7 @@ func NewUserHandler() *UserHandler {
 	pre := presenter.NewUserPresenter()
 	return &UserHandler{
 		uc:  ctn.NewUserUseCase(repo, pre, time.Second),
-		rsp: respond.NewRespond("json"),
+		rsp: respond.NewRespond(registry.Cfg.Serializer.Code),
 	}
 }
 

@@ -2,12 +2,9 @@ package respond
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"net/http"
-	"strings"
 
-	"clean_arch/domain/model"
 	Iserializer "clean_arch/domain/serializer"
 	"clean_arch/domain/usecase/out"
 	"clean_arch/endpoint/api"
@@ -18,7 +15,7 @@ type RespondMsgpack struct {
 	srz Iserializer.Serializer
 }
 
-// OK - write xml response format
+// OK - write msgpack response format
 func (r *RespondMsgpack) OK(w http.ResponseWriter, payload interface{}) {
 	response, _ := r.Encode(api.NewResponse(payload))
 
@@ -27,7 +24,7 @@ func (r *RespondMsgpack) OK(w http.ResponseWriter, payload interface{}) {
 	w.Write(response)
 }
 
-// Created - write xml response format
+// Created - write msgpack response format
 func (r *RespondMsgpack) Created(w http.ResponseWriter, payload interface{}) {
 	response, _ := r.Encode(api.NewResponse(payload))
 
@@ -45,21 +42,7 @@ func (r *RespondMsgpack) respondError(w http.ResponseWriter, code int, payload i
 
 // Error - return error message
 func (r *RespondMsgpack) Error(w http.ResponseWriter, err error) {
-	var code string
-	if strings.HasPrefix(err.Error(), "pq:") {
-		code = "1103"
-	} else {
-		switch {
-		case errors.Is(err, model.ErrEntityBadInput):
-			code = "1101"
-		case errors.Is(err, model.ErrEntityNotFound):
-			code = "1102"
-		case errors.Is(err, model.ErrEntityUniqueConflict):
-			code = "1104"
-		default:
-			code = "1103"
-		}
-	}
+	code := GetErrorCode(err)
 	r.respondError(w, out.GetHTTPStatus(code), api.NewErrorResponse(code))
 }
 

@@ -6,9 +6,9 @@ import (
 
 // Error -
 type Error struct {
-	Status  int    `json:"-" xml:"-"`
-	Code    string `json:"code" xml:"code"`
-	Message string `json:"message" xml:"message"`
+	Status  int    `json:"-" msgpack:"-"`
+	Code    string `json:"code" msgpack:"code"`
+	Message string `json:"message" msgpack:"message"`
 }
 
 // NewBadReqeustError -

@@ -133,7 +133,7 @@ func TestUserHandlerError(t *testing.T) {
 	e.PUT("/1").WithJSON(user2).
 		Expect().Status(http.StatusBadRequest)
 	e.PUT("/1").WithJSON(user3).
-		Expect().Status(http.StatusInternalServerError)
+		Expect().Status(http.StatusNotModified)
 	e.PUT("/a9").WithJSON(user3).
 		Expect().Status(http.StatusNotFound)
 	e.PUT("/99").WithJSON(user3).

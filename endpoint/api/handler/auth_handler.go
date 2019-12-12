@@ -15,6 +15,7 @@ import (
 	"clean_arch/endpoint/api"
 	"clean_arch/endpoint/api/middleware"
 	"clean_arch/endpoint/api/respond"
+	"clean_arch/registry"
 	ctn "clean_arch/usecase"
 )
 
@@ -32,7 +33,7 @@ func NewAuthHandler() *AuthHandler {
 	pre := presenter.NewAccountPresenter()
 	return &AuthHandler{
 		uc:  ctn.NewAccountUseCase(repo, pre, 2*time.Second),
-		rsp: respond.NewRespond("json"),
+		rsp: respond.NewRespond(registry.Cfg.Serializer.Code),
 	}
 }
 

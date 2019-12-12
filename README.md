@@ -18,7 +18,7 @@ For golang web apps template, with REST, GraphQL and GRPC as access endpoint
 ## Todo
 
 * [done] input model validate and transform
-* [done] output model transform and presenter json/xml
+* [done] output model transform and presenter with json/message_pack
 * [done] error handle with golang 1.13 unwrap
 * [done] response format standard
 * [doing] add GraphQL endpoint

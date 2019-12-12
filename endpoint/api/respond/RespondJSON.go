@@ -2,12 +2,9 @@ package respond
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"net/http"
-	"strings"
 
-	"clean_arch/domain/model"
 	Iserializer "clean_arch/domain/serializer"
 	"clean_arch/domain/usecase/out"
 	"clean_arch/endpoint/api"
@@ -45,35 +42,7 @@ func (r *RespondJSON) respondError(w http.ResponseWriter, code int, payload inte
 
 // Error - return error message
 func (r *RespondJSON) Error(w http.ResponseWriter, err error) {
-	var code string
-	if strings.HasPrefix(err.Error(), "pq: duplicate key value violates unique constraint") {
-		code = "101"
-	} else if strings.HasPrefix(err.Error(), "pq:") {
-		code = "103"
-	} else {
-		switch {
-		case errors.Is(err, model.ErrEntityBadInput):
-			code = "101"
-		case errors.Is(err, model.ErrEntityNotFound):
-			code = "102"
-		case errors.Is(err, model.ErrEntityNotChanged):
-			code = "103"
-		case errors.Is(err, model.ErrEntityUniqueConflict):
-			code = "104"
-		case errors.Is(err, model.ErrInternalServerError):
-			code = "105"
-		case errors.Is(err, model.ErrAuthNotMatch):
-			code = "201"
-		case errors.Is(err, model.ErrTokenExpired):
-			code = "202"
-		case errors.Is(err, model.ErrTokenIsInvalid):
-			code = "203"
-		case errors.Is(err, model.ErrActionNotAllowed):
-			code = "204"
-		default:
-			code = "103"
-		}
-	}
+	code := GetErrorCode(err)
 	r.respondError(w, out.GetHTTPStatus(code), api.NewErrorResponse(code))
 }
 

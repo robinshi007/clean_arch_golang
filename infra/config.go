@@ -2,12 +2,13 @@ package infra
 
 // Config - config
 type Config struct {
-	Name     string         `yaml:"name"`
-	Mode     string         `yaml:"mode"`
-	Server   ServerConfig   `yaml:"server"`
-	Log      LogConfig      `yaml:"log"`
-	Database DatabaseConfig `yaml:"database"`
-	Contact  ContactConfig  `yaml:"contact"`
+	Name       string           `yaml:"name"`
+	Mode       string           `yaml:"mode"`
+	Server     ServerConfig     `yaml:"server"`
+	Log        LogConfig        `yaml:"log"`
+	Database   DatabaseConfig   `yaml:"database"`
+	Serializer SerializerConfig `yaml:"serializer"`
+	Contact    ContactConfig    `yaml:"contact"`
 }
 
 // ServerConfig -
@@ -28,6 +29,11 @@ type DatabaseConfig struct {
 	Code       string `default:"sqldb"`
 	DriverName string `default:"sqlite3" yaml:"driver_name"`
 	URLAddress string `yaml:"url_address"`
+}
+
+// SerializerConfig -
+type SerializerConfig struct {
+	Code string `default:"json"`
 }
 
 // ContactConfig -
