@@ -15,7 +15,7 @@ For golang web apps template, with REST, GraphQL and GRPC as access endpoint
 * Clean arch with loosely coupled
 * Docker deploy support
 
-## Todo
+## Todo List
 
 * [done] input model validate and transform
 * [done] output model transform and presenter with json/message_pack
@@ -30,6 +30,13 @@ For golang web apps template, with REST, GraphQL and GRPC as access endpoint
 * [done] integrite test
 * e2e test
 * dev with ticktock
+
+## Dev Circle
+
+* phase 1: requirement, customer and competition product analysis
+* phase 2: prototype with html/css/js, min run with tech stack.
+* phase 3: coding and testing with feature complete
+* phase 4: documentation, safety and integrition enhancement
 
 ## Refers
 
