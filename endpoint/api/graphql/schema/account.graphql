@@ -1,16 +1,26 @@
 type Account {
   id: ID!
+  name: String!
   email: String!
+  created_at: Time!
+  updated_at: Time!
 }
 
 input NewAccount{
   email: String!
+  name: String!
   password: String!
 }
 input EditAccount{
+  id: ID!
+  name: String!
+}
+input EditAccountPassword{
   id: ID!
   password: String!
 }
 input FetchAccount{
   id: ID!
 }
+
+scalar Time

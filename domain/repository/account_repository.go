@@ -20,6 +20,7 @@ type AccountRepository interface {
 	GetByName(ctx context.Context, name string) (*model.UserAccount, error)
 	Create(ctx context.Context, u *model.UserAccount) (int64, error)
 	Update(ctx context.Context, u *model.UserAccount) (*model.UserAccount, error)
+	UpdatePassword(ctx context.Context, u *model.UserAccount) (*model.UserAccount, error)
 	Delete(ctx context.Context, id int64) error
 	DuplicatedByEmail(ctx context.Context, email string) error
 	DuplicatedByName(ctx context.Context, name string) error

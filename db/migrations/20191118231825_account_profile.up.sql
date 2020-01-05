@@ -4,8 +4,8 @@
 BEGIN;
   CREATE TABLE IF NOT EXISTS user_accounts (
     uid SERIAL PRIMARY KEY NOT NULL,
-    name VARCHAR(100),
-    email VARCHAR(254) NOT NULL,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(254) UNIQUE NOT NULL,
 
     password VARCHAR(200) NOT NULL,
     password_salt VARCHAR(50),

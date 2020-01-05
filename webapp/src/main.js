@@ -1,14 +1,25 @@
-import Vue from 'vue'
-import App from './App.vue'
-import './registerServiceWorker'
-import router from './router'
-import store from './store'
-import './quasar'
+import Vue from 'vue';
 
-Vue.config.productionTip = false
+import './registerServiceWorker';
+import './quasar';
+import { createProvider } from './graphql';
+import './http';
+
+import LayoutDefault from './layouts/LayoutDefault.vue';
+import LayoutEmpty from './layouts/LayoutEmpty.vue';
+
+import store from './store';
+import router from './router';
+import App from './App.vue';
+
+Vue.component('default-layout', LayoutDefault);
+Vue.component('empty-layout', LayoutEmpty);
+
+Vue.config.productionTip = false;
 
 new Vue({
   router,
   store,
-  render: h => h(App)
-}).$mount('#app')
+  apolloProvider: createProvider(),
+  render: h => h(App),
+}).$mount('#app');

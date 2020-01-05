@@ -71,7 +71,7 @@ func (u *AccountHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 // UpdatePassword - update a post by id
 func (u *AccountHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	account := in.EditAccount{
+	account := in.EditAccountPassword{
 		ID: chi.URLParam(r, "id"),
 	}
 	u.rsp.Decode(r.Body, &account)

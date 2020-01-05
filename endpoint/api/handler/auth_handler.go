@@ -31,7 +31,7 @@ func NewAuthHandler() *AuthHandler {
 	repo := postgres.NewAccountRepo()
 	pre := presenter.NewAccountPresenter()
 	return &AuthHandler{
-		uc:  ctn.NewAccountUseCase(repo, pre, 2*time.Second),
+		uc:  ctn.NewAccountUseCase(repo, pre, 5*time.Second),
 		rsp: respond.NewRespond(registry.Cfg.Serializer.Code),
 	}
 }
@@ -47,60 +47,58 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	// clean the cookie
 	account := in.LoginAccountByEmail{}
 	a.rsp.Decode(r.Body, &account)
-	res, err := a.uc.Login(r.Context(), &account)
+	isMatched, err := a.uc.Login(r.Context(), &account)
 	if err != nil {
 		a.rsp.Error(w, err)
-	} else if !res {
+	} else if !isMatched {
 		a.rsp.Error(w, model.ErrAuthNotMatch)
 	} else {
-		tokenString, err := middleware.GenerateToken(account.Email)
+		tokenInfo, err := middleware.GenerateToken(account.Email)
 		if err != nil {
 			a.rsp.Error(w, err)
 		}
-		http.SetCookie(w, &http.Cookie{
-			Name:    "token",
-			Value:   tokenString,
-			Expires: time.Now().Add(30 * time.Minute),
-		})
-		a.rsp.OK(w, res)
+		a.rsp.OK(w, tokenInfo)
 	}
 }
 
 // RefreshToken -
 func (a *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
-	token, _, err := middleware.FromContext(r.Context())
-
+	_, claim, err := middleware.FromContext(r.Context())
 	if err != nil {
-		a.rsp.Error(w, model.ErrTokenIsInvalid)
+		a.rsp.Error(w, err)
 		return
 	}
 
-	if token == nil || !token.Valid {
-		a.rsp.Error(w, model.ErrTokenIsInvalid)
-		return
-	}
-	if claim, ok := token.Claims.(*middleware.AccountClaims); ok && token.Valid {
-		if (claim.ExpiresAt - time.Now().Unix()) < 60*10 {
-			// generate new jwt token and set cookie
-			tokenString, err := middleware.GenerateToken(claim.Email)
-			if err != nil {
-				a.rsp.Error(w, err)
-				return
-			}
-			http.SetCookie(w, &http.Cookie{
-				Name:    "token",
-				Value:   tokenString,
-				Expires: time.Now().Add(30 * time.Minute),
-			})
-			a.rsp.OK(w, "token is refreshed")
+	// refresh time to 20S
+	if (claim.ExpiresAt - time.Now().Unix()) < 5*60 {
+		// generate new jwt token and set cookie
+		tokenInfo, err := middleware.GenerateToken(claim.Email)
+		if err != nil {
+			a.rsp.Error(w, err)
 			return
 		}
-		a.rsp.OK(w, "token is no need to refresh")
+		a.rsp.OK(w, tokenInfo)
 		return
 	}
-	a.rsp.Error(w, model.ErrTokenIsInvalid)
+	a.rsp.OK(w, "token is no need to refresh")
 	return
+}
+
+// JWTVerify - check token and put claims into context
+func (a *AuthHandler) JWTVerify() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		hfn := func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+
+			//token, err := VerifyRequest(ja, r, findTokenFns...)
+			tokenString := middleware.TokenFromHTTPRequest(r)
+			token, _, err := middleware.ParseToken(tokenString)
+			newCtx := middleware.NewContext(ctx, token, err)
+			next.ServeHTTP(w, r.WithContext(newCtx))
+		}
+		return http.HandlerFunc(hfn)
+	}
 }
 
 // JWTAuthenticator - a authentication middleware to enforce access from the
@@ -108,11 +106,14 @@ func (a *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 // response for any unverified tokens and passes the good ones through.
 func (a *AuthHandler) JWTAuthenticator(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, _, err := middleware.FromContext(r.Context())
-		if err != nil || token == nil || !token.Valid {
-			a.rsp.Error(w, model.ErrTokenIsInvalid)
+		_, _, err := middleware.FromContext(r.Context())
+
+		if err != nil {
+			a.rsp.Error(w, err)
 			return
 		}
+
+		// load user info according to claims info
 
 		// Token is authenticated, pass it through
 		next.ServeHTTP(w, r)

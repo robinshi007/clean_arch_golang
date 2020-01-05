@@ -11,6 +11,6 @@
 <script>
 export default {
   props: ['msg'],
-  name: 'HelloWorld'
-}
+  name: 'HelloWorld',
+};
 </script>

@@ -12,6 +12,7 @@ require (
 	github.com/gavv/httpexpect v2.0.0+incompatible
 	github.com/gchaincl/sqlhooks v1.2.0
 	github.com/go-chi/chi v4.0.2+incompatible
+	github.com/go-chi/cors v1.0.0
 	github.com/go-playground/locales v0.12.1 // indirect
 	github.com/go-playground/universal-translator v0.16.0 // indirect
 	github.com/golang-migrate/migrate/v4 v4.7.0

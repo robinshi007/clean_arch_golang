@@ -31,6 +31,9 @@ func (r *mutationResolver) CreateAccount(ctx context.Context, input in.NewAccoun
 	return account, nil
 }
 func (r *mutationResolver) UpdateAccount(ctx context.Context, input in.EditAccount) (*out.Account, error) {
+	return r.AccountUC.Update(ctx, &input)
+}
+func (r *mutationResolver) UpdateAccountPassword(ctx context.Context, input in.EditAccountPassword) (*out.Account, error) {
 	return r.AccountUC.UpdatePassword(ctx, &input)
 }
 func (r *mutationResolver) DeleteAccount(ctx context.Context, input in.FetchAccount) (*out.Account, error) {

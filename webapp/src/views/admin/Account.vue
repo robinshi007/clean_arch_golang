@@ -1,0 +1,49 @@
+<template>
+  <q-page>
+    <q-card v-if="loading == 0">
+      <q-card-section>
+        <div class="text-h6">
+          Account Details
+        </div>
+      </q-card-section>
+      <q-card-section>
+        {{account.id}}
+      </q-card-section>
+      <q-card-section>
+        {{account.name}}
+      </q-card-section>
+      <q-card-section>
+        {{account.email}}
+      </q-card-section>
+    </q-card>
+  </q-page>
+</template>
+
+<script>
+import ACCOUNT from '@/graphql/Account.gql';
+// import gql from 'graphql-tag';
+
+export default {
+  data() {
+    return {
+      loading: 0,
+    };
+  },
+  apollo: {
+    account: {
+      query: ACCOUNT,
+      update: data => data.fetchAccount,
+      variables() {
+        return {
+          id: this.$route.params.id,
+        };
+      },
+    },
+  },
+  computed: {
+  },
+
+  methods: {
+  },
+};
+</script>

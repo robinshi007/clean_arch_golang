@@ -13,7 +13,8 @@ type AccountUsecase interface {
 	GetByID(ctx context.Context, input *in.FetchAccount) (*out.Account, error)
 	GetByEmail(ctx context.Context, input *in.FetchAccountByEmail) (*out.Account, error)
 	Create(ctx context.Context, input *in.NewAccount) (out.ID, error)
-	UpdatePassword(ctx context.Context, input *in.EditAccount) (*out.Account, error)
+	Update(ctx context.Context, input *in.EditAccount) (*out.Account, error)
+	UpdatePassword(ctx context.Context, input *in.EditAccountPassword) (*out.Account, error)
 	Delete(ctx context.Context, input *in.FetchAccount) error
 	Login(ctx context.Context, input *in.LoginAccountByEmail) (bool, error)
 }

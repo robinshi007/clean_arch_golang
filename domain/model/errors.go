@@ -21,10 +21,12 @@ var (
 
 	// ErrAuthNotMatch -
 	ErrAuthNotMatch = errors.New("login email or password is not correct")
+	// ErrTokenEmpty -
+	ErrTokenEmpty = errors.New("token is empty")
 	// ErrTokenExpired -
 	ErrTokenExpired = errors.New("token is expired")
-	// ErrTokenIsInvalid -
-	ErrTokenIsInvalid = errors.New("token is invalid")
+	// ErrTokenInvalid -
+	ErrTokenInvalid = errors.New("token is invalid")
 	// ErrActionNotAllowed -
 	ErrActionNotAllowed = errors.New("action is not allowed")
 )

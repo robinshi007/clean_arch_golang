@@ -32,8 +32,14 @@ func NewAccountUseCase(
 }
 
 func (au *accountUsecase) GetAll(ctx context.Context, num int64) ([]*out.Account, error) {
-	accounts, err := au.repo.GetAll(ctx, &repository.AccountListOptions{})
-	time.Sleep(3 * time.Second)
+	accounts, err := au.repo.GetAll(ctx, &repository.AccountListOptions{
+		"",
+		&repository.LimitOffset{
+			Limit:  50,
+			Offset: 0,
+		},
+	})
+	//time.Sleep(3 * time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +100,7 @@ func (au *accountUsecase) Create(ctx context.Context, input *in.NewAccount) (out
 
 	res, err := au.repo.Create(ctx, &model.UserAccount{
 		Email:    input.Email,
+		Name:     input.Name,
 		Password: PasswordHash,
 	})
 	if err != nil {
@@ -103,7 +110,7 @@ func (au *accountUsecase) Create(ctx context.Context, input *in.NewAccount) (out
 	return out.ID(id), err
 }
 
-func (au *accountUsecase) UpdatePassword(ctx context.Context, input *in.EditAccount) (*out.Account, error) {
+func (au *accountUsecase) Update(ctx context.Context, input *in.EditAccount) (*out.Account, error) {
 
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
@@ -118,16 +125,50 @@ func (au *accountUsecase) UpdatePassword(ctx context.Context, input *in.EditAcco
 	}
 
 	// check is dirty
-	if account.Password == input.Password {
+	if account.Name == input.Name {
 		return nil, model.ErrEntityNotChanged
 	}
 	accountNew, err := au.repo.Update(ctx, &model.UserAccount{
-		UID:      account.UID,
-		Password: input.Password,
+		UID:  account.UID,
+		Name: input.Name,
 	})
 	if err != nil {
 		return nil, err
 	}
+	accountNew.Email = account.Email
+	return au.pre.ViewAccount(ctx, accountNew), nil
+}
+func (au *accountUsecase) UpdatePassword(ctx context.Context, input *in.EditAccountPassword) (*out.Account, error) {
+
+	if err := in.Validate(input); err != nil {
+		return nil, model.ErrEntityBadInput
+	}
+	id, err := strconv.ParseInt(input.ID, 10, 64)
+	if err != nil {
+		return nil, model.ErrEntityBadInput
+	}
+	account, err := au.repo.GetByID(context.Background(), id)
+	if err != nil {
+		return nil, model.ErrEntityNotFound
+	}
+
+	passwordHash, err := util.HashPassword(input.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	// check is dirty
+	if account.Password == passwordHash {
+		return nil, model.ErrEntityNotChanged
+	}
+	accountNew, err := au.repo.UpdatePassword(ctx, &model.UserAccount{
+		UID:      account.UID,
+		Password: passwordHash,
+	})
+	if err != nil {
+		return nil, err
+	}
+	accountNew.Name = account.Name
 	accountNew.Email = account.Email
 	return au.pre.ViewAccount(ctx, accountNew), nil
 }
@@ -137,10 +178,13 @@ func (au *accountUsecase) Delete(ctx context.Context, input *in.FetchAccount) er
 	if err != nil {
 		return model.ErrEntityBadInput
 	}
-
 	id, err := in.ToID(input.ID)
 	if err != nil {
 		return err
+	}
+	// ignore super admin user
+	if id == 1 {
+		return model.ErrEntityNotFound
 	}
 	return au.repo.Delete(ctx, id)
 }

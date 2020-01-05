@@ -92,11 +92,20 @@ func NewTokenExpiredError() *Error {
 	}
 }
 
+// NewTokenEmptyError -
+func NewTokenEmptyError() *Error {
+	return &Error{
+		Status:  http.StatusUnauthorized,
+		Code:    "203",
+		Message: "Token Is Empty",
+	}
+}
+
 // NewUnauthorizedError -
 func NewUnauthorizedError() *Error {
 	return &Error{
 		Status:  http.StatusUnauthorized,
-		Code:    "203",
+		Code:    "204",
 		Message: "The Action is Unauthorized",
 	}
 }
@@ -105,7 +114,7 @@ func NewUnauthorizedError() *Error {
 func NewForbiddenError() *Error {
 	return &Error{
 		Status:  http.StatusForbidden,
-		Code:    "204",
+		Code:    "205",
 		Message: "The Action Is Not Allowed",
 	}
 }
@@ -128,79 +137,39 @@ func NewUnsupportedMediaTypeError() *Error {
 	}
 }
 
-// GetError -
-func GetErrorResponse(code string) *Error {
-	switch code {
-	// common error
-	case "101":
-		return NewBadReqeustError()
-	case "102":
-		return NewNotFoundError()
-	case "103":
-		return NewNotChangedError()
-	case "104":
-		return NewConflictError()
-	case "105":
-		return NewInternalServerError()
-	case "106":
-		return NewRouteNotFound()
-	case "107":
-		return NewMethodNotAllowed()
+// ErrorResponseMap -
+var ErrorResponseMap = map[string]*Error{
+	"101": NewBadReqeustError(),
+	"102": NewNotFoundError(),
+	"103": NewNotChangedError(),
+	"104": NewConflictError(),
+	"105": NewInternalServerError(),
+	"106": NewRouteNotFound(),
+	"107": NewMethodNotAllowed(),
 
 	// auth and permisson error
-	case "201":
-		return NewLoginError()
-	case "202":
-		return NewTokenExpiredError()
-	case "203":
-		return NewUnauthorizedError()
-	case "204":
-		return NewForbiddenError()
+	"201": NewLoginError(),
+	"202": NewTokenExpiredError(),
+	"203": NewTokenEmptyError(),
+	"204": NewUnauthorizedError(),
+	"205": NewForbiddenError(),
 
 	// misc error
-	case "901":
-		return NewRequestTimeoutError()
-	case "902":
-		return NewUnsupportedMediaTypeError()
+	"901": NewRequestTimeoutError(),
+	"902": NewUnsupportedMediaTypeError(),
+}
 
-	default:
-		return NewInternalServerError()
+// GetErrorResponse -
+func GetErrorResponse(code string) *Error {
+	val, ok := ErrorResponseMap[code]
+	if ok == true {
+		return val
 	}
+	// default error response
+	return ErrorResponseMap["105"]
 }
 
 // GetHTTPStatus -
 func GetHTTPStatus(code string) int {
-	switch code {
-	case "101":
-		return http.StatusBadRequest
-	case "102":
-		return http.StatusNotFound
-	case "103":
-		return http.StatusNotModified
-	case "104":
-		return http.StatusConflict
-	case "105":
-		return http.StatusInternalServerError
-	case "106":
-		return http.StatusNotFound
-	case "107":
-		return http.StatusMethodNotAllowed
-
-	case "201":
-		return http.StatusUnauthorized
-	case "202":
-		return http.StatusUnauthorized
-	case "203":
-		return http.StatusUnauthorized
-	case "204":
-		return http.StatusForbidden
-
-	case "901":
-		return http.StatusRequestTimeout
-	case "902":
-		return http.StatusUnsupportedMediaType
-
-	default:
-		return http.StatusInternalServerError
-	}
+	return GetErrorResponse(code).Status
 }

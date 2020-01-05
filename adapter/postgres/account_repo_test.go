@@ -56,11 +56,20 @@ func TestAccountCRUD(t *testing.T) {
 		t.Errorf("ProfileRepo.GetAll() return %d account, expected %d", len(profiles), expectedCount)
 	}
 
-	expectedPass = "Hello world!"
-	account, err = ar.Update(ctx, &model.UserAccount{UID: accountID, Password: expectedPass})
-	if account.Password != expectedPass {
-		t.Errorf("AccountRepo.Update() return account with password %s , expected %s", account.Password, expectedPass)
+	expectedName := "Great!"
+	_, err = ar.Update(ctx, &model.UserAccount{UID: accountID, Name: expectedName})
+	accountNameNew, err := ar.GetByID(ctx, accountID)
+	if accountNameNew.Name != expectedName {
+		t.Errorf("AccountRepo.Update() return account with name %s , expected %s", accountNameNew.Name, expectedName)
 	}
+
+	expectedPassNew := "Hello world!"
+	_, err = ar.UpdatePassword(ctx, &model.UserAccount{UID: accountID, Password: expectedPassNew})
+	accountPassNew, err := ar.GetByID(ctx, accountID)
+	if accountPassNew.Password != expectedPassNew {
+		t.Errorf("AccountRepo.Update() return account with password %s , expected %s", accountPassNew.Password, expectedPassNew)
+	}
+
 	_, err = ar.Create(ctx, &model.UserAccount{Email: "Hello Again", Password: "pass"})
 	accounts, err = ar.GetAll(ctx, &repository.AccountListOptions{})
 	expectedCount = 2

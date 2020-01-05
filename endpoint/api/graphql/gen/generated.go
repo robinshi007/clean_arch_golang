@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -47,17 +48,21 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Account struct {
-		Email func(childComplexity int) int
-		ID    func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		Email     func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
 	}
 
 	Mutation struct {
-		CreateAccount func(childComplexity int, input in.NewAccount) int
-		CreateUser    func(childComplexity int, input in.NewUser) int
-		DeleteAccount func(childComplexity int, input in.FetchAccount) int
-		DeleteUser    func(childComplexity int, input in.FetchUser) int
-		UpdateAccount func(childComplexity int, input in.EditAccount) int
-		UpdateUser    func(childComplexity int, input in.EditUser) int
+		CreateAccount         func(childComplexity int, input in.NewAccount) int
+		CreateUser            func(childComplexity int, input in.NewUser) int
+		DeleteAccount         func(childComplexity int, input in.FetchAccount) int
+		DeleteUser            func(childComplexity int, input in.FetchUser) int
+		UpdateAccount         func(childComplexity int, input in.EditAccount) int
+		UpdateAccountPassword func(childComplexity int, input in.EditAccountPassword) int
+		UpdateUser            func(childComplexity int, input in.EditUser) int
 	}
 
 	Query struct {
@@ -84,6 +89,7 @@ type MutationResolver interface {
 	DeleteUser(ctx context.Context, input in.FetchUser) (*out.User, error)
 	CreateAccount(ctx context.Context, input in.NewAccount) (*out.Account, error)
 	UpdateAccount(ctx context.Context, input in.EditAccount) (*out.Account, error)
+	UpdateAccountPassword(ctx context.Context, input in.EditAccountPassword) (*out.Account, error)
 	DeleteAccount(ctx context.Context, input in.FetchAccount) (*out.Account, error)
 }
 type QueryResolver interface {
@@ -114,6 +120,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Account.created_at":
+		if e.complexity.Account.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Account.CreatedAt(childComplexity), true
+
 	case "Account.email":
 		if e.complexity.Account.Email == nil {
 			break
@@ -127,6 +140,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Account.ID(childComplexity), true
+
+	case "Account.name":
+		if e.complexity.Account.Name == nil {
+			break
+		}
+
+		return e.complexity.Account.Name(childComplexity), true
+
+	case "Account.updated_at":
+		if e.complexity.Account.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Account.UpdatedAt(childComplexity), true
 
 	case "Mutation.createAccount":
 		if e.complexity.Mutation.CreateAccount == nil {
@@ -187,6 +214,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateAccount(childComplexity, args["input"].(in.EditAccount)), true
+
+	case "Mutation.updateAccountPassword":
+		if e.complexity.Mutation.UpdateAccountPassword == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateAccountPassword_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateAccountPassword(childComplexity, args["input"].(in.EditAccountPassword)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -330,20 +369,30 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var parsedSchema = gqlparser.MustLoadSchema(
 	&ast.Source{Name: "schema/account.graphql", Input: `type Account {
   id: ID!
+  name: String!
   email: String!
+  created_at: Time!
+  updated_at: Time!
 }
 
 input NewAccount{
   email: String!
+  name: String!
   password: String!
 }
 input EditAccount{
+  id: ID!
+  name: String!
+}
+input EditAccountPassword{
   id: ID!
   password: String!
 }
 input FetchAccount{
   id: ID!
 }
+
+scalar Time
 `},
 	&ast.Source{Name: "schema/common.graphql", Input: `
 type Query {
@@ -360,6 +409,7 @@ type Mutation {
 
   createAccount(input: NewAccount!): Account!
   updateAccount(input: EditAccount!): Account!
+  updateAccountPassword(input: EditAccountPassword!): Account!
   deleteAccount(input: FetchAccount!): Account!
 }
 `},
@@ -435,6 +485,20 @@ func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, 
 	var arg0 in.FetchUser
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNFetchUser2clean_archᚋdomainᚋusecaseᚋinᚐFetchUser(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateAccountPassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 in.EditAccountPassword
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNEditAccountPassword2clean_archᚋdomainᚋusecaseᚋinᚐEditAccountPassword(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -586,6 +650,43 @@ func (ec *executionContext) _Account_id(ctx context.Context, field graphql.Colle
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Account_name(ctx context.Context, field graphql.CollectedField, obj *out.Account) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Account",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Account_email(ctx context.Context, field graphql.CollectedField, obj *out.Account) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
@@ -621,6 +722,80 @@ func (ec *executionContext) _Account_email(ctx context.Context, field graphql.Co
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Account_created_at(ctx context.Context, field graphql.CollectedField, obj *out.Account) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Account",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Account_updated_at(ctx context.Context, field graphql.CollectedField, obj *out.Account) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Account",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -826,6 +1001,50 @@ func (ec *executionContext) _Mutation_updateAccount(ctx context.Context, field g
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().UpdateAccount(rctx, args["input"].(in.EditAccount))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*out.Account)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNAccount2ᚖclean_archᚋdomainᚋusecaseᚋoutᚐAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateAccountPassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateAccountPassword_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateAccountPassword(rctx, args["input"].(in.EditAccountPassword))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2435,6 +2654,30 @@ func (ec *executionContext) unmarshalInputEditAccount(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputEditAccountPassword(ctx context.Context, obj interface{}) (in.EditAccountPassword, error) {
+	var it in.EditAccountPassword
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "password":
 			var err error
 			it.Password, err = ec.unmarshalNString2string(ctx, v)
@@ -2519,6 +2762,12 @@ func (ec *executionContext) unmarshalInputNewAccount(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "password":
 			var err error
 			it.Password, err = ec.unmarshalNString2string(ctx, v)
@@ -2582,8 +2831,23 @@ func (ec *executionContext) _Account(ctx context.Context, sel ast.SelectionSet, 
 				}
 				return res
 			})
+		case "name":
+			out.Values[i] = ec._Account_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "email":
 			out.Values[i] = ec._Account_email(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "created_at":
+			out.Values[i] = ec._Account_created_at(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "updated_at":
+			out.Values[i] = ec._Account_updated_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -2635,6 +2899,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "updateAccount":
 			out.Values[i] = ec._Mutation_updateAccount(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateAccountPassword":
+			out.Values[i] = ec._Mutation_updateAccountPassword(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3123,6 +3392,10 @@ func (ec *executionContext) unmarshalNEditAccount2clean_archᚋdomainᚋusecase�
 	return ec.unmarshalInputEditAccount(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNEditAccountPassword2clean_archᚋdomainᚋusecaseᚋinᚐEditAccountPassword(ctx context.Context, v interface{}) (in.EditAccountPassword, error) {
+	return ec.unmarshalInputEditAccountPassword(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNEditUser2clean_archᚋdomainᚋusecaseᚋinᚐEditUser(ctx context.Context, v interface{}) (in.EditUser, error) {
 	return ec.unmarshalInputEditUser(ctx, v)
 }
@@ -3163,6 +3436,20 @@ func (ec *executionContext) unmarshalNString2string(ctx context.Context, v inter
 
 func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	return graphql.UnmarshalTime(v)
+}
+
+func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	res := graphql.MarshalTime(v)
 	if res == graphql.Null {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")

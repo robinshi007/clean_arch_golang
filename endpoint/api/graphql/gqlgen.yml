@@ -28,6 +28,8 @@ models:
     model: clean_arch/domain/usecase/in.NewAccount
   EditAccount:
     model: clean_arch/domain/usecase/in.EditAccount
+  EditAccountPassword:
+    model: clean_arch/domain/usecase/in.EditAccountPassword
   FetchAccount:
     model: clean_arch/domain/usecase/in.FetchAccount
 autobind: []

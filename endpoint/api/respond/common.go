@@ -54,10 +54,12 @@ func GetErrorCode(err error) string {
 			code = "201"
 		case errors.Is(err, model.ErrTokenExpired):
 			code = "202"
-		case errors.Is(err, model.ErrTokenIsInvalid):
+		case errors.Is(err, model.ErrTokenEmpty):
 			code = "203"
-		case errors.Is(err, model.ErrActionNotAllowed):
+		case errors.Is(err, model.ErrTokenInvalid):
 			code = "204"
+		case errors.Is(err, model.ErrActionNotAllowed):
+			code = "205"
 		default:
 			code = "103"
 		}

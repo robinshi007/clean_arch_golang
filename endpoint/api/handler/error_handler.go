@@ -46,7 +46,6 @@ func (e *ErrorHandler) Recoverer(next http.Handler) http.Handler {
 				//				debug.PrintStack()
 
 				e.rsp.Error(w, model.ErrInternalServerError)
-				// http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			}
 		}()
 

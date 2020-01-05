@@ -32,8 +32,11 @@ func (u accountPresenter) ViewAccountID(ctx context.Context, account *model.User
 // ViewAccount -
 func (u accountPresenter) ViewAccount(ctx context.Context, account *model.UserAccount) *out.Account {
 	return &out.Account{
-		ID:    account.UID,
-		Email: account.Email,
+		ID:        account.UID,
+		Name:      account.Name,
+		Email:     account.Email,
+		CreatedAt: account.CreatedAt,
+		UpdatedAt: account.UpdatedAt,
 	}
 }
 
@@ -42,8 +45,11 @@ func (u accountPresenter) ViewAccounts(ctx context.Context, accounts []*model.Us
 	res := make([]*out.Account, len(accounts))
 	for i, account := range accounts {
 		res[i] = &out.Account{
-			ID:    account.UID,
-			Email: account.Email,
+			ID:        account.UID,
+			Name:      account.Name,
+			Email:     account.Email,
+			CreatedAt: account.CreatedAt,
+			UpdatedAt: account.UpdatedAt,
 		}
 	}
 	return res

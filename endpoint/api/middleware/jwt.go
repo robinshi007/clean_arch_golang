@@ -3,7 +3,6 @@ package middleware
 import (
 	"clean_arch/domain/model"
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -38,28 +37,37 @@ var (
 	ErrorCtxKey = &contextKey{"Error"}
 )
 
+// TokenInfo -
+type TokenInfo struct {
+	Token     string `json:"token"`
+	ExpiresAt int64  `json:"expiresAt"`
+}
+
 // GenerateToken -
-func GenerateToken(email string) (string, error) {
-	expireAt := time.Now().Add(60 * time.Minute)
+func GenerateToken(email string) (TokenInfo, error) {
+	expiresAt := time.Now().Add(30 * time.Minute)
 	issuedBy := "nobody"
 
 	// define payload
 	claim := AccountClaims{
 		email,
 		jwt.StandardClaims{
-			ExpiresAt: expireAt.Unix(),
+			ExpiresAt: expiresAt.Unix(),
 			Issuer:    issuedBy,
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	ss, err := token.SignedString([]byte(jwtKey))
-	return ss, err
+	return TokenInfo{ss, expiresAt.Unix()}, err
 
 }
 
 // ParseToken -
 func ParseToken(ss string) (*jwt.Token, *AccountClaims, error) {
+	if ss == "" {
+		return nil, nil, model.ErrTokenEmpty
+	}
 
 	// parse payload
 	token, err := jwt.ParseWithClaims(ss, &AccountClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -71,9 +79,14 @@ func ParseToken(ss string) (*jwt.Token, *AccountClaims, error) {
 		if claim, ok := token.Claims.(*AccountClaims); ok && token.Valid {
 			return token, claim, nil
 		}
-		return nil, nil, model.ErrTokenIsInvalid
+		return nil, nil, model.ErrTokenInvalid
 	}
-	return nil, nil, model.ErrTokenIsInvalid
+
+	v, _ := err.(*jwt.ValidationError)
+	if v.Errors == jwt.ValidationErrorExpired {
+		return nil, nil, model.ErrTokenExpired
+	}
+	return nil, nil, model.ErrTokenInvalid
 }
 
 // NewContext -
@@ -91,7 +104,7 @@ func FromContext(ctx context.Context) (*jwt.Token, *AccountClaims, error) {
 		if tokenClaims, ok := token.Claims.(*AccountClaims); ok {
 			claims = tokenClaims
 		} else {
-			return nil, nil, errors.New(fmt.Sprintf("jwt: unknown type of Claims: %T", token.Claims))
+			return nil, nil, fmt.Errorf("jwt: unknown type of Claims: %s", token.Claims)
 		}
 	} else {
 		claims = &AccountClaims{}
@@ -104,26 +117,9 @@ func FromContext(ctx context.Context) (*jwt.Token, *AccountClaims, error) {
 func TokenFromHTTPRequest(r *http.Request) string {
 	reqToken := r.Header.Get("Authorization")
 	var tokenString string
-	splitToken := strings.Split(reqToken, "Bearer ")
-	if len(splitToken) > 1 {
-		tokenString = splitToken[1]
+	splitToken := strings.Split(reqToken, "Bearer")
+	if len(splitToken) == 2 {
+		tokenString = strings.TrimSpace(splitToken[1])
 	}
-	//fmt.Println("tokenString", tokenString)
 	return tokenString
-}
-
-// JWTVerify - check token and put claims into context
-func JWTVerify() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		hfn := func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-
-			//token, err := VerifyRequest(ja, r, findTokenFns...)
-			tokenString := TokenFromHTTPRequest(r)
-			token, _, err := ParseToken(tokenString)
-			newCtx := NewContext(ctx, token, err)
-			next.ServeHTTP(w, r.WithContext(newCtx))
-		}
-		return http.HandlerFunc(hfn)
-	}
 }

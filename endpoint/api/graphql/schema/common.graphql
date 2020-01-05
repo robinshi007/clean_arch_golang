@@ -13,5 +13,6 @@ type Mutation {
 
   createAccount(input: NewAccount!): Account!
   updateAccount(input: EditAccount!): Account!
+  updateAccountPassword(input: EditAccountPassword!): Account!
   deleteAccount(input: FetchAccount!): Account!
 }

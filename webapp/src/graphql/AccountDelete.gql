@@ -1,0 +1,7 @@
+mutation deleteAccount($id: ID!){
+  deleteAccount(input: { id: $id}){
+    id
+    name
+    email
+  }
+}
