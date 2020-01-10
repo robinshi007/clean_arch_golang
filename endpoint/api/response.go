@@ -12,6 +12,22 @@ type Response struct {
 	Errors   []*out.Error `json:"errors" msgpack:"errors"`
 }
 
+// GraphQLResponse -
+type GraphQLResponse struct {
+	Data   interface{}         `json:"data" msgpack:"data"`
+	Errors []*out.GraphQLError `json:"errors" msgpack:"errors"`
+}
+
+// NewResponse -
+func NewResponse(res interface{}) *Response {
+	return &Response{
+		Success:  true,
+		Data:     res,
+		Messages: []string{},
+		Errors:   []*out.Error{},
+	}
+}
+
 // NewErrorResponse -
 func NewErrorResponse(code string) *Response {
 	return &Response{
@@ -23,12 +39,15 @@ func NewErrorResponse(code string) *Response {
 	}
 }
 
-// NewResponse -
-func NewResponse(res interface{}) *Response {
-	return &Response{
-		Success:  true,
-		Data:     res,
-		Messages: []string{},
-		Errors:   []*out.Error{},
+// NewGraphQLErrorResponse -
+func NewGraphQLErrorResponse(message, path string) *GraphQLResponse {
+	return &GraphQLResponse{
+		Errors: []*out.GraphQLError{
+			&out.GraphQLError{
+				Message: message,
+				Path:    []string{path},
+			},
+		},
+		Data: nil,
 	}
 }

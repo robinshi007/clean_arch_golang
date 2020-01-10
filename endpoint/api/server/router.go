@@ -5,11 +5,13 @@ import (
 	"time"
 
 	gqlhandler "github.com/99designs/gqlgen/handler"
+	"github.com/casbin/casbin"
 	"github.com/go-chi/chi"
-	chiMiddleware "github.com/go-chi/chi/middleware"
+	chiMW "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 
 	"clean_arch/endpoint/api/handler"
+	mw "clean_arch/endpoint/api/middleware"
 	"clean_arch/infra"
 	"clean_arch/registry"
 )
@@ -18,6 +20,7 @@ import (
 func NewRouter(db infra.DB) http.Handler {
 
 	// middlewares
+	// cors
 	cors := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
@@ -28,19 +31,33 @@ func NewRouter(db infra.DB) http.Handler {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	})
 
+	// casbin
+	e := casbin.NewEnforcer("./config/casbin_model.conf")
+	// Having public access for feching schema
+	e.AddPolicy("public", "__schema", mw.ActionQuery)
+	// Alice just has access to foo query
+	e.AddPolicy("admin@test.com", "accounts", mw.ActionQuery)
+	e.AddPolicy("admin@test.com", "fetchAccount", mw.ActionQuery)
+	e.AddPolicy("admin@test.com", "createAccount", mw.ActionMutation)
+	e.AddPolicy("admin@test.com", "updateAccount", mw.ActionMutation)
+	e.AddPolicy("admin@test.com", "deleteAccount", mw.ActionMutation)
+
+	// admin have access to public resources
+	e.AddGroupingPolicy("admin@test.com", "public")
+
 	// handlers
 	//uHanlder := handler.NewUserHandler()
 	eHandler := handler.NewErrorHandler()
-	aHandler := handler.NewAccountHandler()
+	//aHandler := handler.NewAccountHandler()
 	auHandler := handler.NewAuthHandler()
 
 	r := chi.NewRouter()
-	//	r.Use(chiMiddleware.RequestID)
-	//	r.Use(chiMiddleware.RealIP)
-	r.Use(chiMiddleware.Logger)
-	//r.Use(chiMiddleware.Recoverer)
+	//	r.Use(chiMW.RequestID)
+	//	r.Use(chiMW.RealIP)
+	r.Use(chiMW.Logger)
+	//r.Use(chiMW.Recoverer)
 	r.Use(eHandler.Recoverer)
-	r.Use(chiMiddleware.Timeout(10 * time.Second))
+	r.Use(chiMW.Timeout(10 * time.Second))
 	r.Use(cors.Handler)
 
 	// for test only
@@ -52,22 +69,16 @@ func NewRouter(db infra.DB) http.Handler {
 		r.Mount("/play", gqlhandler.Playground("GraphQL Playground", "/api/v1/graphql"))
 	}
 
-	//	r.Post("/login", auHandler.Login)
-	//	r.Route("/", func(rt chi.Router) {
-	//		rt.Use(mw.JWTVerify())
-	//		rt.Mount("/auth", auHandler.JWTAuthenticator(handler.NewAuthRouter(auHandler)))
-	//	})
-
 	// for api use
 	r.Route("/api/v1", func(rt chi.Router) {
-		rt.Use(auHandler.JWTVerify())
+		rt.Use(mw.JWTVerify())
 		// for login
 		rt.Post("/auth/login", auHandler.Login)
 		// for refresh token
-		rt.Mount("/auth", auHandler.JWTAuthenticator(handler.NewAuthRouter(auHandler)))
+		rt.Mount("/auth", mw.New(mw.JWTAuthenticator).Then(handler.NewAuthRouter(auHandler)))
 		//rt.Mount("/user", handler.NewUserRouter(uHanlder))
-		rt.Mount("/accounts", auHandler.JWTAuthenticator(handler.NewAccountRouter(aHandler)))
-		rt.Mount("/graphql", auHandler.JWTAuthenticator(handler.GraphQLHandler()))
+		//rt.Mount("/accounts", mw.New(mw.JWTAuthenticator).Then(handler.NewAccountRouter(aHandler)))
+		rt.Mount("/graphql", mw.New(mw.JWTAuthenticator, mw.WithAuthorization(e)).Then(handler.GraphQLHandler()))
 		//rt.Mount("/graphql", handler.GraphQLHandler())
 
 	})

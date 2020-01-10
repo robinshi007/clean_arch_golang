@@ -39,7 +39,7 @@ func NewAuthHandler() *AuthHandler {
 // AuthHandler -
 type AuthHandler struct {
 	uc  usecase.AccountUsecase
-	rsp api.Respond
+	rsp api.Responder
 }
 
 // Login -
@@ -47,13 +47,13 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	// clean the cookie
 	account := in.LoginAccountByEmail{}
 	a.rsp.Decode(r.Body, &account)
-	isMatched, err := a.uc.Login(r.Context(), &account)
+	isMatched, name, err := a.uc.Login(r.Context(), &account)
 	if err != nil {
 		a.rsp.Error(w, err)
 	} else if !isMatched {
 		a.rsp.Error(w, model.ErrAuthNotMatch)
 	} else {
-		tokenInfo, err := middleware.GenerateToken(account.Email)
+		tokenInfo, err := middleware.GenerateToken(account.Email, name)
 		if err != nil {
 			a.rsp.Error(w, err)
 		}
@@ -64,7 +64,7 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 // RefreshToken -
 func (a *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
-	_, claim, err := middleware.FromContext(r.Context())
+	_, claim, err := middleware.FromJWTContext(r.Context())
 	if err != nil {
 		a.rsp.Error(w, err)
 		return
@@ -73,7 +73,7 @@ func (a *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	// refresh time to 20S
 	if (claim.ExpiresAt - time.Now().Unix()) < 5*60 {
 		// generate new jwt token and set cookie
-		tokenInfo, err := middleware.GenerateToken(claim.Email)
+		tokenInfo, err := middleware.GenerateToken(claim.Email, claim.Name)
 		if err != nil {
 			a.rsp.Error(w, err)
 			return
@@ -83,39 +83,4 @@ func (a *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 	a.rsp.OK(w, "token is no need to refresh")
 	return
-}
-
-// JWTVerify - check token and put claims into context
-func (a *AuthHandler) JWTVerify() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		hfn := func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-
-			//token, err := VerifyRequest(ja, r, findTokenFns...)
-			tokenString := middleware.TokenFromHTTPRequest(r)
-			token, _, err := middleware.ParseToken(tokenString)
-			newCtx := middleware.NewContext(ctx, token, err)
-			next.ServeHTTP(w, r.WithContext(newCtx))
-		}
-		return http.HandlerFunc(hfn)
-	}
-}
-
-// JWTAuthenticator - a authentication middleware to enforce access from the
-// Verifier middleware request context values. The Authenticator sends a 401 Unauthorized
-// response for any unverified tokens and passes the good ones through.
-func (a *AuthHandler) JWTAuthenticator(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _, err := middleware.FromContext(r.Context())
-
-		if err != nil {
-			a.rsp.Error(w, err)
-			return
-		}
-
-		// load user info according to claims info
-
-		// Token is authenticated, pass it through
-		next.ServeHTTP(w, r)
-	})
 }

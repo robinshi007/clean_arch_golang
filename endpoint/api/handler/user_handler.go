@@ -41,7 +41,7 @@ func NewUserHandler() *UserHandler {
 // UserHandler -
 type UserHandler struct {
 	uc  usecase.UserUsecase
-	rsp api.Respond
+	rsp api.Responder
 }
 
 // GetAll the post data

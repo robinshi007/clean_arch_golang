@@ -16,5 +16,5 @@ type AccountUsecase interface {
 	Update(ctx context.Context, input *in.EditAccount) (*out.Account, error)
 	UpdatePassword(ctx context.Context, input *in.EditAccountPassword) (*out.Account, error)
 	Delete(ctx context.Context, input *in.FetchAccount) error
-	Login(ctx context.Context, input *in.LoginAccountByEmail) (bool, error)
+	Login(ctx context.Context, input *in.LoginAccountByEmail) (bool, string, error)
 }

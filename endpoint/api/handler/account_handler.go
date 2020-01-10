@@ -42,7 +42,7 @@ func NewAccountHandler() *AccountHandler {
 // AccountHandler -
 type AccountHandler struct {
 	uc  usecase.AccountUsecase
-	rsp api.Respond
+	rsp api.Responder
 }
 
 // GetAll the post data

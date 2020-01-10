@@ -189,16 +189,16 @@ func (au *accountUsecase) Delete(ctx context.Context, input *in.FetchAccount) er
 	return au.repo.Delete(ctx, id)
 }
 
-func (au *accountUsecase) Login(ctx context.Context, input *in.LoginAccountByEmail) (bool, error) {
+func (au *accountUsecase) Login(ctx context.Context, input *in.LoginAccountByEmail) (bool, string, error) {
 
 	if err := in.Validate(input); err != nil {
-		return false, model.ErrEntityBadInput
+		return false, "", model.ErrEntityBadInput
 	}
 
 	account, err := au.repo.GetByEmail(ctx, input.Email)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	result := util.ComparePassword(input.Password, account.Password)
-	return result, nil
+	return result, account.Name, nil
 }

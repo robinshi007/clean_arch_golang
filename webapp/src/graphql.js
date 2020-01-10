@@ -92,9 +92,10 @@ export function createProvider(options = {}) {
         console.log(
           '%cError',
           'background: red; color: white; padding: 2px 4px; border-radius: 3px; font-weight: bold;',
-          type, key, vm.$el,
-          error.message, '\n\n',
-          options.query, '\n',
+          type, key,
+          // vm.$el, '\n',
+          error.message, '\n',
+          opts.query, '\n',
           opts,
         );
       }

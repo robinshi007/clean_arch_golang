@@ -46,6 +46,12 @@ func (r *RespondMsgpack) Error(w http.ResponseWriter, err error) {
 	r.respondError(w, out.GetHTTPStatus(code), api.NewErrorResponse(code))
 }
 
+// GraphQLError - return error message
+func (r *RespondMsgpack) GraphQLError(w http.ResponseWriter, code int,
+	message string, path string) {
+	r.respondError(w, code, api.NewGraphQLErrorResponse(message, path))
+}
+
 // Decode -
 func (r *RespondMsgpack) Decode(input io.Reader, v interface{}) error {
 	// convert io.Reader to []byte

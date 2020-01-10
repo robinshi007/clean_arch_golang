@@ -19,7 +19,7 @@ func NewErrorHandler() *ErrorHandler {
 
 // ErrorHandler -
 type ErrorHandler struct {
-	rsp api.Respond
+	rsp api.Responder
 }
 
 // RouteNotFound -

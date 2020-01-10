@@ -9,11 +9,13 @@ export default new Vuex.Store({
   state: {
     status: '',
     email: localStorage.getItem('email') || '',
+    name: localStorage.getItem('name') || '',
     token: localStorage.getItem('token') || '',
     token_expires_at: localStorage.getItem('token_expires_at') || '',
   },
   getters: {
     email: state => state.email,
+    name: state => state.name,
     isLoggedIn: state => !!state.token && (+state.token_expires_at > (Date.now() / 1000)),
     tokenExpiresAt: state => +state.token_expires_at,
   },
@@ -24,18 +26,22 @@ export default new Vuex.Store({
     auth_success(state, data) {
       state.status = 'login success';
       state.email = data.email;
+      state.name = data.name;
       state.token = data.token;
       state.token_expires_at = data.expiresAt;
       localStorage.setItem('email', state.email);
+      localStorage.setItem('name', state.name);
       localStorage.setItem('token', state.token);
       localStorage.setItem('token_expires_at', state.token_expires_at);
     },
     auth_error(state) {
       state.status = 'login error';
       state.email = '';
+      state.name = '';
       state.token = '';
       state.token_expires_at = '';
       localStorage.removeItem('email');
+      localStorage.removeItem('name');
       localStorage.removeItem('token');
       localStorage.removeItem('token_expires_at');
     },
@@ -51,7 +57,9 @@ export default new Vuex.Store({
       state.token = '';
       state.token_expires_at = '';
       state.email = '';
+      state.name = '';
       localStorage.removeItem('email');
+      localStorage.removeItem('name');
       localStorage.removeItem('token');
       localStorage.removeItem('token_expires_at');
     },
@@ -61,8 +69,10 @@ export default new Vuex.Store({
       commit('auth_request');
       return Vue.axios.post('/api/v1/auth/login', data).then((response) => {
         if (response.data.success) {
-          const { token, expiresAt } = response.data.data;
-          commit('auth_success', { email: data.email, token, expiresAt });
+          const { name, token, expiresAt } = response.data.data;
+          commit('auth_success', {
+            name, email: data.email, token, expiresAt,
+          });
           Vue.axios.defaults.headers.common.Authorization = `Bearer ${token}`;
           const postData = response.data;
           // add redirect info

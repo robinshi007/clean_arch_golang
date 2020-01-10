@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/99designs/gqlgen v0.10.1
 	github.com/ajg/form v1.5.1 // indirect
+	github.com/casbin/casbin v1.9.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
 	github.com/fatih/structs v1.1.0 // indirect

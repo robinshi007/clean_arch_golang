@@ -56,7 +56,7 @@
       v-model="confirm"
       persistent
     >
-      <q-card style="min-width: 450px">
+      <q-card style="min-width: 450px" class="q-pa-sm">
         <q-card-section>
           <div class="text-h6">Delete</div>
         </q-card-section>
@@ -68,8 +68,10 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn unelevated label="Delete" color="red" @click="onDelete()" v-close-popup/>
+          <div class="q-gutter-md">
+            <q-btn flat label="Cancel" color="primary" v-close-popup />
+            <q-btn unelevated label="Delete" color="red" @click="onDelete()" v-close-popup/>
+          </div>
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -77,8 +79,8 @@
 </template>
 
 <script>
-import ACCOUNTS from '@/graphql/Accounts.gql';
-import ACCOUNT_DELETE from '@/graphql/AccountDelete.gql';
+import ADMIN_ACCOUNTS from '@/graphql/Accounts.gql';
+import ADMIN_ACCOUNT_DELETE from '@/graphql/AccountDelete.gql';
 import formatDate from '@/utils/date';
 
 export default {
@@ -144,7 +146,17 @@ export default {
     };
   },
   apollo: {
-    accounts: ACCOUNTS,
+    accounts: {
+      query: ADMIN_ACCOUNTS,
+      error(err) {
+        const { graphQLErrors } = err;
+        if (graphQLErrors && graphQLErrors.some(e => e.message === 'the action is unauthorized')) {
+          this.$q.notify({ message: 'The action "ADMIN_ACCOUNTS" is unauthorized' });
+        }
+        // return 0 to avoid global error handler
+        return 0;
+      },
+    },
   },
   computed: {
   },
@@ -165,7 +177,7 @@ export default {
     },
     onDelete() {
       this.$apollo.mutate({
-        mutation: ACCOUNT_DELETE,
+        mutation: ADMIN_ACCOUNT_DELETE,
         variables: {
           id: this.selectedId,
         },

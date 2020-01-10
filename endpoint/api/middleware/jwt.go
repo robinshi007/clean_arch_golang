@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"clean_arch/domain/model"
 	"context"
 	"fmt"
 	"net/http"
@@ -9,11 +8,15 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+
+	"clean_arch/domain/model"
+	"clean_arch/endpoint/api/globals"
 )
 
 // AccountClaims -
 type AccountClaims struct {
 	Email string `json:"email"`
+	Name  string `json:"name"`
 	jwt.StandardClaims
 }
 
@@ -39,18 +42,20 @@ var (
 
 // TokenInfo -
 type TokenInfo struct {
+	Name      string `json:"name"`
 	Token     string `json:"token"`
 	ExpiresAt int64  `json:"expiresAt"`
 }
 
 // GenerateToken -
-func GenerateToken(email string) (TokenInfo, error) {
+func GenerateToken(email string, name string) (TokenInfo, error) {
 	expiresAt := time.Now().Add(30 * time.Minute)
 	issuedBy := "nobody"
 
 	// define payload
 	claim := AccountClaims{
 		email,
+		name,
 		jwt.StandardClaims{
 			ExpiresAt: expiresAt.Unix(),
 			Issuer:    issuedBy,
@@ -59,7 +64,7 @@ func GenerateToken(email string) (TokenInfo, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	ss, err := token.SignedString([]byte(jwtKey))
-	return TokenInfo{ss, expiresAt.Unix()}, err
+	return TokenInfo{name, ss, expiresAt.Unix()}, err
 
 }
 
@@ -89,15 +94,15 @@ func ParseToken(ss string) (*jwt.Token, *AccountClaims, error) {
 	return nil, nil, model.ErrTokenInvalid
 }
 
-// NewContext -
-func NewContext(ctx context.Context, t *jwt.Token, err error) context.Context {
+// NewJWTContext -
+func NewJWTContext(ctx context.Context, t *jwt.Token, err error) context.Context {
 	ctx = context.WithValue(ctx, TokenCtxKey, t)
 	ctx = context.WithValue(ctx, ErrorCtxKey, err)
 	return ctx
 }
 
-// FromContext -
-func FromContext(ctx context.Context) (*jwt.Token, *AccountClaims, error) {
+// FromJWTContext -
+func FromJWTContext(ctx context.Context) (*jwt.Token, *AccountClaims, error) {
 	token, _ := ctx.Value(TokenCtxKey).(*jwt.Token)
 	var claims *AccountClaims
 	if token != nil {
@@ -122,4 +127,39 @@ func TokenFromHTTPRequest(r *http.Request) string {
 		tokenString = strings.TrimSpace(splitToken[1])
 	}
 	return tokenString
+}
+
+// WithJWTVerify - check token and put claims into context
+func JWTVerify() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		hfn := func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+
+			//token, err := VerifyRequest(ja, r, findTokenFns...)
+			tokenString := TokenFromHTTPRequest(r)
+			token, _, err := ParseToken(tokenString)
+			newCtx := NewJWTContext(ctx, token, err)
+			next.ServeHTTP(w, r.WithContext(newCtx))
+		}
+		return http.HandlerFunc(hfn)
+	}
+}
+
+// JWTAuthenticator - a authentication middleware to enforce access from the
+// Verifier middleware request context values. The Authenticator sends a 401 Unauthorized
+// response for any unverified tokens and passes the good ones through.
+func JWTAuthenticator(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _, err := FromJWTContext(r.Context())
+
+		if err != nil {
+			globals.Respond.Error(w, err)
+			return
+		}
+
+		// load user info according to claims info
+
+		// Token is authenticated, pass it through
+		next.ServeHTTP(w, r)
+	})
 }

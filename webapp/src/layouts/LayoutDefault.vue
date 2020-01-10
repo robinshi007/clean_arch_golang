@@ -16,9 +16,14 @@
 
         <q-space />
           <q-btn flat label="Login" :to="{name: 'auth.login'}" v-if="!isLoggedIn" />
-        <q-btn-dropdown stretch flat :label="email" v-if="isLoggedIn">
+        <q-btn-dropdown stretch flat :label="name" v-if="isLoggedIn">
           <q-list>
-            <q-item tabindex="0" clickable @click="onLogout">
+            <q-item tabindex="0">
+              <q-item-section>
+                <q-item-label>{{email}}</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item tabindex="1" clickable @click="onLogout">
               <q-item-section>
                 <q-item-label>Logout</q-item-label>
               </q-item-section>
@@ -87,6 +92,7 @@ export default {
     ...mapGetters([
       'isLoggedIn',
       'email',
+      'name',
     ]),
   },
   methods: {

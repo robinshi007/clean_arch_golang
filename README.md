@@ -21,14 +21,17 @@ For golang web apps template, with REST, GraphQL and GRPC as access endpoint
 * [done] output model transform and presenter with json/message_pack
 * [done] error handle with golang 1.13 unwrap
 * [done] response format standard
-* [doing] add GraphQL endpoint
-* [doing] error handler(404, 5xx)
+* [done] add GraphQL endpoint
+* [done] error handler(404, 5xx)
 * [done] SQL format library sqlf
 * [done] dbm with SQL expression log
 * [doing] add context for handler, usecase, repository and respond
-* unit test
-* [done] integrite test
-* e2e test
+* [doing] unit testing, integration testing, e2e testing
+* [doing] acceptance testing
+* [done] add graphql error to middleware
+* [doing] full exmaple to redirect service(rest, graphql, grpc, testing, doc, ui)
+* [doing] adpting sqlx and squirrel
+* [doing] add middleware limiter, cors, crsf?, profiler and appdash
 * dev with ticktock
 
 ## Dev Circle

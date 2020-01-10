@@ -26,7 +26,7 @@ var registerOnce sync.Once
 // Open - ConnectDB database
 func (p *pqsql) Open(driverName, dataSourceName string) error {
 	var err error
-	startupTimeout := 10 * time.Second
+	startupTimeout := 5 * time.Second
 	startupDeadline := time.Now().Add(startupTimeout)
 
 	// DB specific before check, e.g. force PostgreSQL session timezone to UTC.
@@ -38,10 +38,9 @@ func (p *pqsql) Open(driverName, dataSourceName string) error {
 		err = p.openDBWithHooks(dataSourceName)
 		if err == nil {
 			err = p.DB.Ping()
-
 		}
 		if err != nil {
-			time.Sleep(startupTimeout / 10)
+			time.Sleep(startupTimeout / 5)
 			continue
 		}
 

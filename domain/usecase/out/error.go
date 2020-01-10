@@ -11,6 +11,12 @@ type Error struct {
 	Message string `json:"message" msgpack:"message"`
 }
 
+// GraphQLError -
+type GraphQLError struct {
+	Message string   `json:"message" msgpack:"message"`
+	Path    []string `json:"path" msgpack:"path"`
+}
+
 // NewBadReqeustError -
 func NewBadReqeustError() *Error {
 	return &Error{

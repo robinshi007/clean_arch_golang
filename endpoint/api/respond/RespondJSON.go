@@ -2,7 +2,6 @@ package respond
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -36,7 +35,6 @@ func (r *RespondJSON) Created(w http.ResponseWriter, payload interface{}) {
 
 func (r *RespondJSON) respondError(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := r.srz.Encode(payload)
-	fmt.Println("code", code)
 	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -46,6 +44,12 @@ func (r *RespondJSON) respondError(w http.ResponseWriter, code int, payload inte
 func (r *RespondJSON) Error(w http.ResponseWriter, err error) {
 	code := GetErrorCode(err)
 	r.respondError(w, out.GetHTTPStatus(code), api.NewErrorResponse(code))
+}
+
+// GraphQLError - return error message
+func (r *RespondJSON) GraphQLError(w http.ResponseWriter, code int,
+	message string, path string) {
+	r.respondError(w, code, api.NewGraphQLErrorResponse(message, path))
 }
 
 // Decode -

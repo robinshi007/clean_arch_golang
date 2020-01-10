@@ -1,9 +1,9 @@
 package config
 
 import (
-	"clean_arch/infra"
+	"errors"
 
-	"github.com/pkg/errors"
+	"clean_arch/infra"
 )
 
 // database code. Need to map to the database code (DataStoreConfig) in the configuration yaml file.
@@ -23,11 +23,11 @@ const (
 func ValidateConfig(config infra.Config) error {
 	err := validateDataStore(config)
 	if err != nil {
-		return errors.Wrap(err, "")
+		return err
 	}
 	err = validateLogger(config)
 	if err != nil {
-		return errors.Wrap(err, "")
+		return err
 	}
 	return nil
 }
@@ -35,13 +35,9 @@ func ValidateConfig(config infra.Config) error {
 func validateLogger(config infra.Config) error {
 	log := config.Log
 	key := log.Code
-	logMsg := " in validateLogger doesn't match key = "
-	if ZAP != key {
-		errMsg := ZAP + logMsg + key
-		return errors.New(errMsg)
-	}
-	if ZAP != key {
-		errMsg := ZAP + logMsg + key
+	logMsg := "config.validateLogger: doesn't match key = "
+	if ZAP != key && LOGRUS != key {
+		errMsg := logMsg + key
 		return errors.New(errMsg)
 	}
 	return nil
@@ -50,9 +46,9 @@ func validateLogger(config infra.Config) error {
 func validateDataStore(config infra.Config) error {
 	dc := config.Database
 	key := dc.Code
-	dcMsg := " in validateDataStore doesn't match key = "
+	dcMsg := "config.validateDataStore: doesn't match key = "
 	if SQLDB != key {
-		errMsg := SQLDB + dcMsg + key
+		errMsg := dcMsg + key
 		return errors.New(errMsg)
 	}
 

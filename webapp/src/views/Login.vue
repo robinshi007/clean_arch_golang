@@ -35,7 +35,7 @@
           />
 
           <div>
-            <q-btn label="Login" type="submit" color="primary"/>
+            <q-btn unelevated label="Login" type="submit" color="primary"/>
           </div>
       </q-form>
     </div>

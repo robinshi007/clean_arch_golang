@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import ACCOUNT from '@/graphql/Account.gql';
+import ADMIN_ACCOUNT from '@/graphql/Account.gql';
 // import gql from 'graphql-tag';
 
 export default {
@@ -31,7 +31,7 @@ export default {
   },
   apollo: {
     account: {
-      query: ACCOUNT,
+      query: ADMIN_ACCOUNT,
       update: data => data.fetchAccount,
       variables() {
         return {

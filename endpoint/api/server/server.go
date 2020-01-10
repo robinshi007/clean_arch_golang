@@ -5,11 +5,15 @@ import (
 	"net/http"
 	"time"
 
+	"clean_arch/endpoint/api/globals"
 	"clean_arch/infra"
 )
 
 // NewServer -
 func NewServer(cfg *infra.Config, conn infra.DB) *http.Server {
+
+	// init api globals
+	globals.InitResponder()
 
 	r := NewRouter(conn)
 	srv := &http.Server{

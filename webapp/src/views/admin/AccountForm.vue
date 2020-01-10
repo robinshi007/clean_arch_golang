@@ -53,9 +53,9 @@
 
 <script>
 import validateEmail from '@/utils/validate';
-import ACCOUNT from '@/graphql/Account.gql';
-import ACCOUNT_CREATE from '@/graphql/AccountCreate.gql';
-import ACCOUNT_UPDATE from '@/graphql/AccountUpdate.gql';
+import ADMIN_ACCOUNT from '@/graphql/Account.gql';
+import ADMIN_ACCOUNT_CREATE from '@/graphql/AccountCreate.gql';
+import ADMIN_ACCOUNT_UPDATE from '@/graphql/AccountUpdate.gql';
 // import gql from 'graphql-tag';
 
 export default {
@@ -74,7 +74,7 @@ export default {
     // fetch data when edit item
     if (this.$route.params.id) {
       this.$apollo.addSmartQuery('account', {
-        query: ACCOUNT,
+        query: ADMIN_ACCOUNT,
         update: data => data.fetchAccount,
         variables() {
           return {
@@ -91,7 +91,7 @@ export default {
     onSubmit() {
       if (this.account.id) {
         this.$apollo.mutate({
-          mutation: ACCOUNT_UPDATE,
+          mutation: ADMIN_ACCOUNT_UPDATE,
           variables: {
             id: this.account.id,
             name: this.account.name,
@@ -105,11 +105,13 @@ export default {
           const { graphQLErrors } = error;
           if (graphQLErrors && graphQLErrors.some(e => e.message === 'requested item is not changed')) {
             this.$q.notify({ message: 'Item is not changed' });
+          } else if (graphQLErrors && graphQLErrors.some(e => e.message.includes('pq: duplicate key value violates unique constraint "user_accounts_name_key'))) {
+            this.$q.notify({ message: `The name "${this.account.name}" has been used` });
           }
         });
       } else {
         this.$apollo.mutate({
-          mutation: ACCOUNT_CREATE,
+          mutation: ADMIN_ACCOUNT_CREATE,
           variables: {
             name: this.account.name,
             email: this.account.email,
@@ -129,9 +131,9 @@ export default {
           const { graphQLErrors } = error;
           if (graphQLErrors && graphQLErrors.some(e => e.message === 'requested item is not changed')) {
             this.$q.notify({ message: 'Item is not changed' });
-          } else if (graphQLErrors && graphQLErrors.some(e => e.message.startsWith('pq: duplicate key value violates unique constraint "user_accounts_name_key'))) {
+          } else if (graphQLErrors && graphQLErrors.some(e => e.message.includes('pq: duplicate key value violates unique constraint "user_accounts_name_key'))) {
             this.$q.notify({ message: `The name "${this.account.name}" has been used` });
-          } else if (graphQLErrors && graphQLErrors.some(e => e.message.startsWith('pq: duplicate key value violates unique constraint "user_accounts_email_key'))) {
+          } else if (graphQLErrors && graphQLErrors.some(e => e.message.includes('pq: duplicate key value violates unique constraint "user_accounts_email_key'))) {
             this.$q.notify({ message: `The email "${this.account.email}" has been used` });
           }
         });

@@ -10,7 +10,7 @@ import (
 )
 
 // NewRespond -
-func NewRespond(code string) api.Respond {
+func NewRespond(code string) api.Responder {
 	switch code {
 	case "json", "JSON":
 		return &RespondJSON{
@@ -57,6 +57,8 @@ func GetErrorCode(err error) string {
 		case errors.Is(err, model.ErrTokenEmpty):
 			code = "203"
 		case errors.Is(err, model.ErrTokenInvalid):
+			code = "204"
+		case errors.Is(err, model.ErrUnauthorized):
 			code = "204"
 		case errors.Is(err, model.ErrActionNotAllowed):
 			code = "205"
