@@ -1,6 +1,8 @@
 package model
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
 	// ErrRouteNotFound -
@@ -27,7 +29,7 @@ var (
 	ErrTokenExpired = errors.New("token is expired")
 	// ErrTokenInvalid -
 	ErrTokenInvalid = errors.New("token is invalid")
-	// ErrUnAuthorized -
+	// ErrUnauthorized -
 	ErrUnauthorized = errors.New("Unauthorized")
 	// ErrActionNotAllowed -
 	ErrActionNotAllowed = errors.New("action is not allowed")

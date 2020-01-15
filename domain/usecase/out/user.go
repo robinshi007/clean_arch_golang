@@ -2,9 +2,6 @@ package out
 
 import "time"
 
-// ID -
-type ID string
-
 // User -
 type User struct {
 	ID        int64     `json:"id" msgpack:"id"`

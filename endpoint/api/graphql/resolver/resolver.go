@@ -9,19 +9,22 @@ import (
 
 // Resolver -
 type Resolver struct {
-	UserUC    usecase.UserUsecase
-	AccountUC usecase.AccountUsecase
+	UserUC     usecase.UserUsecase
+	AccountUC  usecase.AccountUsecase
+	RedirectUC usecase.RedirectUsecase
 }
 
 // NewRootResolver -
 func NewRootResolver(
 	uuc usecase.UserUsecase,
 	auc usecase.AccountUsecase,
+	ruc usecase.RedirectUsecase,
 ) gen.Config {
 	return gen.Config{
 		Resolvers: &Resolver{
-			UserUC:    uuc,
-			AccountUC: auc,
+			UserUC:     uuc,
+			AccountUC:  auc,
+			RedirectUC: ruc,
 		},
 	}
 
@@ -37,6 +40,10 @@ func (r *Resolver) Query() gen.QueryResolver {
 	return &queryResolver{r}
 }
 
-type mutationResolver struct{ *Resolver }
+type mutationResolver struct {
+	*Resolver
+}
 
-type queryResolver struct{ *Resolver }
+type queryResolver struct {
+	*Resolver
+}

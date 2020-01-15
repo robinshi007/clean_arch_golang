@@ -42,6 +42,10 @@ func NewRouter(db infra.DB) http.Handler {
 	e.AddPolicy("admin@test.com", "updateAccount", mw.ActionMutation)
 	e.AddPolicy("admin@test.com", "deleteAccount", mw.ActionMutation)
 
+	e.AddPolicy("admin@test.com", "redirects", mw.ActionQuery)
+	e.AddPolicy("admin@test.com", "fetchRedirectByCode", mw.ActionQuery)
+	e.AddPolicy("admin@test.com", "createRedirect", mw.ActionMutation)
+
 	// admin have access to public resources
 	e.AddGroupingPolicy("admin@test.com", "public")
 
@@ -57,7 +61,7 @@ func NewRouter(db infra.DB) http.Handler {
 	r.Use(chiMW.Logger)
 	//r.Use(chiMW.Recoverer)
 	r.Use(eHandler.Recoverer)
-	r.Use(chiMW.Timeout(10 * time.Second))
+	r.Use(chiMW.Timeout(5 * time.Second))
 	r.Use(cors.Handler)
 
 	// for test only

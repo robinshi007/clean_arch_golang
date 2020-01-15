@@ -21,5 +21,8 @@ func GraphQLHandler() http.Handler {
 	arepo := postgres.NewAccountRepo()
 	apre := presenter.NewAccountPresenter()
 	auc := usecase.NewAccountUseCase(arepo, apre, time.Second)
-	return gqlhandler.GraphQL(gen.NewExecutableSchema(resolver.NewRootResolver(uuc, auc)))
+	rrepo := postgres.NewRedirectRepo()
+	rpre := presenter.NewRedirectPresenter()
+	ruc := usecase.NewRedirectUsecase(rrepo, rpre)
+	return gqlhandler.GraphQL(gen.NewExecutableSchema(resolver.NewRootResolver(uuc, auc, ruc)))
 }

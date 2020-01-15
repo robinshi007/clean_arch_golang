@@ -47,9 +47,8 @@ func (r *RespondJSON) Error(w http.ResponseWriter, err error) {
 }
 
 // GraphQLError - return error message
-func (r *RespondJSON) GraphQLError(w http.ResponseWriter, code int,
-	message string, path string) {
-	r.respondError(w, code, api.NewGraphQLErrorResponse(message, path))
+func (r *RespondJSON) GraphQLError(w http.ResponseWriter, message string, path string) {
+	r.respondError(w, http.StatusOK, api.NewGraphQLErrorResponse(message, path))
 }
 
 // Decode -

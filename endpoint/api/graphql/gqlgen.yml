@@ -32,4 +32,10 @@ models:
     model: clean_arch/domain/usecase/in.EditAccountPassword
   FetchAccount:
     model: clean_arch/domain/usecase/in.FetchAccount
+  Redirect:
+    model: clean_arch/domain/usecase/out.Redirect
+  FetchRedirectByCode:
+    model: clean_arch/domain/usecase/in.FetchRedirectByCode
+  NewRedirect:
+    model: clean_arch/domain/usecase/in.NewRedirect
 autobind: []

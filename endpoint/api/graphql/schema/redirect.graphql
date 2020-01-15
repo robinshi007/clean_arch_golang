@@ -1,0 +1,13 @@
+type Redirect {
+  id: ID!
+  code: String!
+  url: String!
+  created_at: Time!
+}
+
+input NewRedirect{
+  url: String!
+}
+input FetchRedirectByCode{
+  code: String!
+}

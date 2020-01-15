@@ -65,7 +65,7 @@ func WithAuthorization(ef *casbin.Enforcer) Middleware {
 							case *ast.Field:
 								if !ef.Enforce(subject, f.Name.Value, o) {
 									fmt.Printf("ef: %v, %v, %v\n", subject, f.Name.Value, o)
-									globals.Respond.GraphQLError(w, http.StatusOK, "the action is unauthorized", "authorization_checker")
+									globals.Respond.GraphQLError(w, "the action is unauthorized", "authorization_checker")
 									return
 								}
 							}

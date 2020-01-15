@@ -14,3 +14,6 @@ yarn-error.log*
 
 # Editor directories and files
 .vscode
+
+# generated file
+endpoint/api/graphql/gen/

@@ -33,8 +33,8 @@ func NewAccountUseCase(
 
 func (au *accountUsecase) GetAll(ctx context.Context, num int64) ([]*out.Account, error) {
 	accounts, err := au.repo.GetAll(ctx, &repository.AccountListOptions{
-		"",
-		&repository.LimitOffset{
+		Query: "",
+		LimitOffset: &repository.LimitOffset{
 			Limit:  50,
 			Offset: 0,
 		},

@@ -22,5 +22,3 @@ input EditAccountPassword{
 input FetchAccount{
   id: ID!
 }
-
-scalar Time

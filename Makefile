@@ -10,8 +10,10 @@ test:
 	go test ./... -v
 test_db:
 	go test clean_arch/adapter/postgres -v
+test_ucase:
+	go test clean_arch/usecase -v
 test_handler:
-	go test clean_arch/endpoint/api/handler
+	go test clean_arch/endpoint/api/handler -v
 
 protoc:
 	protoc --proto_path=. --go_out=plugins=grpc:./ endpoint/rpc/v1/protocol/*.proto

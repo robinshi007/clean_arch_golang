@@ -11,7 +11,7 @@ type Responder interface {
 	OK(w http.ResponseWriter, payload interface{})
 	Created(w http.ResponseWriter, payload interface{})
 	Error(w http.ResponseWriter, err error)
-	GraphQLError(w http.ResponseWriter, code int, message string, path string)
+	GraphQLError(w http.ResponseWriter, message string, path string)
 	Decode(input io.Reader, v interface{}) error
 	Encode(input interface{}) ([]byte, error)
 }

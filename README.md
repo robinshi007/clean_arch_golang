@@ -4,15 +4,15 @@ For golang web apps template, with REST, GraphQL and GRPC as access endpoint
 
 ## Feature
 
-* Stack (Golang, Redis, Postgres/SQLite3, Nats)
+* Stack (Golang, Redis[cache], Postgres[sqldb], Nats[message bus])
 * Library(chi, migrate, pq, sqlf, sqlhooks, error1.13, graphql)
 * Endpoint (REST, GraphQL and GRPC)
 * Serializer (JSON, MessagePack)
 * Database (Postgres, SQLite3)
 * Logging, tracing and metrics(zerolog, opentracing and prometheus)
-* Security(JWT, UUID)
-* Test support(Unit test and Integration test)
-* Clean arch with loosely coupled
+* Security(JWT, UUID, CRSF, DDOS)
+* Test support(Unit test, Integration test and e2e test)
+* Clean arch with loosely coupled, easy to extand
 * Docker deploy support
 
 ## Todo List
@@ -25,13 +25,15 @@ For golang web apps template, with REST, GraphQL and GRPC as access endpoint
 * [done] error handler(404, 5xx)
 * [done] SQL format library sqlf
 * [done] dbm with SQL expression log
-* [doing] add context for handler, usecase, repository and respond
-* [doing] unit testing, integration testing, e2e testing
-* [doing] acceptance testing
 * [done] add graphql error to middleware
+* [done] add context for handler, usecase, repository and respond
 * [doing] full exmaple to redirect service(rest, graphql, grpc, testing, doc, ui)
-* [doing] adpting sqlx and squirrel
-* [doing] add middleware limiter, cors, crsf?, profiler and appdash
+* [ ] unit testing, integration testing, e2e testing
+* [ ] adpting sqlx and squirrel
+* add middleware cors, crsf?, profiler
+* opentracing & metrics
+* version with migration support
+* docker deploy support
 * dev with ticktock
 
 ## Dev Circle

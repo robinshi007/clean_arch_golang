@@ -1,10 +1,12 @@
-
 type Query {
   users: [User!]!
   fetchUser(input: FetchUser!): User!
 
   accounts: [Account!]!
   fetchAccount(input: FetchAccount!): Account!
+
+  redirects: [Redirect!]!
+  fetchRedirectByCode(input: FetchRedirectByCode!): Redirect!
 }
 type Mutation {
   createUser(input: NewUser!): User!
@@ -15,4 +17,8 @@ type Mutation {
   updateAccount(input: EditAccount!): Account!
   updateAccountPassword(input: EditAccountPassword!): Account!
   deleteAccount(input: FetchAccount!): Account!
+
+  createRedirect(input: NewRedirect!): Redirect!
 }
+
+scalar Time
