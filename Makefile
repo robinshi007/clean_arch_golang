@@ -2,6 +2,8 @@ run:
 	go run cmd/server/main.go
 run_rpc:
 	go run cmd/rpc_server/main.go
+run_gen:
+	go run cmd/gen/main.go
 build:
 	go build cmd/server/main.go
 clean:
