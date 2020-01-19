@@ -1,5 +1,5 @@
 <template>
-  <q-page>
+  <q-page class="app-page">
     <q-card v-if="loading == 0">
       <q-card-section>
         <div class="text-h6">
@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import validateEmail from '@/utils/validate';
+import validateEmail from '../../../utils/validateEmail';
 import ADMIN_ACCOUNT from '@/graphql/Account.gql';
 import ADMIN_ACCOUNT_CREATE from '@/graphql/AccountCreate.gql';
 import ADMIN_ACCOUNT_UPDATE from '@/graphql/AccountUpdate.gql';

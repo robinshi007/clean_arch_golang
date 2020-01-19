@@ -1,0 +1,8 @@
+query {
+  redirects {
+    id
+    code
+    url
+    created_at
+  }
+}

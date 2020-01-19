@@ -35,14 +35,14 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input in.NewUser) (*o
 	if err != nil {
 		return nil, err
 	}
-	user, _ := r.UserUC.GetByID(ctx, &in.FetchUser{ID: string(userID)})
+	user, _ := r.UserUC.FindByID(ctx, &in.FetchUser{ID: string(userID)})
 	return user, nil
 }
 func (r *mutationResolver) UpdateUser(ctx context.Context, input in.EditUser) (*out.User, error) {
 	return r.UserUC.Update(ctx, &input)
 }
 func (r *mutationResolver) DeleteUser(ctx context.Context, input in.FetchUser) (*out.User, error) {
-	user, err := r.UserUC.GetByID(ctx, &input)
+	user, err := r.UserUC.FindByID(ctx, &input)
 	if err != nil {
 		return nil, err
 	}
@@ -55,8 +55,8 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, input in.FetchUser) (
 
 // queryResolver -
 func (r *queryResolver) Users(ctx context.Context) ([]*out.User, error) {
-	return r.UserUC.GetAll(ctx, 10)
+	return r.UserUC.FindAll(ctx, &in.FetchAllOptions{})
 }
 func (r *queryResolver) FetchUser(ctx context.Context, input in.FetchUser) (*out.User, error) {
-	return r.UserUC.GetByID(ctx, &input)
+	return r.UserUC.FindByID(ctx, &input)
 }

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"time"
 
 	"clean_arch/adapter/postgres"
 	"clean_arch/adapter/presenter"
@@ -26,15 +25,16 @@ func main() {
 	defer registry.Db.Close()
 
 	// migrate schema up
-	fmt.Println("migration database...")
+	fmt.Printf("PQSQL migration database...")
 	util.MigrationUp(registry.Cfg, currentPath)
+	fmt.Println("done")
 
 	// migrate init data
 	{
 		repo := postgres.NewAccountRepo()
 		pre := presenter.NewAccountPresenter()
-		uc := ctn.NewAccountUseCase(repo, pre, 2*time.Second)
-		_, err := uc.GetByEmail(context.Background(), &in.FetchAccountByEmail{
+		uc := ctn.NewAccountUsecase(repo, pre)
+		_, err := uc.FindByEmail(context.Background(), &in.FetchAccountByEmail{
 			Email: "admin@test.com",
 		})
 		// if not found super admin user, create a new one
@@ -59,7 +59,7 @@ func main() {
 	errs := make(chan error, 2)
 	srv := server.NewServer(registry.Cfg, registry.Db)
 	go func() {
-		fmt.Println(fmt.Sprintf("server listen at :%s", registry.Cfg.Server.Port))
+		fmt.Println(fmt.Sprintf("server listen at :%s\n", registry.Cfg.Server.Port))
 		errs <- srv.ListenAndServe()
 	}()
 

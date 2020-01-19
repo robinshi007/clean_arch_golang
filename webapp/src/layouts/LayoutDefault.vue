@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated class="">
+    <q-header elevated class="fixed-top">
       <q-toolbar>
         <q-btn
           flat
@@ -39,30 +39,64 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
-      content-class="bg-grey-2"
+      content-class="bg-write"
     >
-    <q-list class="app-menu">
-        <q-item-label header></q-item-label>
-      <q-item clickable :to="{ name: 'home.index' }" exact>
+    <q-scroll-area style="height: calc(100% - 50px); margin-top: 50px">
+      <q-list class="app-menu">
+        <!-- <q-item-label header></q-item-label> -->
+        <q-item clickable :to="{ name: 'home.index' }" exact>
           <q-item-section>
             <q-item-label>Home</q-item-label>
-            <q-item-label caption>Home Page</q-item-label>
           </q-item-section>
         </q-item>
         <q-item clickable :to="{ name: 'home.about' }">
           <q-item-section>
             <q-item-label>About</q-item-label>
-            <q-item-label caption>About Page</q-item-label>
           </q-item-section>
         </q-item>
-        <q-expansion-item clickable label="Admin">
-          <q-item clickable :to="{ name: 'admin.account.list' }">
+        <q-separator />
+        <q-expansion-item
+          clickable
+          label="Admin"
+          active-class="active"
+          default-opened
+          >
+          <q-item dense clickable :to="{ name: 'admin.account.list' }">
             <q-item-section>
               <q-item-label>Account</q-item-label>
             </q-item-section>
           </q-item>
+          <q-item dense clickable :to="{ name: 'admin.user.list' }">
+            <q-item-section>
+              <q-item-label>User</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item dense clickable :to="{ name: 'admin.redirect.list' }">
+            <q-item-section>
+              <q-item-label>Redirect</q-item-label>
+            </q-item-section>
+          </q-item>
         </q-expansion-item>
       </q-list>
+    </q-scroll-area>
+
+      <div class="absolute-top bg-white layout-drawer-toolbar">
+        <form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
+          <q-input class=" full-width doc-algolia bg-primary"
+            ref="docAlgolia"
+            dense
+            square
+            dark
+            borderless
+            placeholder="Search"
+            >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </form>
+        <div class="layout-drawer-toolbar__shadow absolute-full no-pointer-events"></div>
+      </div>
     </q-drawer>
 
     <q-page-container>
@@ -89,11 +123,11 @@ export default {
     };
   },
   computed: {
-    ...mapGetters([
-      'isLoggedIn',
-      'email',
-      'name',
-    ]),
+    ...mapGetters({
+      isLoggedIn: 'auth/isLoggedIn',
+      email: 'auth/email',
+      name: 'auth/name',
+    }),
   },
   methods: {
     onLogout() {
@@ -112,6 +146,9 @@ export default {
 </script>
 
 <style>
+body {
+  background-color: #fafafa;
+}
 .fade-enter-active,
 .fade-leave-active {
   transition-duration: 0.25s;
@@ -127,7 +164,7 @@ export default {
   margin: 4px 10px 0;
 }
 .app-menu .q-expansion-item--expanded > div > .q-item > .q-item__section--main {
-  color: $primary;
+  color: #027be3;
   font-weight: 700;
 }
 .app-menu .q-expansion-item__content .q-item {
@@ -136,5 +173,44 @@ export default {
 }
 .app-menu .q-item.q-router-link--active {
   background: #e3f2ff;
+}
+.q-expansion-item--expanded>div>.q-item {
+  color: #027be3;
+}
+.absolute-top, .absolute-full, .fixed-top {
+  top: 0;
+  left: 0;
+  right: 0;
+}
+.absolute-top  {
+  position: absolute;
+}
+.fixed-top {
+  position: fixed;
+}
+.doc-algolia {
+  padding: 0 18px 0 16px;
+  height: 50px;
+}
+.layout-drawer-toolbar {
+  margin-right: -2px;
+}
+.doc-algolia .q-icon {
+  color: #fafafa;
+}
+.layout-drawer-toolbar__shadow{
+  bottom:-10px
+}
+.layout-drawer-toolbar__shadow:after{
+  content:"";
+  position:absolute;
+  top:0;
+  right:0;
+  bottom:10px;
+  left:0;
+  box-shadow:0 0 10px 2px rgba(0,0,0,0.2),0 0px 10px rgba(0,0,0,0.24);
+}
+.no-pointer-events {
+  pointer-events: none!important;
 }
 </style>

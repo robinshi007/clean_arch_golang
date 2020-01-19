@@ -19,7 +19,7 @@ func TestRedirectCRUD(t *testing.T) {
 	db := registry.Db
 	defer db.Close()
 
-	// migration up
+	// migration down
 	util.MigrationDown(cfg, WD)
 	util.MigrationUp(cfg, WD)
 
@@ -29,7 +29,7 @@ func TestRedirectCRUD(t *testing.T) {
 	var redirect *model.Redirect
 	expectedURL := "http://www.test.com"
 	code := shortid.MustGenerate()
-	redirectID, err := rr.Save(ctx, &model.Redirect{
+	redirectID, err := rr.Create(ctx, &model.Redirect{
 		Code: code,
 		URL:  expectedURL,
 	})
@@ -52,11 +52,11 @@ func TestRedirectCRUD(t *testing.T) {
 	}
 	expectedURL2 := "http://www.example.com"
 	code2 := shortid.MustGenerate()
-	_, err = rr.Save(ctx, &model.Redirect{
+	_, err = rr.Create(ctx, &model.Redirect{
 		Code: code2,
 		URL:  expectedURL2,
 	})
-	redirects, err := rr.FindAll(ctx, &repository.RedirectListOptions{
+	redirects, err := rr.FindAll(ctx, &repository.ListOptions{
 		Query: "",
 		LimitOffset: &repository.LimitOffset{
 			Limit:  5,
@@ -81,5 +81,4 @@ func TestRedirectCRUD(t *testing.T) {
 		t.Errorf("error occurs: %s", err.Error())
 	}
 
-	util.MigrationDown(cfg, WD)
 }

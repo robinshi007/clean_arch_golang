@@ -1,0 +1,8 @@
+mutation updateUser($id: ID!, $name: String!){
+  updateUser(input:{ id: $id, name: $name }) {
+    id
+    name
+    created_at
+    updated_at
+  }
+}

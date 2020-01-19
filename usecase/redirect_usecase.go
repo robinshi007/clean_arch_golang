@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -38,7 +39,7 @@ func (r *redirectUsecase) Count(ctx context.Context) (int64, error) {
 }
 
 // FindAll -
-func (r *redirectUsecase) FindAll(ctx context.Context, input *in.FetchRedirects) ([]*out.Redirect, error) {
+func (r *redirectUsecase) FindAll(ctx context.Context, input *in.FetchAllOptions) ([]*out.Redirect, error) {
 	if input.Offset == "" {
 		input.Offset = "0"
 	}
@@ -51,7 +52,7 @@ func (r *redirectUsecase) FindAll(ctx context.Context, input *in.FetchRedirects)
 	offset, _ := strconv.Atoi(input.Offset)
 	limit, _ := strconv.Atoi(input.Limit)
 
-	redirects, err := r.repo.FindAll(ctx, &repository.RedirectListOptions{
+	redirects, err := r.repo.FindAll(ctx, &repository.ListOptions{
 		Query: "",
 		LimitOffset: &repository.LimitOffset{
 			Limit:  limit,
@@ -89,12 +90,48 @@ func (r *redirectUsecase) FindByCode(ctx context.Context, input *in.FetchRedirec
 	return r.pre.ViewRedirect(ctx, redirect), nil
 }
 
-func (r *redirectUsecase) Save(ctx context.Context, input *in.NewRedirect) (out.ID, error) {
+func (r *redirectUsecase) FindByURL(ctx context.Context, input *in.FetchOrCreateRedirect) (*out.Redirect, error) {
 	if err := in.Validate(input); err != nil {
-		return out.ID("-1"), fmt.Errorf("redirectUsecase.Save: %w", model.ErrEntityBadInput)
+		return nil, fmt.Errorf("redirectUsecase.FindByURL: %w", model.ErrEntityBadInput)
+	}
+	redirect, err := r.repo.FindByURL(ctx, input.URL)
+	if err != nil {
+		return nil, err
+	}
+	return r.pre.ViewRedirect(ctx, redirect), nil
+}
+
+func (r *redirectUsecase) FindOrCreate(ctx context.Context, input *in.FetchOrCreateRedirect) (*out.Redirect, error) {
+	if err := in.Validate(input); err != nil {
+		return nil, fmt.Errorf("redirectUsecase.FindByURL: %w", model.ErrEntityBadInput)
+	}
+	redirect, err := r.repo.FindByURL(ctx, input.URL)
+	if err != nil {
+		if errors.Is(err, model.ErrEntityNotFound) {
+			newRedirectID, err := r.Create(ctx, &in.NewRedirect{
+				URL: input.URL,
+			})
+			if err != nil {
+				return nil, err
+			}
+			newID, _ := in.ToID(string(newRedirectID))
+			newRedirect, err := r.repo.FindByID(ctx, newID)
+			if err != nil {
+				return nil, err
+			}
+			return r.pre.ViewRedirect(ctx, newRedirect), nil
+		}
+		return nil, err
+	}
+	return r.pre.ViewRedirect(ctx, redirect), nil
+}
+
+func (r *redirectUsecase) Create(ctx context.Context, input *in.NewRedirect) (out.ID, error) {
+	if err := in.Validate(input); err != nil {
+		return out.ID("-1"), fmt.Errorf("redirectUsecase.Create: %w", model.ErrEntityBadInput)
 	}
 
-	res, err := r.repo.Save(ctx, &model.Redirect{
+	res, err := r.repo.Create(ctx, &model.Redirect{
 		Code:      shortid.MustGenerate(),
 		URL:       input.URL,
 		CreatedAt: time.Now(),

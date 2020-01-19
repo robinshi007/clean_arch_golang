@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"strconv"
-	"time"
 
 	"clean_arch/domain/model"
 	"clean_arch/domain/presenter"
@@ -14,38 +13,36 @@ import (
 )
 
 type userUsecase struct {
-	repo       repository.UserRepository
-	pre        presenter.UserPresenter
-	ctxTimeout time.Duration
+	repo repository.UserRepository
+	pre  presenter.UserPresenter
 }
 
 // NewUserUseCase -
-func NewUserUseCase(
+func NewUserUsecase(
 	repo repository.UserRepository,
 	pre presenter.UserPresenter,
-	timeout time.Duration,
 ) usecase.UserUsecase {
 	return &userUsecase{
-		repo:       repo,
-		pre:        pre,
-		ctxTimeout: timeout,
+		repo: repo,
+		pre:  pre,
 	}
 }
 
-func (u *userUsecase) GetAll(c context.Context, num int64) ([]*out.User, error) {
-	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
-	defer cancel()
-	users, err := u.repo.GetAll(ctx, &repository.UserListOptions{})
+// Count -
+func (u *userUsecase) Count(ctx context.Context) (int64, error) {
+	return u.repo.Count(ctx)
+}
+
+// FindAll -
+func (u *userUsecase) FindAll(ctx context.Context, input *in.FetchAllOptions) ([]*out.User, error) {
+	users, err := u.repo.FindAll(ctx, &repository.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 	return u.pre.ViewUsers(ctx, users), nil
 }
 
-func (u *userUsecase) GetByID(c context.Context, input *in.FetchUser) (*out.User, error) {
-	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
-	defer cancel()
-
+func (u *userUsecase) FindByID(ctx context.Context, input *in.FetchUser) (*out.User, error) {
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
 	}
@@ -53,32 +50,27 @@ func (u *userUsecase) GetByID(c context.Context, input *in.FetchUser) (*out.User
 	if err != nil {
 		return nil, model.ErrEntityBadInput
 	}
-	user, err := u.repo.GetByID(ctx, id)
+	user, err := u.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	return u.pre.ViewUser(ctx, user), nil
 }
 
-func (u *userUsecase) GetByName(c context.Context, input *in.FetchUserByName) (*out.User, error) {
-	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
-	defer cancel()
+func (u *userUsecase) FindByName(ctx context.Context, input *in.FetchUserByName) (*out.User, error) {
 
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
 	}
 
-	user, err := u.repo.GetByName(ctx, input.Name)
+	user, err := u.repo.FindByName(ctx, input.Name)
 	if err != nil {
 		return nil, err
 	}
 	return u.pre.ViewUser(ctx, user), nil
 }
 
-func (u *userUsecase) Create(c context.Context, input *in.NewUser) (out.ID, error) {
-	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
-	defer cancel()
-
+func (u *userUsecase) Create(ctx context.Context, input *in.NewUser) (out.ID, error) {
 	if err := in.Validate(input); err != nil {
 		return out.ID("-1"), model.ErrEntityBadInput
 	}
@@ -90,10 +82,7 @@ func (u *userUsecase) Create(c context.Context, input *in.NewUser) (out.ID, erro
 	return out.ID(id), err
 }
 
-func (u *userUsecase) Update(c context.Context, input *in.EditUser) (*out.User, error) {
-	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
-	defer cancel()
-
+func (u *userUsecase) Update(ctx context.Context, input *in.EditUser) (*out.User, error) {
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
 	}
@@ -101,7 +90,7 @@ func (u *userUsecase) Update(c context.Context, input *in.EditUser) (*out.User, 
 	if err != nil {
 		return nil, model.ErrEntityBadInput
 	}
-	user, err := u.repo.GetByID(context.Background(), id)
+	user, err := u.repo.FindByID(context.Background(), id)
 	if err != nil {
 		return nil, model.ErrEntityNotFound
 	}
@@ -120,10 +109,7 @@ func (u *userUsecase) Update(c context.Context, input *in.EditUser) (*out.User, 
 	return u.pre.ViewUser(ctx, usr), nil
 }
 
-func (u *userUsecase) Delete(c context.Context, input *in.FetchUser) error {
-	ctx, cancel := context.WithTimeout(c, u.ctxTimeout)
-	defer cancel()
-
+func (u *userUsecase) Delete(ctx context.Context, input *in.FetchUser) error {
 	err := in.Validate(input)
 	if err != nil {
 		return model.ErrEntityBadInput
@@ -137,7 +123,7 @@ func (u *userUsecase) Delete(c context.Context, input *in.FetchUser) error {
 }
 
 func (u *userUsecase) RegisterUser(c context.Context, name string) (out.ID, error) {
-	if err := u.repo.DuplicatedByName(c, name); err != nil {
+	if err := u.repo.ExistsByName(c, name); err != nil {
 		return out.ID("-1"), err
 	}
 	user := model.NewUser(name)

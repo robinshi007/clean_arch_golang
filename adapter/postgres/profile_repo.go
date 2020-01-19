@@ -51,7 +51,7 @@ func (pr *profileRepo) getBySQL(ctx context.Context, query string, args ...inter
 	return profiles, nil
 }
 
-func (pr *profileRepo) listSQL(opt repository.ProfileListOptions) (conds []*sqlf.Query) {
+func (pr *profileRepo) listSQL(opt repository.ListOptions) (conds []*sqlf.Query) {
 	conds = []*sqlf.Query{}
 	conds = append(conds, sqlf.Sprintf("deleted_at IS NULL"))
 	if opt.Query != "" {
@@ -61,16 +61,16 @@ func (pr *profileRepo) listSQL(opt repository.ProfileListOptions) (conds []*sqlf
 	return conds
 }
 
-func (pr *profileRepo) GetAll(ctx context.Context, opt *repository.ProfileListOptions) ([]*model.UserProfile, error) {
+func (pr *profileRepo) FindAll(ctx context.Context, opt *repository.ListOptions) ([]*model.UserProfile, error) {
 	if opt == nil {
-		opt = &repository.ProfileListOptions{}
+		opt = &repository.ListOptions{}
 	}
 	conds := pr.listSQL(*opt)
 	q := sqlf.Sprintf("WHERE %s ORDER BY uid ASC %s", sqlf.Join(conds, "AND"), opt.LimitOffset.SQL())
 	return pr.getBySQL(ctx, q.Query(sqlf.PostgresBindVar), q.Args()...)
 }
 
-func (pr *profileRepo) GetByID(ctx context.Context, id int64) (*model.UserProfile, error) {
+func (pr *profileRepo) FindByID(ctx context.Context, id int64) (*model.UserProfile, error) {
 	rows, err := pr.getBySQL(ctx, "WHERE deleted_at IS NULL AND uid=$1 LIMIT 1", strconv.FormatInt(id, 10))
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (pr *profileRepo) GetByID(ctx context.Context, id int64) (*model.UserProfil
 	}
 	return rows[0], nil
 }
-func (pr *profileRepo) GetByEmail(ctx context.Context, email string) (*model.UserProfile, error) {
+func (pr *profileRepo) FindByEmail(ctx context.Context, email string) (*model.UserProfile, error) {
 	rows, err := pr.getBySQL(ctx, "WHERE deleted_at IS NULL AND email=$1 LIMIT 1", email)
 	if err != nil {
 		return nil, err

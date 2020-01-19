@@ -40,12 +40,14 @@ func (p *pqsql) Open(driverName, dataSourceName string) error {
 			err = p.DB.Ping()
 		}
 		if err != nil {
+			fmt.Printf(".")
 			time.Sleep(startupTimeout / 5)
 			continue
 		}
 
 		// Database specific before check
 
+		fmt.Printf("done\n")
 		return nil
 	}
 }
@@ -57,6 +59,7 @@ func (p *pqsql) openDBWithHooks(dataSourceName string) error {
 		}))
 		fmt.Printf("PQSQL MODE: %s\n", p.Mode)
 	})
+	fmt.Printf("PQSQL Connecting...")
 	db, err := sql.Open("postgres-proxy", dataSourceName)
 	p.DB = db
 	return err

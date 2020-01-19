@@ -55,7 +55,7 @@ func (r *redirectRepo) getBySQL(ctx context.Context, query string, args ...inter
 	return redirects, nil
 }
 
-func (r *redirectRepo) listSQL(opt repository.RedirectListOptions) (conds []*sqlf.Query) {
+func (r *redirectRepo) listSQL(opt repository.ListOptions) (conds []*sqlf.Query) {
 	conds = []*sqlf.Query{}
 	conds = append(conds, sqlf.Sprintf("deleted_at IS NULL"))
 	return conds
@@ -72,9 +72,9 @@ func (r *redirectRepo) Count(ctx context.Context) (int64, error) {
 	return count, nil
 }
 
-func (r *redirectRepo) FindAll(ctx context.Context, opt *repository.RedirectListOptions) ([]*model.Redirect, error) {
+func (r *redirectRepo) FindAll(ctx context.Context, opt *repository.ListOptions) ([]*model.Redirect, error) {
 	if opt == nil {
-		opt = &repository.RedirectListOptions{}
+		opt = &repository.ListOptions{}
 	}
 	conds := r.listSQL(*opt)
 	q := sqlf.Sprintf("WHERE %s ORDER BY id ASC %s", sqlf.Join(conds, "AND"), opt.LimitOffset.SQL())
@@ -105,8 +105,20 @@ func (r *redirectRepo) FindByCode(ctx context.Context, code string) (*model.Redi
 	return rows[0], nil
 }
 
+// FindByURL -
+func (r *redirectRepo) FindByURL(ctx context.Context, code string) (*model.Redirect, error) {
+	rows, err := r.getBySQL(ctx, "WHERE deleted_at IS NULL AND url=$1 LIMIT 1", code)
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, model.ErrEntityNotFound
+	}
+	return rows[0], nil
+}
+
 // Create -
-func (r *redirectRepo) Save(ctx context.Context, redirect *model.Redirect) (int64, error) {
+func (r *redirectRepo) Create(ctx context.Context, redirect *model.Redirect) (int64, error) {
 	query := "INSERT INTO redirects (code,url,created_at) VALUES ($1, $2, $3) RETURNING id"
 	tx, err := registry.Db.BeginTx(ctx, nil)
 	if err != nil {

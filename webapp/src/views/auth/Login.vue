@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import validateEmail from '@/utils/validate';
+import validateEmail from '@/utils/validateEmail';
 
 export default {
   name: 'PageLogin',
@@ -64,7 +64,7 @@ export default {
       if (this.$route.query.redirect) {
         postData.redirect = this.$route.query.redirect;
       }
-      this.$store.dispatch('login', postData).then((data) => {
+      this.$store.dispatch('auth/login', postData).then((data) => {
         if (data) {
           const { query } = this.$route;
           if (query && query.redirect) {

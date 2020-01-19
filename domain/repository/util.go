@@ -18,3 +18,9 @@ func (o *LimitOffset) SQL() *sqlf.Query {
 	}
 	return sqlf.Sprintf("LIMIT %d OFFSET %d", o.Limit, o.Offset)
 }
+
+// ListOptions -
+type ListOptions struct {
+	Query       string
+	LimitOffset *LimitOffset
+}

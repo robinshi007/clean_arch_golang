@@ -42,6 +42,12 @@ func NewRouter(db infra.DB) http.Handler {
 	e.AddPolicy("admin@test.com", "updateAccount", mw.ActionMutation)
 	e.AddPolicy("admin@test.com", "deleteAccount", mw.ActionMutation)
 
+	e.AddPolicy("admin@test.com", "users", mw.ActionQuery)
+	e.AddPolicy("admin@test.com", "fetchUser", mw.ActionQuery)
+	e.AddPolicy("admin@test.com", "createUser", mw.ActionMutation)
+	e.AddPolicy("admin@test.com", "updateUser", mw.ActionMutation)
+	e.AddPolicy("admin@test.com", "deleteUser", mw.ActionMutation)
+
 	e.AddPolicy("admin@test.com", "redirects", mw.ActionQuery)
 	e.AddPolicy("admin@test.com", "fetchRedirectByCode", mw.ActionQuery)
 	e.AddPolicy("admin@test.com", "createRedirect", mw.ActionMutation)

@@ -25,7 +25,8 @@ func TestGraphQLHandlerRedirect(t *testing.T) {
 	db := registry.Db
 	defer db.Close()
 
-	// migration up
+	// migration down
+	util.MigrationDown(cfg, wd)
 	util.MigrationUp(cfg, wd)
 
 	gqlHanlder := handler.GraphQLHandler()
@@ -75,6 +76,5 @@ func TestGraphQLHandlerRedirect(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object().Value("data").
 		Object().Value("redirects").Array().Length().Equal(1)
-	// migration down
-	util.MigrationDown(cfg, wd)
+
 }

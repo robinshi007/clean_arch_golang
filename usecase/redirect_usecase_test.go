@@ -18,7 +18,7 @@ func TestRedirectUsecase(t *testing.T) {
 	db := registry.Db
 	defer db.Close()
 
-	// migration up
+	// migration
 	util.MigrationDown(cfg, WD)
 	util.MigrationUp(cfg, WD)
 
@@ -33,32 +33,37 @@ func TestRedirectUsecase(t *testing.T) {
 		URL: expectedURL,
 	}
 	// save first one
-	redirectID, err := ru.Save(ctx, redirectNewInput)
+	redirectID, err := ru.Create(ctx, redirectNewInput)
 	redirect, err := ru.FindByID(ctx, &in.FetchRedirect{
 		ID: string(redirectID),
 	})
 	if redirect.URL != expectedURL {
-		t.Errorf("RedirectRepo.FindByCode() return redirect with URL %s , expected %s", redirect.URL, expectedURL)
+		t.Errorf("RedirectUsecase.FindByID() return redirect with URL %s , expected %s", redirect.URL, expectedURL)
+	}
+	redirect2, err := ru.FindByCode(ctx, &in.FetchRedirectByCode{
+		Code: redirect.Code,
+	})
+	if redirect2.URL != expectedURL {
+		t.Errorf("RedirectUsecase.FindByCode() return redirect with URL %s , expected %s", redirect2.URL, expectedURL)
 	}
 	// save new again
 	expectedURL2 := "http://www.example.com"
-	_, err = ru.Save(ctx, &in.NewRedirect{
+	_, err = ru.Create(ctx, &in.NewRedirect{
 		URL: expectedURL2,
 	})
-	redirects, err := ru.FindAll(ctx, &in.FetchRedirects{})
+	redirects, err := ru.FindAll(ctx, &in.FetchAllOptions{})
 	if len(redirects) != 2 {
-		t.Errorf("RedirectRepo.FindAll() return redirects with length %d , expected %d", len(redirects), 2)
+		t.Errorf("RedirectUsecase.FindAll() return redirects with length %d , expected %d", len(redirects), 2)
 	}
 	if redirects[0].URL != expectedURL {
-		t.Errorf("RedirectRepo.FindAll() return first redirect with URL %s , expected %s", redirects[0].URL, expectedURL)
+		t.Errorf("RedirectUsecase.FindAll() return first redirect with URL %s , expected %s", redirects[0].URL, expectedURL)
 	}
 	if redirects[1].URL != expectedURL2 {
-		t.Errorf("RedirectRepo.FindAll() return last redirect with URL %s , expected %s", redirects[1].URL, expectedURL2)
+		t.Errorf("RedirectUsecase.FindAll() return last redirect with URL %s , expected %s", redirects[1].URL, expectedURL2)
 	}
 
 	if err != nil {
 		t.Errorf("error occurs: %s", err.Error())
 	}
 
-	util.MigrationDown(cfg, WD)
 }

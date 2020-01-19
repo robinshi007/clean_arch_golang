@@ -1,5 +1,5 @@
 <template>
-  <q-page>
+  <q-page class="app-page">
     <q-card v-if="loading == 0">
       <q-card-section>
         <div class="text-h6">

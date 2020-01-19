@@ -1,8 +1,8 @@
 <template>
-  <q-page class="flex flex-center">
+  <div class="flex flex-center">
     <img alt="Quasar logo" src="../assets/logo.png">
     <h3>{{msg}}</h3>
-  </q-page>
+  </div>
 </template>
 
 <style>

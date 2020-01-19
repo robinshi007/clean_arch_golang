@@ -1,23 +1,8 @@
 <template>
-  <q-page>
-    <!--  <h5 class='q-ml-md'>Admin User CRUD Test</h5>
-    <q-markup-table>
-      <thead>
-        <tr>
-          <th class="text-left">ID</th>
-          <th class="text-right">Email</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="user of accounts" :key="user.id">
-          <td>{{user.id}}</td>
-          <td class="text-right">{{user.email}}</td>
-        </tr>
-      </tbody>
-    </q-markup-table> -->
+  <q-page class="app-page">
     <q-table
-      title= "Accounts"
-      :data="accounts"
+      title= "Users"
+      :data="users"
       :columns="columns"
       row-key="id"
       v-if="loading == 0"
@@ -44,7 +29,7 @@
               flat round color="primary" icon="edit" >
               <q-tooltip>Edit</q-tooltip>
             </q-btn>
-            <q-btn type="a" @click="onDeleteConfirm(props.value)" v-if="!(props.value === '1')"
+            <q-btn type="a" @click="onDeleteConfirm(props.value)"
               flat round color="primary" icon="delete" >
               <q-tooltip>Delete</q-tooltip>
             </q-btn>
@@ -63,7 +48,7 @@
         <q-card-section class="row items-center">
           <q-avatar icon="warning" color="orange" text-color="white" />
             <span class="q-ml-sm">
-              Are you sure to delete Account #{{selectedId}}?
+              Are you sure to delete User #{{selectedId}}?
             </span>
         </q-card-section>
 
@@ -79,8 +64,8 @@
 </template>
 
 <script>
-import ADMIN_ACCOUNTS from '@/graphql/Accounts.gql';
-import ADMIN_ACCOUNT_DELETE from '@/graphql/AccountDelete.gql';
+import ADMIN_USERS from '@/graphql/Users.gql';
+import ADMIN_USER_DELETE from '@/graphql/UserDelete.gql';
 import formatDate from '@/utils/date';
 
 export default {
@@ -146,12 +131,12 @@ export default {
     };
   },
   apollo: {
-    accounts: {
-      query: ADMIN_ACCOUNTS,
+    users: {
+      query: ADMIN_USERS,
       error(err) {
         const { graphQLErrors } = err;
         if (graphQLErrors && graphQLErrors.some(e => e.message === 'the action is unauthorized')) {
-          this.$q.notify({ message: 'The action "ADMIN_ACCOUNTS" is unauthorized' });
+          this.$q.notify({ message: 'The action "ADMIN_USERS" is unauthorized' });
         }
         // return 0 to avoid global error handler
         return 0;
@@ -163,13 +148,13 @@ export default {
 
   methods: {
     onItemNew() {
-      return this.$router.push({ name: 'admin.account.new' });
+      return this.$router.push({ name: 'admin.user.new' });
     },
     onItemView(val) {
-      return this.$router.push({ name: 'admin.account.get', params: { id: val } });
+      return this.$router.push({ name: 'admin.user.get', params: { id: val } });
     },
     onItemEdit(val) {
-      return this.$router.push({ name: 'admin.account.edit', params: { id: val } });
+      return this.$router.push({ name: 'admin.user.edit', params: { id: val } });
     },
     onDeleteConfirm(val) {
       this.selectedId = val;
@@ -177,14 +162,14 @@ export default {
     },
     onDelete() {
       this.$apollo.mutate({
-        mutation: ADMIN_ACCOUNT_DELETE,
+        mutation: ADMIN_USER_DELETE,
         variables: {
           id: this.selectedId,
         },
         update: () => {
-          this.$apollo.queries.accounts.refetch();
+          this.$apollo.queries.users.refetch();
           this.$q.notify({
-            message: `Account #${this.selectedId} is deleted successfully.`,
+            message: `User #${this.selectedId} is deleted successfully.`,
             actions: [
               { label: 'Dismiss', handler: () => { /* ... */ } },
             ],

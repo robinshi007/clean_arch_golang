@@ -20,8 +20,8 @@ func main() {
 	flag.Parse()
 
 	genFile := GenFile{
-		TemplatePath: "cmd/gen/index.tmpl",
-		OutputPath:   "cmd/gen/index.go",
+		TemplatePath: "cmd/gentool/test.tmpl",
+		OutputPath:   "cmd/gentool/test.go",
 	}
 	genFile.Generate(Bind{
 		Name: "world!",

@@ -15,10 +15,11 @@ type RedirectListOptions struct {
 // RedirectRepository -
 type RedirectRepository interface {
 	Count(ctx context.Context) (int64, error)
-	FindAll(ctx context.Context, opt *RedirectListOptions) ([]*model.Redirect, error)
+	FindAll(ctx context.Context, opt *ListOptions) ([]*model.Redirect, error)
 	FindByID(ctx context.Context, id int64) (*model.Redirect, error)
 	FindByCode(ctx context.Context, code string) (*model.Redirect, error)
-	Save(ctx context.Context, r *model.Redirect) (int64, error)
+	FindByURL(ctx context.Context, url string) (*model.Redirect, error)
+	Create(ctx context.Context, r *model.Redirect) (int64, error)
 	Delete(ctx context.Context, id int64) error
 }
 

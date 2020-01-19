@@ -1,21 +1,21 @@
 run:
-	go run cmd/server/main.go
-run_rpc:
+	go run cmd/api_server/main.go
+run_grpc:
 	go run cmd/rpc_server/main.go
 run_gen:
 	go run cmd/gen/main.go
 build:
-	go build cmd/server/main.go
+	go build cmd/api_server/main.go
 clean:
 	go clean
 test:
-	go test ./... -v
+	go test ./...
 test_db:
-	go test clean_arch/adapter/postgres -v
+	go test clean_arch/adapter/postgres
 test_ucase:
-	go test clean_arch/usecase -v
+	go test clean_arch/usecase
 test_handler:
-	go test clean_arch/endpoint/api/handler -v
+	go test clean_arch/endpoint/api/handler
 
 protoc:
 	protoc --proto_path=. --go_out=plugins=grpc:./ endpoint/rpc/v1/protocol/*.proto

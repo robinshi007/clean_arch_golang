@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
 	gqlhandler "github.com/99designs/gqlgen/handler"
 
@@ -17,10 +16,10 @@ import (
 func GraphQLHandler() http.Handler {
 	urepo := postgres.NewUserRepo()
 	upre := presenter.NewUserPresenter()
-	uuc := usecase.NewUserUseCase(urepo, upre, time.Second)
+	uuc := usecase.NewUserUsecase(urepo, upre)
 	arepo := postgres.NewAccountRepo()
 	apre := presenter.NewAccountPresenter()
-	auc := usecase.NewAccountUseCase(arepo, apre, time.Second)
+	auc := usecase.NewAccountUsecase(arepo, apre)
 	rrepo := postgres.NewRedirectRepo()
 	rpre := presenter.NewRedirectPresenter()
 	ruc := usecase.NewRedirectUsecase(rrepo, rpre)

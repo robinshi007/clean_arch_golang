@@ -9,9 +9,9 @@ import (
 
 // AccountUsecase -
 type AccountUsecase interface {
-	GetAll(ctx context.Context, num int64) ([]*out.Account, error)
-	GetByID(ctx context.Context, input *in.FetchAccount) (*out.Account, error)
-	GetByEmail(ctx context.Context, input *in.FetchAccountByEmail) (*out.Account, error)
+	FindAll(ctx context.Context, input *in.FetchAllOptions) ([]*out.Account, error)
+	FindByID(ctx context.Context, input *in.FetchAccount) (*out.Account, error)
+	FindByEmail(ctx context.Context, input *in.FetchAccountByEmail) (*out.Account, error)
 	Create(ctx context.Context, input *in.NewAccount) (out.ID, error)
 	Update(ctx context.Context, input *in.EditAccount) (*out.Account, error)
 	UpdatePassword(ctx context.Context, input *in.EditAccountPassword) (*out.Account, error)

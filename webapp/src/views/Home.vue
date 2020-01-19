@@ -1,6 +1,6 @@
 <template>
-  <q-page class="flex flex-center">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <q-page class="flex flex-center app-page">
+    <HelloWorld msg="Welcome, vue.js "/>
   </q-page>
 </template>
 
@@ -16,3 +16,9 @@ export default {
 };
 
 </script>
+
+<style>
+.app-page {
+  padding: 16px 46px;
+}
+</style>

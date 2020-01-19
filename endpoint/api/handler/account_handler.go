@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi"
 
@@ -20,9 +19,9 @@ import (
 // NewAccountRouter -
 func NewAccountRouter(uHandler *AccountHandler) http.Handler {
 	r := chi.NewRouter()
-	r.Get("/", uHandler.GetAll)
-	r.Get("/{id:[0-9]+}", uHandler.GetByID)
-	r.Get("/{name:[a-zA-Z0-9@]+}/by_email", uHandler.GetByEmail)
+	r.Get("/", uHandler.FindAll)
+	r.Get("/{id:[0-9]+}", uHandler.FindByID)
+	r.Get("/{name:[a-zA-Z0-9@]+}/by_email", uHandler.FindByEmail)
 	r.Post("/", uHandler.Create)
 	r.Put("/{id:[0-9]+}", uHandler.UpdatePassword)
 	r.Delete("/{id:[0-9]+}", uHandler.Delete)
@@ -34,7 +33,7 @@ func NewAccountHandler() *AccountHandler {
 	repo := postgres.NewAccountRepo()
 	pre := presenter.NewAccountPresenter()
 	return &AccountHandler{
-		uc:  ctn.NewAccountUseCase(repo, pre, 2*time.Second),
+		uc:  ctn.NewAccountUsecase(repo, pre),
 		rsp: respond.NewRespond(registry.Cfg.Serializer.Code),
 	}
 }
@@ -45,9 +44,9 @@ type AccountHandler struct {
 	rsp api.Responder
 }
 
-// GetAll the post data
-func (u *AccountHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	res, err := u.uc.GetAll(r.Context(), 5)
+// FindAll the post data
+func (u *AccountHandler) FindAll(w http.ResponseWriter, r *http.Request) {
+	res, err := u.uc.FindAll(r.Context(), &in.FetchAllOptions{})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -85,10 +84,10 @@ func (u *AccountHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) 
 
 }
 
-// GetByID returns a post details
-func (u *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+// FindByID returns a post details
+func (u *AccountHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	res, err := u.uc.GetByID(r.Context(), &in.FetchAccount{ID: id})
+	res, err := u.uc.FindByID(r.Context(), &in.FetchAccount{ID: id})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -96,10 +95,10 @@ func (u *AccountHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetByEmail - returns a post details
-func (u *AccountHandler) GetByEmail(w http.ResponseWriter, r *http.Request) {
+// FindByEmail - returns a post details
+func (u *AccountHandler) FindByEmail(w http.ResponseWriter, r *http.Request) {
 	email := chi.URLParam(r, "email")
-	res, err := u.uc.GetByEmail(r.Context(), &in.FetchAccountByEmail{Email: email})
+	res, err := u.uc.FindByEmail(r.Context(), &in.FetchAccountByEmail{Email: email})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {

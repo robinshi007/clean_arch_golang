@@ -1,0 +1,7 @@
+query fetchRedirectByCode($code: String!){
+  fetchRedirectByCode(input: {code: $code}){
+    id 
+    code 
+    url 
+  }
+}

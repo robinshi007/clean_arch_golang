@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi"
 
@@ -19,9 +18,9 @@ import (
 // NewUserRouter -
 func NewUserRouter(uHandler *UserHandler) http.Handler {
 	r := chi.NewRouter()
-	r.Get("/", uHandler.GetAll)
-	r.Get("/{id:[0-9]+}", uHandler.GetByID)
-	r.Get("/{name:[a-zA-Z0-9]+}/by_name", uHandler.GetByName)
+	r.Get("/", uHandler.FindAll)
+	r.Get("/{id:[0-9]+}", uHandler.FindByID)
+	r.Get("/{name:[a-zA-Z0-9]+}/by_name", uHandler.FindByName)
 	r.Post("/", uHandler.Create)
 	r.Put("/{id:[0-9]+}", uHandler.Update)
 	r.Delete("/{id:[0-9]+}", uHandler.Delete)
@@ -33,7 +32,7 @@ func NewUserHandler() *UserHandler {
 	repo := postgres.NewUserRepo()
 	pre := presenter.NewUserPresenter()
 	return &UserHandler{
-		uc:  ctn.NewUserUseCase(repo, pre, time.Second),
+		uc:  ctn.NewUserUsecase(repo, pre),
 		rsp: respond.NewRespond(registry.Cfg.Serializer.Code),
 	}
 }
@@ -44,9 +43,9 @@ type UserHandler struct {
 	rsp api.Responder
 }
 
-// GetAll the post data
-func (u *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	res, err := u.uc.GetAll(r.Context(), 5)
+// FindAll the post data
+func (u *UserHandler) FindAll(w http.ResponseWriter, r *http.Request) {
+	res, err := u.uc.FindAll(r.Context(), &in.FetchAllOptions{})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -83,10 +82,10 @@ func (u *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// GetByID returns a post details
-func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+// FindByID returns a post details
+func (u *UserHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	res, err := u.uc.GetByID(r.Context(), &in.FetchUser{ID: id})
+	res, err := u.uc.FindByID(r.Context(), &in.FetchUser{ID: id})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {
@@ -94,10 +93,10 @@ func (u *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetByName returns a post details
-func (u *UserHandler) GetByName(w http.ResponseWriter, r *http.Request) {
+// FindByName returns a post details
+func (u *UserHandler) FindByName(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
-	res, err := u.uc.GetByName(r.Context(), &in.FetchUserByName{Name: name})
+	res, err := u.uc.FindByName(r.Context(), &in.FetchUserByName{Name: name})
 	if err != nil {
 		u.rsp.Error(w, err)
 	} else {

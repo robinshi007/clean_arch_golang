@@ -1,0 +1,10 @@
+mutation createRedirect($url: String!){
+  createRedirect(input: {
+   url: $url,
+  }){
+    id
+    code 
+    url 
+    created_at
+  }
+}

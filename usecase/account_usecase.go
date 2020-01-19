@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"strconv"
-	"time"
 
 	"clean_arch/domain/model"
 	"clean_arch/domain/presenter"
@@ -20,10 +19,9 @@ type accountUsecase struct {
 }
 
 // NewAccountUseCase -
-func NewAccountUseCase(
+func NewAccountUsecase(
 	repo repository.AccountRepository,
 	pre presenter.AccountPresenter,
-	timeout time.Duration,
 ) usecase.AccountUsecase {
 	return &accountUsecase{
 		repo: repo,
@@ -31,23 +29,21 @@ func NewAccountUseCase(
 	}
 }
 
-func (au *accountUsecase) GetAll(ctx context.Context, num int64) ([]*out.Account, error) {
-	accounts, err := au.repo.GetAll(ctx, &repository.AccountListOptions{
+func (au *accountUsecase) FindAll(ctx context.Context, input *in.FetchAllOptions) ([]*out.Account, error) {
+	accounts, err := au.repo.FindAll(ctx, &repository.ListOptions{
 		Query: "",
 		LimitOffset: &repository.LimitOffset{
 			Limit:  50,
 			Offset: 0,
 		},
 	})
-	//time.Sleep(3 * time.Second)
 	if err != nil {
 		return nil, err
 	}
 	return au.pre.ViewAccounts(ctx, accounts), nil
 }
 
-func (au *accountUsecase) GetByID(ctx context.Context, input *in.FetchAccount) (*out.Account, error) {
-
+func (au *accountUsecase) FindByID(ctx context.Context, input *in.FetchAccount) (*out.Account, error) {
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
 	}
@@ -55,33 +51,31 @@ func (au *accountUsecase) GetByID(ctx context.Context, input *in.FetchAccount) (
 	if err != nil {
 		return nil, model.ErrEntityBadInput
 	}
-	account, err := au.repo.GetByID(ctx, id)
+	account, err := au.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	return au.pre.ViewAccount(ctx, account), nil
 }
 
-func (au *accountUsecase) GetByEmail(ctx context.Context, input *in.FetchAccountByEmail) (*out.Account, error) {
-
+func (au *accountUsecase) FindByEmail(ctx context.Context, input *in.FetchAccountByEmail) (*out.Account, error) {
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
 	}
 
-	account, err := au.repo.GetByEmail(ctx, input.Email)
+	account, err := au.repo.FindByEmail(ctx, input.Email)
 	if err != nil {
 		return nil, err
 	}
 	return au.pre.ViewAccount(ctx, account), nil
 }
 
-func (au *accountUsecase) GetByName(ctx context.Context, input *in.FetchAccountByName) (*out.Account, error) {
-
+func (au *accountUsecase) FindByName(ctx context.Context, input *in.FetchAccountByName) (*out.Account, error) {
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
 	}
 
-	account, err := au.repo.GetByName(ctx, input.Name)
+	account, err := au.repo.FindByName(ctx, input.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +105,6 @@ func (au *accountUsecase) Create(ctx context.Context, input *in.NewAccount) (out
 }
 
 func (au *accountUsecase) Update(ctx context.Context, input *in.EditAccount) (*out.Account, error) {
-
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
 	}
@@ -119,7 +112,7 @@ func (au *accountUsecase) Update(ctx context.Context, input *in.EditAccount) (*o
 	if err != nil {
 		return nil, model.ErrEntityBadInput
 	}
-	account, err := au.repo.GetByID(context.Background(), id)
+	account, err := au.repo.FindByID(context.Background(), id)
 	if err != nil {
 		return nil, model.ErrEntityNotFound
 	}
@@ -139,7 +132,6 @@ func (au *accountUsecase) Update(ctx context.Context, input *in.EditAccount) (*o
 	return au.pre.ViewAccount(ctx, accountNew), nil
 }
 func (au *accountUsecase) UpdatePassword(ctx context.Context, input *in.EditAccountPassword) (*out.Account, error) {
-
 	if err := in.Validate(input); err != nil {
 		return nil, model.ErrEntityBadInput
 	}
@@ -147,7 +139,7 @@ func (au *accountUsecase) UpdatePassword(ctx context.Context, input *in.EditAcco
 	if err != nil {
 		return nil, model.ErrEntityBadInput
 	}
-	account, err := au.repo.GetByID(context.Background(), id)
+	account, err := au.repo.FindByID(context.Background(), id)
 	if err != nil {
 		return nil, model.ErrEntityNotFound
 	}
@@ -174,8 +166,7 @@ func (au *accountUsecase) UpdatePassword(ctx context.Context, input *in.EditAcco
 }
 
 func (au *accountUsecase) Delete(ctx context.Context, input *in.FetchAccount) error {
-	err := in.Validate(input)
-	if err != nil {
+	if err := in.Validate(input); err != nil {
 		return model.ErrEntityBadInput
 	}
 	id, err := in.ToID(input.ID)
@@ -190,12 +181,11 @@ func (au *accountUsecase) Delete(ctx context.Context, input *in.FetchAccount) er
 }
 
 func (au *accountUsecase) Login(ctx context.Context, input *in.LoginAccountByEmail) (bool, string, error) {
-
 	if err := in.Validate(input); err != nil {
 		return false, "", model.ErrEntityBadInput
 	}
 
-	account, err := au.repo.GetByEmail(ctx, input.Email)
+	account, err := au.repo.FindByEmail(ctx, input.Email)
 	if err != nil {
 		return false, "", err
 	}

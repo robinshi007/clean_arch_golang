@@ -8,6 +8,12 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 )
 
+// FetchAllOption -
+type FetchAllOptions struct {
+	Offset string `validate:"required,numeric"`
+	Limit  string `validate:"required,numeric"`
+}
+
 // ToID -
 func ToID(ID string) (int64, error) {
 	id, err := strconv.ParseInt(ID, 10, 64)

@@ -27,7 +27,7 @@ func (r *mutationResolver) CreateAccount(ctx context.Context, input in.NewAccoun
 	if err != nil {
 		return nil, err
 	}
-	account, _ := r.AccountUC.GetByID(ctx, &in.FetchAccount{ID: string(accountID)})
+	account, _ := r.AccountUC.FindByID(ctx, &in.FetchAccount{ID: string(accountID)})
 	return account, nil
 }
 func (r *mutationResolver) UpdateAccount(ctx context.Context, input in.EditAccount) (*out.Account, error) {
@@ -37,7 +37,7 @@ func (r *mutationResolver) UpdateAccountPassword(ctx context.Context, input in.E
 	return r.AccountUC.UpdatePassword(ctx, &input)
 }
 func (r *mutationResolver) DeleteAccount(ctx context.Context, input in.FetchAccount) (*out.Account, error) {
-	account, err := r.AccountUC.GetByID(ctx, &input)
+	account, err := r.AccountUC.FindByID(ctx, &input)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +50,8 @@ func (r *mutationResolver) DeleteAccount(ctx context.Context, input in.FetchAcco
 
 // queryResolver
 func (r *queryResolver) Accounts(ctx context.Context) ([]*out.Account, error) {
-	return r.AccountUC.GetAll(ctx, 10)
+	return r.AccountUC.FindAll(ctx, &in.FetchAllOptions{})
 }
 func (r *queryResolver) FetchAccount(ctx context.Context, input in.FetchAccount) (*out.Account, error) {
-	return r.AccountUC.GetByID(ctx, &input)
+	return r.AccountUC.FindByID(ctx, &input)
 }

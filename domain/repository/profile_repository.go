@@ -6,15 +6,9 @@ import (
 	"clean_arch/domain/model"
 )
 
-// ProfileListOptions -
-type ProfileListOptions struct {
-	Query string
-	*LimitOffset
-}
-
 // ProfileRepository -
 type ProfileRepository interface {
-	GetAll(ctx context.Context, opt *ProfileListOptions) ([]*model.UserProfile, error)
-	GetByID(ctx context.Context, id int64) (*model.UserProfile, error)
-	GetByEmail(ctx context.Context, email string) (*model.UserProfile, error)
+	FindAll(ctx context.Context, opt *ListOptions) ([]*model.UserProfile, error)
+	FindByID(ctx context.Context, id int64) (*model.UserProfile, error)
+	FindByEmail(ctx context.Context, email string) (*model.UserProfile, error)
 }

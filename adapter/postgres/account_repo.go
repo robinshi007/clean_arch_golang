@@ -62,7 +62,7 @@ func (a *accountRepo) getBySQL(ctx context.Context, query string, args ...interf
 	return accounts, nil
 }
 
-func (a *accountRepo) listSQL(opt repository.AccountListOptions) (conds []*sqlf.Query) {
+func (a *accountRepo) listSQL(opt repository.ListOptions) (conds []*sqlf.Query) {
 	conds = []*sqlf.Query{}
 	conds = append(conds, sqlf.Sprintf("deleted_at IS NULL"))
 	if opt.Query != "" {
@@ -72,16 +72,16 @@ func (a *accountRepo) listSQL(opt repository.AccountListOptions) (conds []*sqlf.
 	return conds
 }
 
-func (a *accountRepo) GetAll(ctx context.Context, opt *repository.AccountListOptions) ([]*model.UserAccount, error) {
+func (a *accountRepo) FindAll(ctx context.Context, opt *repository.ListOptions) ([]*model.UserAccount, error) {
 	if opt == nil {
-		opt = &repository.AccountListOptions{}
+		opt = &repository.ListOptions{}
 	}
 	conds := a.listSQL(*opt)
 	q := sqlf.Sprintf("WHERE %s ORDER BY uid ASC %s", sqlf.Join(conds, "AND"), opt.LimitOffset.SQL())
 	return a.getBySQL(ctx, q.Query(sqlf.PostgresBindVar), q.Args()...)
 }
 
-func (a *accountRepo) GetByID(ctx context.Context, id int64) (*model.UserAccount, error) {
+func (a *accountRepo) FindByID(ctx context.Context, id int64) (*model.UserAccount, error) {
 	rows, err := a.getBySQL(ctx, "WHERE deleted_at IS NULL AND uid=$1 LIMIT 1", strconv.FormatInt(id, 10))
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func (a *accountRepo) GetByID(ctx context.Context, id int64) (*model.UserAccount
 	}
 	return rows[0], nil
 }
-func (a *accountRepo) GetByEmail(ctx context.Context, email string) (*model.UserAccount, error) {
+func (a *accountRepo) FindByEmail(ctx context.Context, email string) (*model.UserAccount, error) {
 	rows, err := a.getBySQL(ctx, "WHERE deleted_at IS NULL AND email=$1 LIMIT 1", email)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func (a *accountRepo) GetByEmail(ctx context.Context, email string) (*model.User
 	}
 	return rows[0], nil
 }
-func (a *accountRepo) GetByName(ctx context.Context, name string) (*model.UserAccount, error) {
+func (a *accountRepo) FindByName(ctx context.Context, name string) (*model.UserAccount, error) {
 	rows, err := a.getBySQL(ctx, "WHERE deleted_at IS NULL AND name=$1 LIMIT 1", name)
 	if err != nil {
 		return nil, err
@@ -249,8 +249,8 @@ func (a *accountRepo) Delete(ctx context.Context, id int64) error {
 	}
 	return nil
 }
-func (a *accountRepo) DuplicatedByEmail(ctx context.Context, email string) error {
-	account, err := a.GetByEmail(ctx, email)
+func (a *accountRepo) ExistsByEmail(ctx context.Context, email string) error {
+	account, err := a.FindByEmail(ctx, email)
 	if account != nil {
 		return model.ErrEntityUniqueConflict
 	}
@@ -259,8 +259,8 @@ func (a *accountRepo) DuplicatedByEmail(ctx context.Context, email string) error
 	}
 	return nil
 }
-func (a *accountRepo) DuplicatedByName(ctx context.Context, name string) error {
-	account, err := a.GetByName(ctx, name)
+func (a *accountRepo) ExistsByName(ctx context.Context, name string) error {
+	account, err := a.FindByName(ctx, name)
 	if account != nil {
 		return model.ErrEntityUniqueConflict
 	}

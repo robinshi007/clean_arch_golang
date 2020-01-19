@@ -29,7 +29,7 @@ func (r *redirectResolver) CreatedAt(ctx context.Context, obj *out.Redirect) (st
 
 // mutationResolver
 func (r *mutationResolver) CreateRedirect(ctx context.Context, input in.NewRedirect) (*out.Redirect, error) {
-	redirectID, err := r.RedirectUC.Save(ctx, &input)
+	redirectID, err := r.RedirectUC.Create(ctx, &input)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (r *mutationResolver) CreateRedirect(ctx context.Context, input in.NewRedir
 
 // queryResolver -
 func (r *queryResolver) Redirects(ctx context.Context) ([]*out.Redirect, error) {
-	return r.RedirectUC.FindAll(ctx, &in.FetchRedirects{})
+	return r.RedirectUC.FindAll(ctx, &in.FetchAllOptions{})
 }
 func (r *queryResolver) FetchRedirectByCode(ctx context.Context, input in.FetchRedirectByCode) (*out.Redirect, error) {
 	return r.RedirectUC.FindByCode(ctx, &input)

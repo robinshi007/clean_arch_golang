@@ -2,7 +2,7 @@ package in
 
 // NewAccount -
 type NewAccount struct {
-	Email    string `validate:"required"`
+	Email    string `validate:"required,email"`
 	Name     string `validate:"required"`
 	Password string `validate:"required"`
 }

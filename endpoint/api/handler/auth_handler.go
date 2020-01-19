@@ -31,7 +31,7 @@ func NewAuthHandler() *AuthHandler {
 	repo := postgres.NewAccountRepo()
 	pre := presenter.NewAccountPresenter()
 	return &AuthHandler{
-		uc:  ctn.NewAccountUseCase(repo, pre, 5*time.Second),
+		uc:  ctn.NewAccountUsecase(repo, pre),
 		rsp: respond.NewRespond(registry.Cfg.Serializer.Code),
 	}
 }

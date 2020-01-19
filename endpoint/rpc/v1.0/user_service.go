@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"clean_arch/domain/usecase"
+	uin "clean_arch/domain/usecase/in"
 	"clean_arch/domain/usecase/out"
 
 	"clean_arch/endpoint/rpc/v1.0/protocol"
@@ -22,7 +23,7 @@ func NewUserService(userUsecase usecase.UserUsecase) *userService {
 }
 
 func (s *userService) ListUser(ctx context.Context, in *protocol.ListUserRequestType) (*protocol.ListUserResponseType, error) {
-	users, err := s.userUsecase.GetAll(ctx, 10)
+	users, err := s.userUsecase.FindAll(ctx, &uin.FetchAllOptions{})
 	if err != nil {
 		return nil, err
 	}

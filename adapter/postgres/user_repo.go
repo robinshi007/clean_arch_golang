@@ -55,7 +55,7 @@ func (u *userRepo) getBySQL(ctx context.Context, query string, args ...interface
 	}
 	return users, nil
 }
-func (u *userRepo) listSQL(opt repository.UserListOptions) (conds []*sqlf.Query) {
+func (u *userRepo) listSQL(opt repository.ListOptions) (conds []*sqlf.Query) {
 	conds = []*sqlf.Query{}
 	conds = append(conds, sqlf.Sprintf("deleted_at IS NULL"))
 	if opt.Query != "" {
@@ -65,18 +65,29 @@ func (u *userRepo) listSQL(opt repository.UserListOptions) (conds []*sqlf.Query)
 	return conds
 }
 
-// GetAll -
-func (u *userRepo) GetAll(ctx context.Context, opt *repository.UserListOptions) ([]*model.User, error) {
+// Count -
+func (u *userRepo) Count(ctx context.Context) (int64, error) {
+	var count int64
+	row := registry.Db.QueryRowContext(ctx, "SELECT Count(*) from users WHERE deleted_at IS NULL")
+	err := row.Scan(&count)
+	if err != nil {
+		return -1, err
+	}
+	return count, nil
+}
+
+// FindAll -
+func (u *userRepo) FindAll(ctx context.Context, opt *repository.ListOptions) ([]*model.User, error) {
 	if opt == nil {
-		opt = &repository.UserListOptions{}
+		opt = &repository.ListOptions{}
 	}
 	conds := u.listSQL(*opt)
 	q := sqlf.Sprintf("WHERE %s ORDER BY id ASC %s", sqlf.Join(conds, "AND"), opt.LimitOffset.SQL())
 	return u.getBySQL(ctx, q.Query(sqlf.PostgresBindVar), q.Args()...)
 }
 
-// GetByID -
-func (u *userRepo) GetByID(ctx context.Context, id int64) (*model.User, error) {
+// FindByID -
+func (u *userRepo) FindByID(ctx context.Context, id int64) (*model.User, error) {
 	rows, err := u.getBySQL(ctx, "WHERE deleted_at IS NULL AND id=$1 LIMIT 1", strconv.FormatInt(id, 10))
 	if err != nil {
 		return nil, err
@@ -87,8 +98,8 @@ func (u *userRepo) GetByID(ctx context.Context, id int64) (*model.User, error) {
 	return rows[0], nil
 }
 
-// GetByName -
-func (u *userRepo) GetByName(ctx context.Context, name string) (*model.User, error) {
+// FindByName -
+func (u *userRepo) FindByName(ctx context.Context, name string) (*model.User, error) {
 	rows, err := u.getBySQL(ctx, "WHERE deleted_at IS NULL AND name=$1 LIMIT 1", name)
 	if err != nil {
 		return nil, err
@@ -180,9 +191,9 @@ func (u *userRepo) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-// DuplicatedByName -
-func (u *userRepo) DuplicatedByName(ctx context.Context, name string) error {
-	user, err := u.GetByName(ctx, name)
+// ExistsByName -
+func (u *userRepo) ExistsByName(ctx context.Context, name string) error {
+	user, err := u.FindByName(ctx, name)
 	if user != nil {
 		return model.ErrEntityUniqueConflict
 	}

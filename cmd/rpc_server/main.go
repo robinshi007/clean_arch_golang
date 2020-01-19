@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"time"
 
 	"google.golang.org/grpc"
 
@@ -36,20 +35,28 @@ func main() {
 	}
 	repo := postgres.NewUserRepo()
 	pre := presenter.NewUserPresenter()
-	service := usecase.NewUserUseCase(repo, pre, time.Second)
+	service := usecase.NewUserUsecase(repo, pre)
 
 	server := grpc.NewServer()
 
 	rpc.Apply(server, service)
 
+	// errs
+	errs := make(chan error, 2)
+
 	go func() {
-		fmt.Printf("start grpc server port: %s", port)
+		fmt.Printf("start grpc server port: %s\n", port)
 		server.Serve(lis)
 	}()
 
-	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-	fmt.Println("stopping grpc server...")
+	// handle signal
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt, os.Kill)
+		errs <- fmt.Errorf("%s", <-c)
+	}()
+
+	fmt.Printf(" %s, stopping grpc servers...", <-errs)
 	server.GracefulStop()
+	fmt.Println("done.")
 }
