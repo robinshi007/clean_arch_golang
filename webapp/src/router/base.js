@@ -22,8 +22,16 @@ const baseRoutes = [
   },
   // 404 error page
   {
-    name: '404',
+    name: 'notfound',
     path: '/404',
+    component: () => import('../views/NotFound.vue'),
+    meta: {
+      isPublic: true,
+    },
+  },
+  {
+    name: '404',
+    path: '*',
     component: () => import('../views/NotFound.vue'),
     meta: {
       isPublic: true,

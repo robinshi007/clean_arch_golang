@@ -7,10 +7,10 @@
         </div>
       </q-card-section>
       <q-card-section>
-        {{user.id}}
+        ID: {{user.id}}
       </q-card-section>
       <q-card-section>
-        {{user.name}}
+        Name: {{user.name}}
       </q-card-section>
     </q-card>
   </q-page>

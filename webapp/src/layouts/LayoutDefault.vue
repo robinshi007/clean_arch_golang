@@ -131,7 +131,7 @@ export default {
   },
   methods: {
     onLogout() {
-      this.$store.dispatch('logout');
+      this.$store.dispatch('auth/logout');
       // reload page after logout
       window.location.reload();
       this.$q.notify({ message: 'Logout successfully.' });

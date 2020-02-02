@@ -7,10 +7,10 @@
         </div>
       </q-card-section>
       <q-card-section>
-        {{redirect.code}}
+        Code: {{redirect.code}}
       </q-card-section>
       <q-card-section>
-        {{redirect.url}}
+        URL: {{redirect.url}}
       </q-card-section>
     </q-card>
   </q-page>

@@ -7,13 +7,13 @@
         </div>
       </q-card-section>
       <q-card-section>
-        {{account.id}}
+        ID: {{account.id}}
       </q-card-section>
       <q-card-section>
-        {{account.name}}
+        Name: {{account.name}}
       </q-card-section>
       <q-card-section>
-        {{account.email}}
+        Email: {{account.email}}
       </q-card-section>
     </q-card>
   </q-page>
