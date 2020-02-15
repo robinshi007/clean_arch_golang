@@ -6,6 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.10.1
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/casbin/casbin v1.9.1
+	github.com/casbin/casbin/v2 v2.1.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -16,11 +17,13 @@ require (
 	github.com/go-chi/cors v1.0.0
 	github.com/go-playground/locales v0.12.1 // indirect
 	github.com/go-playground/universal-translator v0.16.0 // indirect
+	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang-migrate/migrate/v4 v4.7.0
 	github.com/golang/protobuf v1.3.1
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/graphql-go/graphql v0.7.8
 	github.com/imkira/go-interpol v1.1.0 // indirect
+	github.com/jmoiron/sqlx v1.2.0
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/keegancsmith/sqlf v1.1.0
 	github.com/leodido/go-urn v1.1.0 // indirect
@@ -29,6 +32,7 @@ require (
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/smartystreets/goconvey v1.6.4 // indirect
+	github.com/stretchr/testify v1.4.0
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	github.com/valyala/fasthttp v1.5.0 // indirect
 	github.com/vektah/gqlparser v1.1.2

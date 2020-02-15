@@ -144,6 +144,11 @@ func (au *accountUsecase) UpdatePassword(ctx context.Context, input *in.EditAcco
 		return nil, model.ErrEntityNotFound
 	}
 
+	isMatch := util.ComparePassword(input.PasswordCurrent, account.Password)
+	if isMatch != true {
+		return nil, model.ErrPasswordIncorrect
+	}
+
 	passwordHash, err := util.HashPassword(input.Password)
 	if err != nil {
 		return nil, err
@@ -180,15 +185,15 @@ func (au *accountUsecase) Delete(ctx context.Context, input *in.FetchAccount) er
 	return au.repo.Delete(ctx, id)
 }
 
-func (au *accountUsecase) Login(ctx context.Context, input *in.LoginAccountByEmail) (bool, string, error) {
+func (au *accountUsecase) Login(ctx context.Context, input *in.LoginAccountByEmail) (bool, int64, string, error) {
 	if err := in.Validate(input); err != nil {
-		return false, "", model.ErrEntityBadInput
+		return false, -1, "", model.ErrEntityBadInput
 	}
 
 	account, err := au.repo.FindByEmail(ctx, input.Email)
 	if err != nil {
-		return false, "", err
+		return false, -1, "", err
 	}
 	result := util.ComparePassword(input.Password, account.Password)
-	return result, account.Name, nil
+	return result, account.UID, account.Name, nil
 }

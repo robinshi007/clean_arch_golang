@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -24,33 +23,9 @@ type userRepo struct {
 }
 
 func (u *userRepo) getBySQL(ctx context.Context, query string, args ...interface{}) ([]*model.User, error) {
-	rows, err := registry.Db.QueryContext(ctx, "SELECT id, name, description, created_at, updated_at FROM users "+query, args...)
-	if err != nil {
-		return nil, err
-	}
-
 	users := []*model.User{}
-	defer rows.Close()
-	for rows.Next() {
-		//var deletedAt pq.NullTime
-		user := model.User{}
-		err := rows.Scan(
-			&user.ID,
-			&user.Name,
-			&user.Description,
-			&user.CreatedAt,
-			&user.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		//		if deletedAt.Valid {
-		//			user.DeletedAt = deletedAt.Time
-		//		}
-
-		users = append(users, &user)
-	}
-	if err = rows.Err(); err != nil {
+	err := registry.Db.SelectContext(ctx, &users, "SELECT id, name, description, created_at, updated_at FROM users "+query, args...)
+	if err != nil {
 		return nil, err
 	}
 	return users, nil
@@ -113,25 +88,10 @@ func (u *userRepo) FindByName(ctx context.Context, name string) (*model.User, er
 // Create -
 func (u *userRepo) Create(ctx context.Context, user *model.User) (int64, error) {
 	query := "INSERT INTO users (name,description,created_at,updated_at) VALUES ($1, $2, $3, $4) RETURNING id"
-	tx, err := registry.Db.BeginTx(ctx, nil)
-	if err != nil {
-		return -1, err
-	}
-	defer func() {
-		if err != nil {
-			util.CW(os.Stdout, util.NRed, "\"%s\"\n", err.Error())
-			rollErr := tx.Rollback()
-			if rollErr != nil {
-				fmt.Println("rollback error:", rollErr.Error())
-			}
-			return
-		}
-		err = tx.Commit()
-	}()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = user.CreatedAt
 
-	err = tx.QueryRowContext(
+	err := registry.Db.QueryRowContext(
 		ctx,
 		query,
 		user.Name,
@@ -147,27 +107,18 @@ func (u *userRepo) Create(ctx context.Context, user *model.User) (int64, error) 
 
 // Update -
 func (u *userRepo) Update(ctx context.Context, user *model.User) (*model.User, error) {
-	tx, err := registry.Db.BeginTx(ctx, nil)
+	query := "UPDATE users SET name=$1, description=$2, updated_at=$3 WHERE id=$4 AND deleted_at IS NULL RETURNING id"
+	user.UpdatedAt = time.Now()
+	res, err := registry.Db.ExecContext(ctx, query, user.Name, user.Description, user.UpdatedAt, user.ID)
+	if err != nil {
+		return HandleUserPqErr(err)
+	}
+	count, err := res.RowsAffected()
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err != nil {
-			util.CW(os.Stdout, util.NRed, "\"%s\"\n", err.Error())
-			rollErr := tx.Rollback()
-			if rollErr != nil {
-				fmt.Println("rollback error:", rollErr.Error())
-			}
-			return
-		}
-		err = tx.Commit()
-	}()
-
-	query := "UPDATE users SET name=$1, description=$2, updated_at=$3 WHERE id=$4 AND deleted_at IS NULL RETURNING id"
-	user.UpdatedAt = time.Now()
-	_, err = tx.ExecContext(ctx, query, user.Name, user.Description, user.UpdatedAt, user.ID)
-	if err != nil {
-		return HandleUserPqErr(err)
+	if count == 0 {
+		return nil, model.ErrEntityNotFound
 	}
 	return user, nil
 }

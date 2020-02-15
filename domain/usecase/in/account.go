@@ -15,8 +15,9 @@ type EditAccount struct {
 
 // EditAccountPassword -
 type EditAccountPassword struct {
-	ID       string `json:"id" validate:"required,numeric"`
-	Password string `validate:"required"`
+	ID              string `json:"id" validate:"required,numeric"`
+	PasswordCurrent string `json:"password_current" validate:"required"`
+	Password        string `json:"password" validate:"required"`
 }
 
 // FetchAccount -
@@ -40,7 +41,7 @@ type LoginAccountByEmail struct {
 	Password string `validate:"required"`
 }
 
-// LoginAccountByName-
+// LoginAccountByName -
 type LoginAccountByName struct {
 	Name     string `validate:"required,alphanum"`
 	Password string `validate:"required"`

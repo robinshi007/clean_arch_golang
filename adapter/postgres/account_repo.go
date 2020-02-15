@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"os"
 	"strconv"
@@ -25,38 +24,9 @@ type accountRepo struct {
 }
 
 func (a *accountRepo) getBySQL(ctx context.Context, query string, args ...interface{}) ([]*model.UserAccount, error) {
-	rows, err := registry.Db.QueryContext(ctx, "SELECT uid, name, email, password, created_at, updated_at FROM user_accounts "+query, args...)
-	if err != nil {
-		return nil, err
-	}
-
 	accounts := []*model.UserAccount{}
-	defer rows.Close()
-	for rows.Next() {
-		//var deletedAt pq.NullTime
-		var name sql.NullString
-		account := model.UserAccount{}
-		err := rows.Scan(
-			&account.UID,
-			&name,
-			&account.Email,
-			&account.Password,
-			&account.CreatedAt,
-			&account.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		if name.Valid {
-			account.Name = name.String
-		}
-		//		if deletedAt.Valid {
-		//			account.DeletedAt = deletedAt.Time
-		//		}
-
-		accounts = append(accounts, &account)
-	}
-	if err = rows.Err(); err != nil {
+	err := registry.Db.SelectContext(ctx, &accounts, "SELECT uid, name, email, password, created_at, updated_at FROM user_accounts "+query, args...)
+	if err != nil {
 		return nil, err
 	}
 	return accounts, nil
@@ -143,9 +113,10 @@ func (a *accountRepo) Create(ctx context.Context, account *model.UserAccount) (i
 		return -1, err
 	}
 	// create user profile
-	queryProfile := "INSERT INTO user_profiles (uid, email, created_at, updated_at) VALUES ($1, $2, $3, $4)"
+	queryProfile := "INSERT INTO user_profiles (uid, name, email, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)"
 	profile := &model.UserProfile{
 		UID:   account.UID,
+		Name:  account.Name,
 		Email: account.Email,
 	}
 	profile.CreatedAt = time.Now()
@@ -155,6 +126,7 @@ func (a *accountRepo) Create(ctx context.Context, account *model.UserAccount) (i
 		ctx,
 		queryProfile,
 		profile.UID,
+		profile.Name,
 		profile.Email,
 		profile.CreatedAt,
 		profile.UpdatedAt,
@@ -166,56 +138,37 @@ func (a *accountRepo) Create(ctx context.Context, account *model.UserAccount) (i
 	if err != nil {
 		return -1, err
 	}
-	//fmt.Println("uid", account.UID)
 	return account.UID, nil
 }
 func (a *accountRepo) Update(ctx context.Context, account *model.UserAccount) (*model.UserAccount, error) {
-	tx, err := registry.Db.BeginTx(ctx, nil)
+	query := "UPDATE user_accounts SET name=$1, updated_at=$2 WHERE uid=$3 AND deleted_at IS NULL"
+	account.UpdatedAt = time.Now()
+	res, err := registry.Db.ExecContext(ctx, query, account.Name, account.UpdatedAt, account.UID)
+	if err != nil {
+		return HandleAccountPqErr(err)
+	}
+	count, err := res.RowsAffected()
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err != nil {
-			util.CW(os.Stdout, util.NRed, "\"%s\"\n", err.Error())
-			rollErr := tx.Rollback()
-			if rollErr != nil {
-				fmt.Println("rollback error:", rollErr.Error())
-			}
-			return
-		}
-		err = tx.Commit()
-	}()
-
-	query := "UPDATE user_accounts SET name=$1, updated_at=$2 WHERE uid=$3 AND deleted_at IS NULL"
-	account.UpdatedAt = time.Now()
-	_, err = tx.ExecContext(ctx, query, account.Name, account.UpdatedAt, account.UID)
-	if err != nil {
-		return HandleAccountPqErr(err)
+	if count == 0 {
+		return nil, model.ErrEntityNotFound
 	}
 	return account, nil
 }
 func (a *accountRepo) UpdatePassword(ctx context.Context, account *model.UserAccount) (*model.UserAccount, error) {
-	tx, err := registry.Db.BeginTx(ctx, nil)
+	query := "UPDATE user_accounts SET password=$1, updated_at=$2 WHERE uid=$3 AND deleted_at IS NULL"
+	account.UpdatedAt = time.Now()
+	res, err := registry.Db.ExecContext(ctx, query, account.Password, account.UpdatedAt, account.UID)
+	if err != nil {
+		return HandleAccountPqErr(err)
+	}
+	count, err := res.RowsAffected()
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err != nil {
-			util.CW(os.Stdout, util.NRed, "\"%s\"\n", err.Error())
-			rollErr := tx.Rollback()
-			if rollErr != nil {
-				fmt.Println("rollback error:", rollErr.Error())
-			}
-			return
-		}
-		err = tx.Commit()
-	}()
-
-	query := "UPDATE user_accounts SET password=$1, updated_at=$2 WHERE uid=$3 AND deleted_at IS NULL"
-	account.UpdatedAt = time.Now()
-	_, err = tx.ExecContext(ctx, query, account.Password, account.UpdatedAt, account.UID)
-	if err != nil {
-		return HandleAccountPqErr(err)
+	if count == 0 {
+		return nil, model.ErrEntityNotFound
 	}
 	return account, nil
 }

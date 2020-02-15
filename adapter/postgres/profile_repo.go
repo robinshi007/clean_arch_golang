@@ -20,32 +20,9 @@ type profileRepo struct {
 }
 
 func (pr *profileRepo) getBySQL(ctx context.Context, query string, args ...interface{}) ([]*model.UserProfile, error) {
-	rows, err := registry.Db.QueryContext(ctx, "SELECT uid, email, created_at, updated_at FROM user_profiles "+query, args...)
-	if err != nil {
-		return nil, err
-	}
-
 	profiles := []*model.UserProfile{}
-	defer rows.Close()
-	for rows.Next() {
-		//var deletedAt pq.NullTime
-		profile := model.UserProfile{}
-		err := rows.Scan(
-			&profile.UID,
-			&profile.Email,
-			&profile.CreatedAt,
-			&profile.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		//		if deletedAt.Valid {
-		//			profile.DeletedAt = deletedAt.Time
-		//		}
-
-		profiles = append(profiles, &profile)
-	}
-	if err = rows.Err(); err != nil {
+	err := registry.Db.SelectContext(ctx, &profiles, "SELECT uid, email, created_at, updated_at FROM user_profiles "+query, args...)
+	if err != nil {
 		return nil, err
 	}
 	return profiles, nil

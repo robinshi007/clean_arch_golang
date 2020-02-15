@@ -1,15 +1,16 @@
+//https://zupzup.org/casbin-http-role-auth/
+
 package middleware
 
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
 	"clean_arch/endpoint/api/globals"
 
-	"github.com/casbin/casbin"
+	"github.com/casbin/casbin/v2"
 	"github.com/graphql-go/graphql/language/ast"
 	"github.com/graphql-go/graphql/language/parser"
 )
@@ -63,8 +64,9 @@ func WithAuthorization(ef *casbin.Enforcer) Middleware {
 						for _, s := range d.GetSelectionSet().Selections {
 							switch f := s.(type) {
 							case *ast.Field:
-								if !ef.Enforce(subject, f.Name.Value, o) {
-									fmt.Printf("ef: %v, %v, %v\n", subject, f.Name.Value, o)
+								ok, _ := ef.Enforce(subject, f.Name.Value, o)
+								if !ok {
+									// fmt.Printf("ef: %v, %v, %v\n", subject, f.Name.Value, o)
 									globals.Respond.GraphQLError(w, "the action is unauthorized", "authorization_checker")
 									return
 								}

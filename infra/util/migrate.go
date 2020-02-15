@@ -16,24 +16,48 @@ import (
 
 // MigrationUp -
 func MigrationUp(c *infra.Config, wd string) {
-	db, _ := sql.Open(c.Database.DriverName, c.Database.URLAddress)
+	db, err := sql.Open(c.Database.DriverName, c.Database.URLAddress)
 	defer db.Close()
-	driver, _ := postgres.WithInstance(db, &postgres.Config{})
+	FailedIf(err)
+
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	FailedIf(err)
+
 	m, _ := migrate.NewWithDatabaseInstance(
 		fmt.Sprintf("file:///%s/db/migrations", wd),
 		c.Database.DriverName, driver)
-	m.Up()
+	FailedIf(err)
 
+	err = m.Up()
+	if err != nil {
+		if err.Error() == "no change" {
+			fmt.Printf("[migration up] no change...")
+		} else {
+			FailedIf(err)
+		}
+	}
 }
 
 // MigrationDown -
 func MigrationDown(c *infra.Config, wd string) {
-	db, _ := sql.Open(c.Database.DriverName, c.Database.URLAddress)
+	db, err := sql.Open(c.Database.DriverName, c.Database.URLAddress)
 	defer db.Close()
-	driver, _ := postgres.WithInstance(db, &postgres.Config{})
-	m, _ := migrate.NewWithDatabaseInstance(
+	FailedIf(err)
+
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	FailedIf(err)
+
+	m, err := migrate.NewWithDatabaseInstance(
 		fmt.Sprintf("file:///%s/db/migrations", wd),
 		c.Database.DriverName, driver)
-	m.Down()
+	FailedIf(err)
 
+	err = m.Down()
+	if err != nil {
+		if err.Error() == "no change" {
+			fmt.Printf("[migration down] no change...")
+		} else {
+			FailedIf(err)
+		}
+	}
 }

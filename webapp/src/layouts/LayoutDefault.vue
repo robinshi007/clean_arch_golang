@@ -23,7 +23,12 @@
                 <q-item-label>{{email}}</q-item-label>
               </q-item-section>
             </q-item>
-            <q-item tabindex="1" clickable @click="onLogout">
+            <q-item tabindex="1" clickable @click="onChangePassword">
+              <q-item-section>
+                <q-item-label>Change Password</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item tabindex="2" clickable @click="onLogout">
               <q-item-section>
                 <q-item-label>Logout</q-item-label>
               </q-item-section>
@@ -57,6 +62,24 @@
         <q-separator />
         <q-expansion-item
           clickable
+          label="Entity"
+          active-class="active"
+          default-opened
+          >
+          <q-item dense clickable :to="{ name: 'entity.user.list' }">
+            <q-item-section>
+              <q-item-label>User</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item dense clickable :to="{ name: 'entity.redirect.list' }">
+            <q-item-section>
+              <q-item-label>Redirect</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-expansion-item>
+        <q-separator />
+        <q-expansion-item
+          clickable
           label="Admin"
           active-class="active"
           default-opened
@@ -64,16 +87,6 @@
           <q-item dense clickable :to="{ name: 'admin.account.list' }">
             <q-item-section>
               <q-item-label>Account</q-item-label>
-            </q-item-section>
-          </q-item>
-          <q-item dense clickable :to="{ name: 'admin.user.list' }">
-            <q-item-section>
-              <q-item-label>User</q-item-label>
-            </q-item-section>
-          </q-item>
-          <q-item dense clickable :to="{ name: 'admin.redirect.list' }">
-            <q-item-section>
-              <q-item-label>Redirect</q-item-label>
             </q-item-section>
           </q-item>
         </q-expansion-item>
@@ -130,6 +143,9 @@ export default {
     }),
   },
   methods: {
+    onChangePassword() {
+      this.$router.push({ name: 'auth.change_password', query: { redirect: this.$route.path } });
+    },
     onLogout() {
       this.$store.dispatch('auth/logout');
       // reload page after logout

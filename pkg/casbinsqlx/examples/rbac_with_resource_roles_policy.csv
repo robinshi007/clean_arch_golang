@@ -1,0 +1,7 @@
+p, alice, data1, read
+p, bob, data2, write
+p, admin_group, data_group, write
+
+g, alice, admin_group
+g2, data1, data_group
+g2, data2, data_group

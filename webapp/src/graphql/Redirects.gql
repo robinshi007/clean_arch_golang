@@ -3,6 +3,10 @@ query {
     id
     code
     url
+    created_by {
+      id
+      email
+    }
     created_at
   }
 }

@@ -1,23 +1,24 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	gqlhandler "github.com/99designs/gqlgen/handler"
-	"github.com/casbin/casbin"
+	"github.com/casbin/casbin/v2"
 	"github.com/go-chi/chi"
 	chiMW "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 
 	"clean_arch/endpoint/api/handler"
 	mw "clean_arch/endpoint/api/middleware"
-	"clean_arch/infra"
+	"clean_arch/pkg/casbinsqlx"
 	"clean_arch/registry"
 )
 
 // NewRouter -
-func NewRouter(db infra.DB) http.Handler {
+func NewRouter() http.Handler {
 
 	// middlewares
 	// cors
@@ -32,28 +33,18 @@ func NewRouter(db infra.DB) http.Handler {
 	})
 
 	// casbin
-	e := casbin.NewEnforcer("./config/casbin_model.conf")
-	// Having public access for feching schema
-	e.AddPolicy("public", "__schema", mw.ActionQuery)
-	// Alice just has access to foo query
-	e.AddPolicy("admin@test.com", "accounts", mw.ActionQuery)
-	e.AddPolicy("admin@test.com", "fetchAccount", mw.ActionQuery)
-	e.AddPolicy("admin@test.com", "createAccount", mw.ActionMutation)
-	e.AddPolicy("admin@test.com", "updateAccount", mw.ActionMutation)
-	e.AddPolicy("admin@test.com", "deleteAccount", mw.ActionMutation)
 
-	e.AddPolicy("admin@test.com", "users", mw.ActionQuery)
-	e.AddPolicy("admin@test.com", "fetchUser", mw.ActionQuery)
-	e.AddPolicy("admin@test.com", "createUser", mw.ActionMutation)
-	e.AddPolicy("admin@test.com", "updateUser", mw.ActionMutation)
-	e.AddPolicy("admin@test.com", "deleteUser", mw.ActionMutation)
+	a := casbinsqlx.NewAdapterByDB(registry.Db)
+	e, err := casbin.NewEnforcer("./config/casbin_rbac_model.conf", a)
+	//e, err := casbin.NewEnforcer("./config/casbin_rbac_model.conf", "./config/casbin_rbac_policy.csv")
+	if err != nil {
+		fmt.Println("hit")
+		panic(err)
+	}
 
-	e.AddPolicy("admin@test.com", "redirects", mw.ActionQuery)
-	e.AddPolicy("admin@test.com", "fetchRedirectByCode", mw.ActionQuery)
-	e.AddPolicy("admin@test.com", "createRedirect", mw.ActionMutation)
-
-	// admin have access to public resources
-	e.AddGroupingPolicy("admin@test.com", "public")
+	fmt.Println("subject", e.GetAllSubjects())
+	fmt.Println("objects", e.GetAllObjects())
+	fmt.Println("actions", e.GetAllActions())
 
 	// handlers
 	//uHanlder := handler.NewUserHandler()

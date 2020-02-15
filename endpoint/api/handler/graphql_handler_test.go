@@ -3,38 +3,49 @@ package handler_test
 // https://github.com/gavv/httpexpect/blob/master/_examples/fruits_test.go
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
-	"testing"
 
 	"github.com/gavv/httpexpect"
+	"github.com/stretchr/testify/suite"
 
+	"clean_arch/adapter/postgres"
+	"clean_arch/domain/model"
 	"clean_arch/endpoint/api/handler"
 	"clean_arch/infra/util"
 	"clean_arch/registry"
 )
 
-func TestGraphQLHandlerRedirect(t *testing.T) {
-	wd, _ := os.Getwd()
-	wd = filepath.Dir(filepath.Dir(filepath.Dir(wd)))
+type GraphQLHandlerSuite struct {
+	suite.Suite
+}
 
-	registry.InitGlobals(wd)
-	cfg := registry.Cfg
-	db := registry.Db
-	defer db.Close()
+func (suite *GraphQLHandlerSuite) SetupSuite() {
+	registry.InitGlobals(WD)
+}
+func (suite *GraphQLHandlerSuite) SetupTest() {
+	util.MigrationUp(registry.Cfg, WD)
 
-	// migration down
-	util.MigrationDown(cfg, wd)
-	util.MigrationUp(cfg, wd)
+	ar := postgres.NewAccountRepo()
+	ctx := context.Background()
+	_, err := ar.Create(ctx, &model.UserAccount{
+		Name:     "test",
+		Email:    "test@test.com",
+		Password: "testtest",
+	})
+	util.FailedIf(err)
+}
+func (suite *GraphQLHandlerSuite) TearDownTest() {
+	util.MigrationDown(registry.Cfg, WD)
+}
 
+func (suite *GraphQLHandlerSuite) TestRedirectCRUD() {
 	gqlHanlder := handler.GraphQLHandler()
-
 	server := httptest.NewServer(gqlHanlder)
 	defer server.Close()
 
-	e := httpexpect.New(t, server.URL)
+	e := httpexpect.New(suite.T(), server.URL)
 
 	queryList := map[string]interface{}{
 		"operationName": nil,
@@ -70,11 +81,10 @@ func TestGraphQLHandlerRedirect(t *testing.T) {
 	e.POST("/").WithJSON(mutationCreate).
 		Expect().
 		Status(http.StatusOK).JSON().Object().Value("data").
-		Object().Value("createRedirect").Object().ContainsKey("code")
+		Object().Value("createRedirect").Object().ContainsKey("code").ContainsKey("url")
 
 	e.POST("/").WithJSON(queryList).
 		Expect().
 		Status(http.StatusOK).JSON().Object().Value("data").
 		Object().Value("redirects").Array().Length().Equal(1)
-
 }

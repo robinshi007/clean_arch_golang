@@ -1,0 +1,31 @@
+p, role:sysadmin, __schema, Query
+p, role:sysadmin, res:accounts_r, Query
+p, role:sysadmin, res:accounts_cud, Mutation
+
+p, role:editor, res:users_r, Query
+p, role:editor, res:users_cud, Mutation
+p, role:editor, res:redirects_r, Query
+p, role:editor, res:redirects_cud, Mutation
+
+g, role:editor, role:viewer
+g, role:owner, role:editor
+g, role:sysadmin, role:owner
+
+g, admin@test.com, role:sysadmin
+g, test@test.com, role:owner
+
+g2, accounts, res:accounts_r
+g2, fetchAccount, res:accounts_r
+g2, createAccount, res:accounts_cud
+g2, updateAccount, res:accounts_cud
+g2, deleteAccount, res:accounts_cud
+
+g2, users, res:users_r
+g2, fetchUser, res:users_r
+g2, createUser, res:users_cud
+g2, updateUser, res:users_cud
+g2, deleteUser, res:users_cud
+
+g2, redirects, res:redirects_r
+g2, fetchRedirectByCode, res:redirects_r
+g2, createRedirect, res:redirects_cud

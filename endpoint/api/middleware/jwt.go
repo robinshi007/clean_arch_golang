@@ -15,6 +15,7 @@ import (
 
 // AccountClaims -
 type AccountClaims struct {
+	ID    int64  `json:"id"`
 	Email string `json:"email"`
 	Name  string `json:"name"`
 	jwt.StandardClaims
@@ -48,12 +49,13 @@ type TokenInfo struct {
 }
 
 // GenerateToken -
-func GenerateToken(email string, name string) (TokenInfo, error) {
+func GenerateToken(id int64, email string, name string) (TokenInfo, error) {
 	expiresAt := time.Now().Add(30 * time.Minute)
 	issuedBy := "nobody"
 
 	// define payload
 	claim := AccountClaims{
+		id,
 		email,
 		name,
 		jwt.StandardClaims{
@@ -129,7 +131,7 @@ func TokenFromHTTPRequest(r *http.Request) string {
 	return tokenString
 }
 
-// WithJWTVerify - check token and put claims into context
+// JWTVerify - check token and put claims into context
 func JWTVerify() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		hfn := func(w http.ResponseWriter, r *http.Request) {

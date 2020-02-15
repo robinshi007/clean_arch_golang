@@ -28,8 +28,8 @@ gql:
 db_create:
 	migrate create -dir db/migrations -ext sql ${ARGS}
 db_up:
-	migrate -path db/migrations -database postgres://postgres:postgres@localhost:5432/clean_arch_dev?sslmode=disable up 1
+	migrate -path db/migrations -database postgres://postgres:postgres@localhost:5432/clean_arch_dev?sslmode=disable up
 db_down:
-	migrate -path db/migrations -database postgres://postgres:postgres@localhost:5432/clean_arch_dev?sslmode=disable down 1
+	migrate -path db/migrations -database postgres://postgres:postgres@localhost:5432/clean_arch_dev?sslmode=disable down
 db_force:
 	migrate -path db/migrations -database postgres://postgres:postgres@localhost:5432/clean_arch_dev?sslmode=disable force ${ARGS}

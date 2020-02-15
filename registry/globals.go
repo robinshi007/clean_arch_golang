@@ -3,6 +3,8 @@ package registry
 import (
 	"errors"
 
+	"github.com/jmoiron/sqlx"
+
 	"clean_arch/infra"
 	"clean_arch/infra/config"
 	"clean_arch/infra/database"
@@ -13,7 +15,8 @@ import (
 var (
 	Cfg *infra.Config
 	Log infra.LogInfoFormat
-	Db  infra.DB
+	//Db  infra.DB
+	Db *sqlx.DB
 )
 
 // InitConfig -
@@ -39,7 +42,7 @@ func InitDatabase() {
 	if Cfg == nil {
 		panic(errors.New("Config is not initialized"))
 	}
-	dbc, err := database.NewDB(Cfg)
+	dbc, err := database.NewDBx(Cfg)
 	util.FailedIf(err)
 	Db = dbc
 }

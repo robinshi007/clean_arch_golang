@@ -24,32 +24,27 @@ type redirectRepo struct {
 }
 
 func (r *redirectRepo) getBySQL(ctx context.Context, query string, args ...interface{}) ([]*model.Redirect, error) {
-	rows, err := registry.Db.QueryContext(ctx, "SELECT id, code, url, created_at FROM redirects "+query, args...)
+	redirects := []*model.Redirect{}
+	rows, err := registry.Db.QueryxContext(ctx, `SELECT r.id, r.code, r.url, r.created_at, 
+up.uid "created_by.uid", 
+up.email "created_by.email", 
+up.created_at "created_by.created_at", 
+up.updated_at "created_by.updated_at"
+FROM redirects r `+query, args...)
 	if err != nil {
 		return nil, err
 	}
-
-	redirects := []*model.Redirect{}
 	defer rows.Close()
 	for rows.Next() {
-		//var deletedAt pq.NullTime
-		redirect := model.Redirect{}
-		err := rows.Scan(
-			&redirect.ID,
-			&redirect.Code,
-			&redirect.URL,
-			&redirect.CreatedAt,
-		)
+		var r model.Redirect
+		err = rows.StructScan(&r)
 		if err != nil {
 			return nil, err
 		}
-		//		if deletedAt.Valid {
-		//			redirect.DeletedAt = deletedAt.Time
-		//		}
-
-		redirects = append(redirects, &redirect)
+		redirects = append(redirects, &r)
 	}
-	if err = rows.Err(); err != nil {
+	err = rows.Err()
+	if err != nil {
 		return nil, err
 	}
 	return redirects, nil
@@ -57,7 +52,7 @@ func (r *redirectRepo) getBySQL(ctx context.Context, query string, args ...inter
 
 func (r *redirectRepo) listSQL(opt repository.ListOptions) (conds []*sqlf.Query) {
 	conds = []*sqlf.Query{}
-	conds = append(conds, sqlf.Sprintf("deleted_at IS NULL"))
+	conds = append(conds, sqlf.Sprintf("r.deleted_at IS NULL"))
 	return conds
 }
 
@@ -77,13 +72,13 @@ func (r *redirectRepo) FindAll(ctx context.Context, opt *repository.ListOptions)
 		opt = &repository.ListOptions{}
 	}
 	conds := r.listSQL(*opt)
-	q := sqlf.Sprintf("WHERE %s ORDER BY id ASC %s", sqlf.Join(conds, "AND"), opt.LimitOffset.SQL())
+	q := sqlf.Sprintf("JOIN user_profiles up ON r.created_by_id = up.uid WHERE %s ORDER BY id ASC %s", sqlf.Join(conds, "AND"), opt.LimitOffset.SQL())
 	return r.getBySQL(ctx, q.Query(sqlf.PostgresBindVar), q.Args()...)
 }
 
 // FindByID -
 func (r *redirectRepo) FindByID(ctx context.Context, id int64) (*model.Redirect, error) {
-	rows, err := r.getBySQL(ctx, "WHERE deleted_at IS NULL AND id=$1 LIMIT 1", strconv.FormatInt(id, 10))
+	rows, err := r.getBySQL(ctx, "JOIN user_profiles up ON r.created_by_id = up.uid WHERE r.deleted_at IS NULL AND r.id=$1 LIMIT 1", strconv.FormatInt(id, 10))
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +90,7 @@ func (r *redirectRepo) FindByID(ctx context.Context, id int64) (*model.Redirect,
 
 // FindByCode -
 func (r *redirectRepo) FindByCode(ctx context.Context, code string) (*model.Redirect, error) {
-	rows, err := r.getBySQL(ctx, "WHERE deleted_at IS NULL AND code=$1 LIMIT 1", code)
+	rows, err := r.getBySQL(ctx, "JOIN user_profiles up ON r.created_by_id = up.uid WHERE r.deleted_at IS NULL AND r.code=$1 LIMIT 1", code)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +102,7 @@ func (r *redirectRepo) FindByCode(ctx context.Context, code string) (*model.Redi
 
 // FindByURL -
 func (r *redirectRepo) FindByURL(ctx context.Context, code string) (*model.Redirect, error) {
-	rows, err := r.getBySQL(ctx, "WHERE deleted_at IS NULL AND url=$1 LIMIT 1", code)
+	rows, err := r.getBySQL(ctx, "JOIN user_profiles up ON r.created_by_id = up.uid WHERE r.deleted_at IS NULL AND r.url=$1 LIMIT 1", code)
 	if err != nil {
 		return nil, err
 	}
@@ -119,39 +114,25 @@ func (r *redirectRepo) FindByURL(ctx context.Context, code string) (*model.Redir
 
 // Create -
 func (r *redirectRepo) Create(ctx context.Context, redirect *model.Redirect) (int64, error) {
-	query := "INSERT INTO redirects (code,url,created_at) VALUES ($1, $2, $3) RETURNING id"
-	tx, err := registry.Db.BeginTx(ctx, nil)
-	if err != nil {
-		return -1, err
-	}
-	defer func() {
-		if err != nil {
-			util.CW(os.Stdout, util.NRed, "\"%s\"\n", err.Error())
-			rollErr := tx.Rollback()
-			if rollErr != nil {
-				fmt.Println("rollback error:", rollErr.Error())
-			}
-			return
-		}
-		err = tx.Commit()
-	}()
+	query := "INSERT INTO redirects (code,url,created_by_id,created_at) VALUES ($1, $2, $3, $4) RETURNING id"
 	redirect.CreatedAt = time.Now()
-
-	err = tx.QueryRowContext(
+	err := registry.Db.QueryRowContext(
 		ctx,
 		query,
 		redirect.Code,
 		redirect.URL,
+		redirect.CreatedBy.UID,
 		redirect.CreatedAt,
 	).Scan(&redirect.ID)
 	if err != nil {
+		fmt.Println("Redirect.Create:", err)
 		return -1, err
 	}
 	return redirect.ID, nil
 }
 
 // Delete -
-func (u *redirectRepo) Delete(ctx context.Context, id int64) error {
+func (r *redirectRepo) Delete(ctx context.Context, id int64) error {
 	query := "UPDATE redirects SET deleted_at=$1 WHERE id=$2"
 	timeNow := time.Now()
 	res, err := registry.Db.ExecContext(ctx, query, timeNow, strconv.FormatInt(id, 10))

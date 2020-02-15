@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -50,6 +51,14 @@ func (p *pqsql) Open(driverName, dataSourceName string) error {
 		fmt.Printf("done\n")
 		return nil
 	}
+}
+
+// RawDB -
+func (p *pqsql) RawDB() (*sql.DB, error) {
+	if p.DB != nil {
+		return p.DB, nil
+	}
+	return nil, errors.New("empty raw database")
 }
 
 func (p *pqsql) openDBWithHooks(dataSourceName string) error {
@@ -125,9 +134,9 @@ func (h *hook) Before(ctx context.Context, query string, args ...interface{}) (c
 	// Print sql logs only in dev mode
 	if h.Mode == "dev" {
 		beginTime := time.Now()
-		//fmt.Printf("> %s %q", query, args)
+		//fmt.Printf("> %s %v\n", query, args)
 		util.CW(os.Stdout, util.Reset, "%s ", beginTime.Format(util.TimeFormatStr))
-		util.CW(os.Stdout, util.NYellow, "\"%s %q\"", query, args)
+		util.CW(os.Stdout, util.NYellow, "\"%s %v\"", query, args)
 		return context.WithValue(ctx, BeginTimeSQL, beginTime), nil
 	}
 	return ctx, nil

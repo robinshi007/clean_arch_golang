@@ -13,6 +13,7 @@ type DB interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 	Open(driverName string, urlAddress string) error
+	RawDB() (*sql.DB, error)
 	Close() error
 }
 

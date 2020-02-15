@@ -109,6 +109,15 @@ export default {
           sortable: true,
         },
         {
+          name: 'created_by',
+          label: 'Created By',
+          required: true,
+          align: 'left',
+          field: row => row.created_by,
+          format: val => `${val.email}`,
+          sortable: true,
+        },
+        {
           name: 'created_at',
           label: 'Created At',
           required: true,
@@ -145,13 +154,13 @@ export default {
 
   methods: {
     onItemNew() {
-      return this.$router.push({ name: 'admin.redirect.new' });
+      return this.$router.push({ name: 'entity.redirect.new' });
     },
     onItemView(val) {
-      return this.$router.push({ name: 'admin.redirect.get', params: { code: val } });
+      return this.$router.push({ name: 'entity.redirect.get', params: { code: val } });
     },
     onItemEdit(val) {
-      return this.$router.push({ name: 'admin.redirect.edit', params: { code: val } });
+      return this.$router.push({ name: 'entity.redirect.edit', params: { code: val } });
     },
   },
 };

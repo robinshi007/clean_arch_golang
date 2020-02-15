@@ -94,15 +94,6 @@ export default {
           sortable: true,
         },
         {
-          name: 'email',
-          label: 'EMail',
-          required: true,
-          align: 'left',
-          field: row => row.email,
-          format: val => `${val}`,
-          sortable: true,
-        },
-        {
           name: 'created_at',
           label: 'Created At',
           required: true,
@@ -148,13 +139,13 @@ export default {
 
   methods: {
     onItemNew() {
-      return this.$router.push({ name: 'admin.user.new' });
+      return this.$router.push({ name: 'entity.user.new' });
     },
     onItemView(val) {
-      return this.$router.push({ name: 'admin.user.get', params: { id: val } });
+      return this.$router.push({ name: 'entity.user.get', params: { id: val } });
     },
     onItemEdit(val) {
-      return this.$router.push({ name: 'admin.user.edit', params: { id: val } });
+      return this.$router.push({ name: 'entity.user.edit', params: { id: val } });
     },
     onDeleteConfirm(val) {
       this.selectedId = val;

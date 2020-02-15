@@ -10,12 +10,12 @@ import (
 )
 
 // NewServer -
-func NewServer(cfg *infra.Config, conn infra.DB) *http.Server {
+func NewServer(cfg *infra.Config) *http.Server {
 
 	// init api globals
 	globals.InitResponder()
 
-	r := NewRouter(conn)
+	r := NewRouter()
 	srv := &http.Server{
 		Addr:           fmt.Sprintf(":%s", cfg.Server.Port),
 		Handler:        r,

@@ -2,7 +2,8 @@ package postgres_test
 
 import (
 	"context"
-	"testing"
+
+	"github.com/stretchr/testify/suite"
 
 	"clean_arch/adapter/postgres"
 	"clean_arch/domain/model"
@@ -11,63 +12,57 @@ import (
 	"clean_arch/registry"
 )
 
-func TestUserCRUD(t *testing.T) {
+type UserRepoSuite struct {
+	suite.Suite
+}
+
+func (suite *UserRepoSuite) SetupSuite() {
 	registry.InitGlobals(WD)
-	cfg := registry.Cfg
-	db := registry.Db
-	defer db.Close()
+}
+func (suite *UserRepoSuite) SetupTest() {
+	util.MigrationUp(registry.Cfg, WD)
+}
+func (suite *UserRepoSuite) TearDownTest() {
+	util.MigrationDown(registry.Cfg, WD)
+}
 
-	// migration up
-	util.MigrationDown(cfg, WD)
-	util.MigrationUp(cfg, WD)
-
+func (suite *UserRepoSuite) TestFindAll_0() {
 	ur := postgres.NewUserRepo()
 	ctx := context.Background()
 
-	users, err := ur.FindAll(ctx, &repository.ListOptions{})
+	users, _ := ur.FindAll(ctx, &repository.ListOptions{})
 	expectedCount := 0
-	if len(users) != expectedCount {
-		t.Errorf("UserRepo.FindAll() return %d user, expected %d", len(users), expectedCount)
-	}
+	suite.Equal(expectedCount, len(users))
+}
 
-	var user *model.User
+func (suite *UserRepoSuite) TestCRUD() {
+	ur := postgres.NewUserRepo()
+	ctx := context.Background()
+
 	expectedName := "Hello"
 	userID, err := ur.Create(ctx, &model.User{Name: expectedName})
-	user, err = ur.FindByID(ctx, userID)
-	if user.Name != expectedName {
-		t.Errorf("UserRepo.FindByID() return user with name %s , expected %s", user.Name, expectedName)
-	}
-	user, err = ur.FindByName(ctx, expectedName)
-	if user.Name != expectedName {
-		t.Errorf("UserRepo.FindByName() return user with name %s , expected %s", user.Name, expectedName)
-	}
+	user, err := ur.FindByID(ctx, userID)
+	suite.Equal(expectedName, user.Name)
 
-	users, err = ur.FindAll(ctx, &repository.ListOptions{})
-	expectedCount = 1
-	if len(users) != expectedCount {
-		t.Errorf("UserRepo.FindAll() return %d user, expected %d", len(users), expectedCount)
-	}
+	user2, err := ur.FindByName(ctx, expectedName)
+	suite.Equal(expectedName, user2.Name)
 
-	expectedName = "Hello world!"
-	user, err = ur.Update(ctx, &model.User{Name: expectedName})
-	if user.Name != expectedName {
-		t.Errorf("UserRepo.Update() return user with name %s , expected %s", user.Name, expectedName)
-	}
+	users, err := ur.FindAll(ctx, &repository.ListOptions{})
+	expectedCount := 1
+	suite.Equal(expectedCount, len(users))
+
+	expectedName2 := "Hello world!"
+	user3, err := ur.Update(ctx, &model.User{ID: userID, Name: expectedName2})
+	suite.Equal(expectedName2, user3.Name)
+
 	_, err = ur.Create(ctx, &model.User{Name: "Hello Again"})
 	users, err = ur.FindAll(ctx, &repository.ListOptions{})
 	expectedCount = 2
-	if len(users) != expectedCount {
-		t.Errorf("UserRepo.FindAll() return %d user, expected %d", len(users), expectedCount)
-	}
+	suite.Equal(expectedCount, len(users))
+
 	err = ur.Delete(ctx, userID)
 	users, err = ur.FindAll(ctx, &repository.ListOptions{})
+	util.FailedIf(err)
 	expectedCount = 1
-	if len(users) != expectedCount {
-		t.Errorf("UserRepo.FindAll() return %d user, expected %d", len(users), expectedCount)
-	}
-
-	if err != nil {
-		t.Errorf("error occurs: %s", err.Error())
-	}
-
+	suite.Equal(expectedCount, len(users))
 }

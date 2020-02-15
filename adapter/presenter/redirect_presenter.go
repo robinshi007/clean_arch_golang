@@ -26,9 +26,16 @@ func (u redirectPresenter) ViewError(ctx context.Context, err error) *out.Error 
 // ViewRedirect -
 func (u redirectPresenter) ViewRedirect(ctx context.Context, redirect *model.Redirect) *out.Redirect {
 	return &out.Redirect{
-		ID:        redirect.ID,
-		Code:      redirect.Code,
-		URL:       redirect.URL,
+		ID:   redirect.ID,
+		Code: redirect.Code,
+		URL:  redirect.URL,
+		CreatedBy: out.Profile{
+			ID:        redirect.CreatedBy.UID,
+			Name:      redirect.CreatedBy.Name,
+			Email:     redirect.CreatedBy.Email,
+			CreatedAt: redirect.CreatedBy.CreatedAt,
+			UpdatedAt: redirect.CreatedBy.UpdatedAt,
+		},
 		CreatedAt: redirect.CreatedAt,
 	}
 }
@@ -38,9 +45,16 @@ func (u redirectPresenter) ViewRedirects(ctx context.Context, redirects []*model
 	res := make([]*out.Redirect, len(redirects))
 	for i, redirect := range redirects {
 		res[i] = &out.Redirect{
-			ID:        redirect.ID,
-			Code:      redirect.Code,
-			URL:       redirect.URL,
+			ID:   redirect.ID,
+			Code: redirect.Code,
+			URL:  redirect.URL,
+			CreatedBy: out.Profile{
+				ID:        redirect.CreatedBy.UID,
+				Name:      redirect.CreatedBy.Name,
+				Email:     redirect.CreatedBy.Email,
+				CreatedAt: redirect.CreatedBy.CreatedAt,
+				UpdatedAt: redirect.CreatedBy.UpdatedAt,
+			},
 			CreatedAt: redirect.CreatedAt,
 		}
 	}

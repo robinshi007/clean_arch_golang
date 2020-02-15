@@ -32,6 +32,8 @@ models:
     model: clean_arch/domain/usecase/in.EditAccountPassword
   FetchAccount:
     model: clean_arch/domain/usecase/in.FetchAccount
+  Profile:
+    model: clean_arch/domain/usecase/out.Profile
   Redirect:
     model: clean_arch/domain/usecase/out.Redirect
   FetchRedirectByCode:

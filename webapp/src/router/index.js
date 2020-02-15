@@ -3,9 +3,10 @@ import VueRouter from 'vue-router';
 import { Notify } from 'quasar';
 
 import store from '../store';
-import authRoutes from './auth';
-import adminRoutes from './admin';
 import baseRoutes from './base';
+import authRoutes from './auth';
+import entityRoutes from './entity';
+import adminRoutes from './admin';
 
 Vue.use(VueRouter);
 
@@ -14,6 +15,7 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes: [
     ...authRoutes,
+    ...entityRoutes,
     ...adminRoutes,
     ...baseRoutes,
   ],

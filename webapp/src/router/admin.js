@@ -24,41 +24,6 @@ const adminRoutes = [
         name: 'admin.account.list',
         path: 'accounts',
         component: () => import('../views/admin/account/Accounts.vue'),
-      }, // user
-      {
-        name: 'admin.user.new',
-        path: 'users/create',
-        component: () => import('../views/admin/user/UserForm.vue'),
-      },
-      {
-        name: 'admin.user.get',
-        path: 'users/:id',
-        component: () => import('../views/admin/user/User.vue'),
-      },
-      {
-        name: 'admin.user.edit',
-        path: 'users/:id/edit',
-        component: () => import('../views/admin/user/UserForm.vue'),
-      },
-      {
-        name: 'admin.user.list',
-        path: 'users',
-        component: () => import('../views/admin/user/Users.vue'),
-      }, // redirect
-      {
-        name: 'admin.redirect.new',
-        path: 'redirects/create',
-        component: () => import('../views/admin/redirect/RedirectForm.vue'),
-      },
-      {
-        name: 'admin.redirect.get',
-        path: 'redirects/:code',
-        component: () => import('../views/admin/redirect/Redirect.vue'),
-      },
-      {
-        name: 'admin.redirect.list',
-        path: 'redirects',
-        component: () => import('../views/admin/redirect/Redirects.vue'),
       },
     ],
   },

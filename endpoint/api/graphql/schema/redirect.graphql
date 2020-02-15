@@ -2,6 +2,7 @@ type Redirect {
   id: ID!
   code: String!
   url: String!
+  created_by: Profile!
   created_at: Time!
 }
 

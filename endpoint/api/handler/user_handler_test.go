@@ -5,36 +5,35 @@ package handler_test
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
-	"testing"
 
 	"github.com/gavv/httpexpect"
+	"github.com/stretchr/testify/suite"
 
 	"clean_arch/endpoint/api/handler"
 	"clean_arch/infra/util"
 	"clean_arch/registry"
 )
 
-func TestUserHandlerCRUD(t *testing.T) {
-	wd, _ := os.Getwd()
-	wd = filepath.Dir(filepath.Dir(filepath.Dir(wd)))
+type UserHandlerSuite struct {
+	suite.Suite
+}
 
-	registry.InitGlobals(wd)
-	cfg := registry.Cfg
-	db := registry.Db
-	defer db.Close()
+func (suite *UserHandlerSuite) SetupSuite() {
+	registry.InitGlobals(WD)
+}
+func (suite *UserHandlerSuite) SetupTest() {
+	util.MigrationUp(registry.Cfg, WD)
+}
+func (suite *UserHandlerSuite) TearDownTest() {
+	util.MigrationDown(registry.Cfg, WD)
+}
 
-	// migration
-	util.MigrationDown(cfg, wd)
-	util.MigrationUp(cfg, wd)
-
+func (suite *UserHandlerSuite) TestCRUD() {
 	uHanlder := handler.NewUserHandler()
-
 	server := httptest.NewServer(handler.NewUserRouter(uHanlder))
 	defer server.Close()
 
-	e := httpexpect.New(t, server.URL)
+	e := httpexpect.New(suite.T(), server.URL)
 
 	e.GET("/").
 		Expect().
@@ -83,30 +82,14 @@ func TestUserHandlerCRUD(t *testing.T) {
 	e.GET("/").
 		Expect().
 		Status(http.StatusOK).JSON().Object().Value("data").Array().Length().Equal(1)
-
-	// migration down
-	util.MigrationDown(cfg, wd)
 }
 
-func TestUserHandlerError(t *testing.T) {
-	wd, _ := os.Getwd()
-	wd = filepath.Dir(filepath.Dir(filepath.Dir(wd)))
-
-	registry.InitGlobals(wd)
-	cfg := registry.Cfg
-	db := registry.Db
-	defer db.Close()
-
-	// migration up
-	util.MigrationDown(cfg, wd)
-	util.MigrationUp(cfg, wd)
-
+func (suite *UserHandlerSuite) TestError() {
 	uHanlder := handler.NewUserHandler()
-
 	server := httptest.NewServer(handler.NewUserRouter(uHanlder))
 	defer server.Close()
 
-	e := httpexpect.New(t, server.URL)
+	e := httpexpect.New(suite.T(), server.URL)
 
 	user1 := map[string]interface{}{
 		"name": "",
@@ -148,5 +131,4 @@ func TestUserHandlerError(t *testing.T) {
 	e.GET("/").
 		Expect().
 		Status(http.StatusOK).JSON().Object().Value("data").Array().Length().Equal(1)
-
 }

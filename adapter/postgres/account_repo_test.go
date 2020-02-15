@@ -2,7 +2,9 @@ package postgres_test
 
 import (
 	"context"
-	"testing"
+	"fmt"
+
+	"github.com/stretchr/testify/suite"
 
 	"clean_arch/adapter/postgres"
 	"clean_arch/domain/model"
@@ -11,84 +13,112 @@ import (
 	"clean_arch/registry"
 )
 
-func TestAccountCRUD(t *testing.T) {
+type AccountRepoSuite struct {
+	suite.Suite
+}
+
+func (suite *AccountRepoSuite) SetupSuite() {
 	registry.InitGlobals(WD)
-	cfg := registry.Cfg
-	db := registry.Db
-	defer db.Close()
+}
+func (suite *AccountRepoSuite) SetupTest() {
+	util.MigrationUp(registry.Cfg, WD)
+}
+func (suite *AccountRepoSuite) TearDownTest() {
+	util.MigrationDown(registry.Cfg, WD)
+}
 
-	// migration down
-	util.MigrationDown(cfg, WD)
-	util.MigrationUp(cfg, WD)
+func (suite *AccountRepoSuite) TestFindAll_0() {
+	ar := postgres.NewAccountRepo()
+	ctx := context.Background()
 
+	accounts, _ := ar.FindAll(ctx, &repository.ListOptions{})
+	expectedCount := 0
+	suite.Equal(expectedCount, len(accounts))
+}
+func (suite *AccountRepoSuite) TestCreate() {
+	ar := postgres.NewAccountRepo()
+	ctx := context.Background()
+
+	var account *model.UserAccount
+	expectedName := "Hello"
+	expectedEmail := "Hello@test.com"
+	expectedPass := "World!"
+	accountID, err := ar.Create(ctx, &model.UserAccount{Name: expectedName, Email: expectedEmail, Password: expectedPass})
+	account, err = ar.FindByID(ctx, accountID)
+	util.FailedIf(err)
+
+	suite.Equal(expectedName, account.Name)
+	suite.Equal(expectedEmail, account.Email)
+	suite.Equal(expectedPass, account.Password)
+
+	account2, err := ar.FindByEmail(ctx, expectedEmail)
+	suite.Equal(expectedName, account.Name)
+	suite.Equal(expectedEmail, account2.Email)
+	suite.Equal(expectedPass, account2.Password)
+}
+
+func (suite *AccountRepoSuite) TestUpdate() {
+	ar := postgres.NewAccountRepo()
+	ctx := context.Background()
+
+	var account *model.UserAccount
+	expectedName := "Hello"
+	accountID, err := ar.Create(ctx, &model.UserAccount{Name: expectedName, Email: "Hello@test.com", Password: "Pass"})
+	expectedName2 := "Great"
+	_, err = ar.Update(ctx, &model.UserAccount{UID: accountID, Name: expectedName2})
+	account, err = ar.FindByID(ctx, accountID)
+	util.FailedIf(err)
+	suite.Equal(expectedName2, account.Name)
+}
+
+func (suite *AccountRepoSuite) TestUpdatePassword() {
+	ar := postgres.NewAccountRepo()
+	ctx := context.Background()
+
+	var account *model.UserAccount
+	expectedPass := "World!"
+	accountID, err := ar.Create(ctx, &model.UserAccount{Name: "Hello", Email: "Hello@test.com", Password: expectedPass})
+	expectedPass2 := "World Again!"
+	_, err = ar.UpdatePassword(ctx, &model.UserAccount{UID: accountID, Password: expectedPass2})
+	account, err = ar.FindByID(ctx, accountID)
+	util.FailedIf(err)
+	suite.Equal(expectedPass2, account.Password)
+}
+func (suite *AccountRepoSuite) TestDelete() {
+	ar := postgres.NewAccountRepo()
+	ctx := context.Background()
+
+	accountID, _ := ar.Create(ctx, &model.UserAccount{Name: "Hello", Email: "Hello@test.com", Password: "Pass"})
+
+	accounts, _ := ar.FindAll(ctx, &repository.ListOptions{})
+	expectedCount := 1
+	suite.Equal(expectedCount, len(accounts))
+
+	err := ar.Delete(ctx, accountID)
+	util.FailedIf(err)
+
+	accounts2, _ := ar.FindAll(ctx, &repository.ListOptions{})
+	expectedCount2 := 0
+	suite.Equal(expectedCount2, len(accounts2))
+}
+
+func (suite *AccountRepoSuite) TestFindAll_2() {
 	ar := postgres.NewAccountRepo()
 	pr := postgres.NewProfileRepo()
 	ctx := context.Background()
 
-	accounts, err := ar.FindAll(ctx, &repository.ListOptions{})
-	expectedCount := 0
-	if len(accounts) != expectedCount {
-		t.Errorf("AccountRepo.FindAll() return %d account, expected %d", len(accounts), expectedCount)
-	}
-
-	var account *model.UserAccount
 	expectedEmail := "Hello"
 	expectedPass := "World!"
-	accountID, err := ar.Create(ctx, &model.UserAccount{Email: expectedEmail, Password: expectedPass})
-	account, err = ar.FindByID(ctx, accountID)
-	if account.Email != expectedEmail {
-		t.Errorf("AccountRepo.FindByID() return account with email %s , expected %s", account.Email, expectedEmail)
-	}
-	if account.Password != expectedPass {
-		t.Errorf("AccountRepo.FindByID() return account with password %s , expected %s", account.Password, expectedPass)
-	}
-	account, err = ar.FindByEmail(ctx, expectedEmail)
-	if account.Email != expectedEmail {
-		t.Errorf("AccountRepo.FindByName() return account with name %s , expected %s", account.Email, expectedEmail)
-	}
-	accounts, err = ar.FindAll(ctx, &repository.ListOptions{})
-	expectedCount = 1
-	if len(accounts) != expectedCount {
-		t.Errorf("AccountRepo.FindAll() return %d account, expected %d", len(accounts), expectedCount)
-	}
-	profiles, err := pr.FindAll(ctx, &repository.ListOptions{})
-	if len(profiles) != expectedCount {
-		t.Errorf("ProfileRepo.FindAll() return %d account, expected %d", len(profiles), expectedCount)
-	}
-
-	expectedName := "Great!"
-	_, err = ar.Update(ctx, &model.UserAccount{UID: accountID, Name: expectedName})
-	accountNameNew, err := ar.FindByID(ctx, accountID)
-	if accountNameNew.Name != expectedName {
-		t.Errorf("AccountRepo.Update() return account with name %s , expected %s", accountNameNew.Name, expectedName)
-	}
-
-	expectedPassNew := "Hello world!"
-	_, err = ar.UpdatePassword(ctx, &model.UserAccount{UID: accountID, Password: expectedPassNew})
-	accountPassNew, err := ar.FindByID(ctx, accountID)
-	if accountPassNew.Password != expectedPassNew {
-		t.Errorf("AccountRepo.Update() return account with password %s , expected %s", accountPassNew.Password, expectedPassNew)
-	}
-
-	_, err = ar.Create(ctx, &model.UserAccount{Email: "Hello Again", Password: "pass"})
-	accounts, err = ar.FindAll(ctx, &repository.ListOptions{})
-	expectedCount = 2
-	if len(accounts) != expectedCount {
-		t.Errorf("AccountRepo.FindAll() return %d account, expected %d", len(accounts), expectedCount)
-	}
-
-	err = ar.Delete(ctx, accountID)
-	accounts, err = ar.FindAll(ctx, &repository.ListOptions{})
-	expectedCount = 1
-	if len(accounts) != expectedCount {
-		t.Errorf("AccountRepo.FindAll() return %d account, expected %d", len(accounts), expectedCount)
-	}
-	profiles, err = pr.FindAll(ctx, &repository.ListOptions{})
-	if len(profiles) != expectedCount {
-		t.Errorf("ProfileRepo.FindAll() return %d account, expected %d", len(profiles), expectedCount)
-	}
+	expectedEmail2 := "Hi"
+	expectedPass2 := "Great!"
+	_, err := ar.Create(ctx, &model.UserAccount{Name: expectedEmail, Email: expectedEmail, Password: expectedPass})
+	_, err = ar.Create(ctx, &model.UserAccount{Name: expectedEmail2, Email: expectedEmail2, Password: expectedPass2})
 	if err != nil {
-		t.Errorf("error occurs: %s", err.Error())
+		fmt.Printf("err: %v\n", err)
 	}
-
+	accounts, err := ar.FindAll(ctx, &repository.ListOptions{})
+	expectedCount := 2
+	suite.Equal(expectedCount, len(accounts))
+	profiles, err := pr.FindAll(ctx, &repository.ListOptions{})
+	suite.Equal(expectedCount, len(profiles))
 }

@@ -15,6 +15,7 @@ import (
 	"clean_arch/domain/usecase"
 	"clean_arch/domain/usecase/in"
 	"clean_arch/domain/usecase/out"
+	"clean_arch/infra/util"
 )
 
 type redirectUsecase struct {
@@ -90,7 +91,7 @@ func (r *redirectUsecase) FindByCode(ctx context.Context, input *in.FetchRedirec
 	return r.pre.ViewRedirect(ctx, redirect), nil
 }
 
-func (r *redirectUsecase) FindByURL(ctx context.Context, input *in.FetchOrCreateRedirect) (*out.Redirect, error) {
+func (r *redirectUsecase) FindByURL(ctx context.Context, input *in.FetchRedirectByURL) (*out.Redirect, error) {
 	if err := in.Validate(input); err != nil {
 		return nil, fmt.Errorf("redirectUsecase.FindByURL: %w", model.ErrEntityBadInput)
 	}
@@ -110,6 +111,7 @@ func (r *redirectUsecase) FindOrCreate(ctx context.Context, input *in.FetchOrCre
 		if errors.Is(err, model.ErrEntityNotFound) {
 			newRedirectID, err := r.Create(ctx, &in.NewRedirect{
 				URL: input.URL,
+				CID: input.CID,
 			})
 			if err != nil {
 				return nil, err
@@ -130,10 +132,11 @@ func (r *redirectUsecase) Create(ctx context.Context, input *in.NewRedirect) (ou
 	if err := in.Validate(input); err != nil {
 		return out.ID("-1"), fmt.Errorf("redirectUsecase.Create: %w", model.ErrEntityBadInput)
 	}
-
+	cid, _ := util.String2Int64(input.CID)
 	res, err := r.repo.Create(ctx, &model.Redirect{
 		Code:      shortid.MustGenerate(),
 		URL:       input.URL,
+		CreatedBy: model.UserProfile{UID: cid},
 		CreatedAt: time.Now(),
 	})
 

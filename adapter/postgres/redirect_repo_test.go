@@ -2,8 +2,8 @@ package postgres_test
 
 import (
 	"context"
-	"testing"
 
+	"github.com/stretchr/testify/suite"
 	"github.com/teris-io/shortid"
 
 	"clean_arch/adapter/postgres"
@@ -13,49 +13,87 @@ import (
 	"clean_arch/registry"
 )
 
-func TestRedirectCRUD(t *testing.T) {
+type RedirectRepoSuite struct {
+	suite.Suite
+}
+
+func (suite *RedirectRepoSuite) SetupSuite() {
 	registry.InitGlobals(WD)
-	cfg := registry.Cfg
-	db := registry.Db
-	defer db.Close()
+}
+func (suite *RedirectRepoSuite) SetupTest() {
+	util.MigrationUp(registry.Cfg, WD)
+}
+func (suite *RedirectRepoSuite) TearDownTest() {
+	util.MigrationDown(registry.Cfg, WD)
+}
 
-	// migration down
-	util.MigrationDown(cfg, WD)
-	util.MigrationUp(cfg, WD)
-
+func (suite *RedirectRepoSuite) TestFindAll() {
 	rr := postgres.NewRedirectRepo()
 	ctx := context.Background()
 
-	var redirect *model.Redirect
+	redirects, _ := rr.FindAll(ctx, &repository.ListOptions{})
+	expectedCount := 0
+	suite.Equal(expectedCount, len(redirects))
+}
+func (suite *RedirectRepoSuite) TestCreate() {
+	rr := postgres.NewRedirectRepo()
+	ar := postgres.NewAccountRepo()
+	ctx := context.Background()
+
+	accountID, err := ar.Create(ctx, &model.UserAccount{
+		Name:     "test",
+		Email:    "test@test.com",
+		Password: "testtest",
+	})
+	util.FailedIf(err)
+
 	expectedURL := "http://www.test.com"
 	code := shortid.MustGenerate()
 	redirectID, err := rr.Create(ctx, &model.Redirect{
-		Code: code,
-		URL:  expectedURL,
+		Code:      code,
+		URL:       expectedURL,
+		CreatedBy: model.UserProfile{UID: accountID},
 	})
-	redirect, err = rr.FindByCode(ctx, code)
-	if redirect.Code != code {
-		t.Errorf("RedirectRepo.FindByCode() return redirect with code %s , expected %s", redirect.Code, code)
-	}
-	if redirect.URL != expectedURL {
-		t.Errorf("RedirectRepo.FindByCode() return redirect with URL %s , expected %s", redirect.URL, expectedURL)
-	}
+
+	redirects, err := rr.FindAll(ctx, &repository.ListOptions{})
+	expectedCount := 1
+	suite.Equal(expectedCount, len(redirects))
+
+	redirect, err := rr.FindByCode(ctx, code)
+	suite.Equal(expectedURL, redirect.URL)
 
 	redirect2, err := rr.FindByID(ctx, redirectID)
-	if redirect2.URL != expectedURL {
-		t.Errorf("RedirectRepo.FindByID() return redirect with URL %s , expected %s", redirect.URL, expectedURL)
-	}
-	expectedCount := int64(1)
-	count, err := rr.Count(ctx)
-	if count != expectedCount {
-		t.Errorf("RedirectRepo.Count() return %d , expected %d", count, expectedCount)
-	}
+	suite.Equal(expectedURL, redirect2.URL)
+
+}
+func (suite *RedirectRepoSuite) TestDelete() {
+	rr := postgres.NewRedirectRepo()
+	ar := postgres.NewAccountRepo()
+	ctx := context.Background()
+
+	accountID, err := ar.Create(ctx, &model.UserAccount{
+		Name:     "test",
+		Email:    "test@test.com",
+		Password: "testtest",
+	})
+	util.FailedIf(err)
+
+	expectedURL := "http://www.test.com"
+	code := shortid.MustGenerate()
+	_, err = rr.Create(ctx, &model.Redirect{
+		Code:      code,
+		URL:       expectedURL,
+		CreatedBy: model.UserProfile{UID: accountID},
+	})
+
 	expectedURL2 := "http://www.example.com"
 	code2 := shortid.MustGenerate()
-	_, err = rr.Create(ctx, &model.Redirect{
-		Code: code2,
-		URL:  expectedURL2,
+	redirectID, err := rr.Create(ctx, &model.Redirect{
+		Code:      code2,
+		URL:       expectedURL2,
+		CreatedBy: model.UserProfile{UID: accountID},
 	})
+
 	redirects, err := rr.FindAll(ctx, &repository.ListOptions{
 		Query: "",
 		LimitOffset: &repository.LimitOffset{
@@ -63,22 +101,11 @@ func TestRedirectCRUD(t *testing.T) {
 			Offset: 0,
 		},
 	})
-	expectedCount2 := 2
-	if len(redirects) != expectedCount2 {
-		t.Errorf("RedirectRepo.FindAll() return %d records , expected %d", len(redirects), expectedCount2)
-	}
-	err = rr.Delete(ctx, int64(1))
-	if err != nil {
-		t.Errorf("RedirectRepo.Delete() return no err, expected %s", err.Error())
-	}
-	expectedCount3 := int64(1)
-	count3, err := rr.Count(ctx)
-	if count3 != expectedCount3 {
-		t.Errorf("RedirectRepo.Count() return %d , expected %d", count3, expectedCount3)
-	}
+	util.FailedIf(err)
+	suite.Equal(2, len(redirects))
 
-	if err != nil {
-		t.Errorf("error occurs: %s", err.Error())
-	}
-
+	err = rr.Delete(ctx, int64(redirectID))
+	util.FailedIf(err)
+	redirects2, err := rr.FindAll(ctx, &repository.ListOptions{})
+	suite.Equal(1, len(redirects2))
 }

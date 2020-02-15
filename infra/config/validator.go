@@ -51,6 +51,5 @@ func validateDataStore(config infra.Config) error {
 		errMsg := dcMsg + key
 		return errors.New(errMsg)
 	}
-
 	return nil
 }

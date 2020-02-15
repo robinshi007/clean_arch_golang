@@ -3,6 +3,7 @@ package in
 // NewRedirect -
 type NewRedirect struct {
 	URL string `json:"url" validate:"required,url"`
+	CID string `json:"cid" validate:"required"`
 }
 
 // FetchRedirect -
@@ -22,5 +23,6 @@ type FetchRedirectByURL struct {
 
 // FetchOrCreateRedirect -
 type FetchOrCreateRedirect struct {
-	URL string `json:"url" validate:"required"`
+	URL string `json:"url" validate:"required,url"`
+	CID string `json:"cid" validate:"required"`
 }

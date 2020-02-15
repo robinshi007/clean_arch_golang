@@ -1,6 +1,8 @@
 package database
 
 import (
+	"github.com/jmoiron/sqlx"
+
 	"clean_arch/infra"
 )
 
@@ -21,4 +23,17 @@ func NewDB(c *infra.Config) (infra.DB, error) {
 		return nil, err
 	}
 	return dbma, nil
+}
+
+// NewDBx -
+func NewDBx(c *infra.Config) (*sqlx.DB, error) {
+	dbma, err := NewDB(c)
+	if err != nil {
+		return nil, err
+	}
+	rawDb, err := dbma.RawDB()
+	if err != nil {
+		return nil, err
+	}
+	return sqlx.NewDb(rawDb, "postgres"), nil
 }

@@ -17,9 +17,11 @@ func GraphQLHandler() http.Handler {
 	urepo := postgres.NewUserRepo()
 	upre := presenter.NewUserPresenter()
 	uuc := usecase.NewUserUsecase(urepo, upre)
+
 	arepo := postgres.NewAccountRepo()
 	apre := presenter.NewAccountPresenter()
 	auc := usecase.NewAccountUsecase(arepo, apre)
+
 	rrepo := postgres.NewRedirectRepo()
 	rpre := presenter.NewRedirectPresenter()
 	ruc := usecase.NewRedirectUsecase(rrepo, rpre)

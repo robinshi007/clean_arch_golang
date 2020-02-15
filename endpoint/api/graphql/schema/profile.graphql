@@ -1,0 +1,7 @@
+type Profile {
+  id: ID!
+  name: String!
+  email: String!
+  created_at: Time!
+  updated_at: Time!
+}

@@ -8,5 +8,13 @@ const authRoutes = [
       layout: 'empty',
     },
   },
+  {
+    name: 'auth.change_password',
+    path: '/change_password',
+    component: () => import('../views/auth/ChangePassword.vue'),
+    meta: {
+      layout: 'empty',
+    },
+  },
 ];
 export default authRoutes;

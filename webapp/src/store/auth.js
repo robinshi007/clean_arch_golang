@@ -83,6 +83,19 @@ const authState = {
         return Promise.reject(err);
       });
     },
+    change_password({ commit }, data) {
+      return Vue.axios.post('/api/v1/auth/change_password', data).then((response) => {
+        if (response.data.success) {
+          const postData = response.data;
+          // add redirect info
+          if (data.redirect) {
+            postData.redirect = data.redirect;
+          }
+          return Promise.resolve(postData);
+        }
+        return Promise.reject(response.data);
+      }).catch(err => Promise.reject(err));
+    },
     refreshToken({ commit }) {
       return Vue.axios.get('/api/v1/auth/refresh_token').then((response) => {
         if (response.data.data.token) {

@@ -2,7 +2,6 @@ package usecase_test
 
 import (
 	"context"
-	"testing"
 
 	"clean_arch/adapter/postgres"
 	"clean_arch/adapter/presenter"
@@ -10,18 +9,37 @@ import (
 	"clean_arch/infra/util"
 	"clean_arch/registry"
 	"clean_arch/usecase"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func TestUserUsecase(t *testing.T) {
+type UserUcaseSuite struct {
+	suite.Suite
+}
+
+func (suite *UserUcaseSuite) SetupSuite() {
 	registry.InitGlobals(WD)
-	cfg := registry.Cfg
-	db := registry.Db
-	defer db.Close()
+}
+func (suite *UserUcaseSuite) SetupTest() {
+	util.MigrationUp(registry.Cfg, WD)
+}
+func (suite *UserUcaseSuite) TearDownTest() {
+	util.MigrationDown(registry.Cfg, WD)
+}
 
-	// migration
-	util.MigrationDown(cfg, WD)
-	util.MigrationUp(cfg, WD)
+func (suite *UserUcaseSuite) TestFindAll_0() {
+	uu := usecase.NewUserUsecase(
+		postgres.NewUserRepo(),
+		presenter.NewUserPresenter(),
+	)
+	ctx := context.Background()
 
+	users, err := uu.FindAll(ctx, &in.FetchAllOptions{})
+	util.FailedIf(err)
+	expectedCount := 0
+	suite.Equal(expectedCount, len(users))
+}
+func (suite *UserUcaseSuite) TestCreate() {
 	uu := usecase.NewUserUsecase(
 		postgres.NewUserRepo(),
 		presenter.NewUserPresenter(),
@@ -37,41 +55,50 @@ func TestUserUsecase(t *testing.T) {
 	user, err := uu.FindByID(ctx, &in.FetchUser{
 		ID: string(userID),
 	})
-	if user.Name != expectedName {
-		t.Errorf("UserUsecase.FindByID() return user with name %s , expected %s", user.Name, expectedName)
+	util.FailedIf(err)
+	suite.Equal(expectedName, user.Name)
+}
+func (suite *UserUcaseSuite) TestCRUD() {
+	uu := usecase.NewUserUsecase(
+		postgres.NewUserRepo(),
+		presenter.NewUserPresenter(),
+	)
+	ctx := context.Background()
+
+	expectedName := "TestName"
+	userNewInput := &in.NewUser{
+		Name: expectedName,
 	}
-	_, err = uu.Create(ctx, &in.NewUser{Name: "Second Name"})
+	// save first one and find one
+	userID, err := uu.Create(ctx, userNewInput)
+	_, err = uu.Create(ctx, &in.NewUser{
+		Name: "hello",
+	})
+	util.FailedIf(err)
+
+	users, err := uu.FindAll(ctx, &in.FetchAllOptions{})
+	util.FailedIf(err)
+	expectedCount := 2
+	suite.Equal(expectedCount, len(users))
+
 	// update one
 	expectedNameAgain := "TestNameAgain"
 	_, err = uu.Update(ctx, &in.EditUser{
+		ID:   string(userID),
 		Name: expectedNameAgain,
 	})
 	user2, err := uu.FindByID(ctx, &in.FetchUser{
 		ID: string(userID),
 	})
-	if user2.Name != expectedName {
-		t.Errorf("UserUsecase.FindByID() return user with name %s , expected %s", user.Name, expectedName)
-	}
-	count, err := uu.Count(ctx)
-	if count != 2 {
-		t.Errorf("UserUsecase.Count() return user count %d , expected %d", count, 2)
-	}
-	users, err := uu.FindAll(ctx, &in.FetchAllOptions{})
-	if len(users) != 2 {
-		t.Errorf("UserUsecase.FindAll() return user count %d , expected %d", len(users), 2)
-	}
+	suite.Equal(expectedNameAgain, user2.Name)
+
 	// delete one
 	err = uu.Delete(ctx, &in.FetchUser{
 		ID: string(userID),
 	})
-	// recheck the count
-	count2, err := uu.Count(ctx)
-	if count2 != 1 {
-		t.Errorf("UserUsecase.Count() return user count %d , expected %d", count2, 1)
-	}
 
-	if err != nil {
-		t.Errorf("error occurs: %s", err.Error())
-	}
-
+	users2, err := uu.FindAll(ctx, &in.FetchAllOptions{})
+	util.FailedIf(err)
+	expectedCount2 := 1
+	suite.Equal(expectedCount2, len(users2))
 }

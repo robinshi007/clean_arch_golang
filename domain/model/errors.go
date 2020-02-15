@@ -23,6 +23,8 @@ var (
 
 	// ErrAuthNotMatch -
 	ErrAuthNotMatch = errors.New("login email or password is not correct")
+	// ErrPasswordIncorrect -
+	ErrPasswordIncorrect = errors.New("current user's password is not correct")
 	// ErrTokenEmpty -
 	ErrTokenEmpty = errors.New("token is empty")
 	// ErrTokenExpired -
